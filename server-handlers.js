@@ -3,13 +3,17 @@ let Docker = require('dockerode');
 let docker = new Docker();
 let handlers = {}
 
+function parseArgs(argv) {
+  return argv.reduce((args, arg) => {
+    const match = arg.split("=")
+    args.set(match[0], match[1] || true)
+    return args
+  }, new Map())
+}
+const opts = parseArgs(process.argv)
+const workingDir = opts.get("--workingDir")
 
 handlers["build-image"] = async ({ base_image_url, apt, conda, pip }) => {
-  // let { remote } = require('electron')
-  // let fs = require('fs');
-  // let dir = 
-  // fs.mkdir();
-  // console.log(remote.app.getPath("appData"))
   console.log(workingDir);
   return "Start building"
 }
