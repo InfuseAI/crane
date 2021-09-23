@@ -5,7 +5,7 @@ const findOpenSocket = require('./find-open-socket')
 const isDev = require('electron-is-dev')
 const fs = require('fs')
 const path = require('path');
-
+require('@electron/remote/main').initialize();
 
 let clientWin
 let serverWin
@@ -18,7 +18,8 @@ function createWindow(socketName) {
     width: 800,
     height: 600,
     webPreferences: {
-      nodeIntegration: false,
+      nodeIntegration: true,
+      contextIsolation: false,
       preload: __dirname + '/client-preload.js'
     }
   })
@@ -40,9 +41,11 @@ function createBackgroundWindow(socketName) {
     height: 500,
     show: true,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      contextIsolation: false,
     }
   })
+  require("@electron/remote/main").enable(win.webContents)
   win.loadURL(`file://${__dirname}/server-dev.html`)
 
   win.webContents.on('did-finish-load', () => {
