@@ -1,38 +1,32 @@
-const electron = require('electron')
 const { app, BrowserWindow } = require('electron')
 const { fork } = require('child_process')
-const findOpenSocket = require('./find-open-socket')
 const isDev = require('electron-is-dev')
 const fs = require('fs')
 const path = require('path');
-require('@electron/remote/main').initialize();
+
+const workingDir = path.join(app.getPath('userData'), 'workingDir')
+
 
 let clientWin
 let serverWin
 let serverProcess
 
-const workingDir = path.join(app.getPath('userData'), 'workingDir')
-
-function createWindow(socketName) {
+function createWindow(args) {
   clientWin = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
       nodeIntegration: false,
+      contextIsolation: true,
+      additionalArguments: args,
       preload: __dirname + '/client-preload.js'
     }
   })
 
   clientWin.loadFile('client-index.html')
-
-  clientWin.webContents.on('did-finish-load', () => {
-    clientWin.webContents.send('set-socket', {
-      name: socketName
-    })
-  })
 }
 
-function createBackgroundWindow(socketName) {
+function createBackgroundWindow(args) {
   const win = new BrowserWindow({
     x: 500,
     y: 300,
@@ -42,52 +36,50 @@ function createBackgroundWindow(socketName) {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
+      additionalArguments: args,
     }
   })
-  require("@electron/remote/main").enable(win.webContents)
   win.loadURL(`file://${__dirname}/server-dev.html`)
-
-  win.webContents.on('did-finish-load', () => {
-    win.webContents.send('set-socket', { name: socketName })
-  })
 
   serverWin = win
 }
 
-function createBackgroundProcess(socketName) {
-  serverProcess = fork(__dirname + '/server.js', [
-    '--subprocess',
-    app.getVersion(),
-    socketName,
-    workingDir
-  ])
-
-  serverProcess.on('message', msg => {
-    console.log(msg)
-  })
+function createBackgroundProcess(args) {
+  serverProcess = fork(__dirname + '/server.js', ['--subprocess', ...args])
+  serverProcess.on('message', msg => { console.log("index", msg) })
 }
 
+const socketAppspace = `myapp.${process.pid}.`
+const socketId = "server"
+
 function createAppDirectory() {     
-    if (!fs.existsSync(workingDir)) {
-        fs.mkdir(workingDir, (err) => { 
-            if (err) { 
-                return console.error(err); 
-            } 
-            console.log('Directory created successfully!', workingDir); 
-        });
-    }
+  if (!fs.existsSync(workingDir)) {
+      fs.mkdir(workingDir, (err) => { 
+          if (err) { 
+              return console.error(err); 
+          } 
+          console.log('Directory created successfully!', workingDir); 
+      });
+  }
 }
 
 app.on('ready', async () => {
-  createAppDirectory()
-  serverSocket = await findOpenSocket()
+  const args = [
+    `--appVersion=${app.getVersion()}`,
+    `--socketAppspace=${socketAppspace}`,
+    `--socketId=server`,
+    `--workingDir=${workingDir}`
+  ]
+  if (isDev) args.push("--isDev")
 
-  createWindow(serverSocket)
+  createAppDirectory()
+
+  createWindow(args)
 
   if (isDev) {
-    createBackgroundWindow(serverSocket)
+    createBackgroundWindow(args)
   } else {
-    createBackgroundProcess(serverSocket)
+    createBackgroundProcess(args)
   }
 })
 
@@ -96,4 +88,7 @@ app.on('before-quit', () => {
     serverProcess.kill()
     serverProcess = null
   }
+  // cleanup: remove socket after use
+  const socketPath = `/tmp/${socketAppspace}${socketId}`
+  fs.unlinkSync(socketPath)
 })
