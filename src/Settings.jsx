@@ -1,14 +1,26 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Layout, Breadcrumb, Form, Input, Button } from 'antd';
-//import { send } from './utils/ipcClient';
+import { send } from './utils/ipcClient';
 
 const { Content } = Layout;
 
 export default function Settings() {
   const [form] = Form.useForm();
   const onFinish = async (values) => {
-    console.log('form values', values);
+    const result = await send('save-dockerhub-credential', {
+      account: values['docker-account'],
+      password: values['docker-password']});
+    console.log('Save values', result);
   };
+  useEffect( async () => {
+    const credential = await send('get-dockerhub-credential');
+    if (credential) {
+      form.setFieldsValue({'docker-account': credential.account});
+      form.setFieldsValue({'docker-password': credential.password});
+    } else {
+      console.log('No credential found')
+    }
+  })
   const initialValues = {};
   return (
     <Content style={{ margin: '0 16px' }}>
