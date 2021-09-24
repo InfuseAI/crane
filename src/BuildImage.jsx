@@ -15,6 +15,8 @@ export default function BuildImage() {
   };
   const initialValues = {
     base_image_url: 'ubuntu:xenial',
+    apt: `curl\ngit
+    `
   };
   return (
     <Content style={{ margin: '0 16px' }}>

@@ -12,7 +12,7 @@ const BuildImage = lazy(() => import('./BuildImage'));
 const { Content, Sider } = Layout;
 
 const Crane = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const onCollapse = (collapsed) => {
     setCollapsed(collapsed);
   };
