@@ -9,6 +9,7 @@ import {
 } from '@ant-design/icons';
 
 const BuildImage = lazy(() => import('./BuildImage'));
+const Settings = lazy(() => import('./Settings'));
 const { Content, Sider } = Layout;
 
 const Crane = () => {
@@ -28,24 +29,31 @@ const Crane = () => {
             style={{ position: 'relative', height: 'calc(100% - 32px)' }}
           >
             <Menu.Item key='1' icon={<PlusOutlined />}>
-              <Link to='/' style={{color: 'white'}}>Build a new Image</Link>
+              <Link to='/' style={{ color: 'white' }}>
+                Build a new Image
+              </Link>
             </Menu.Item>
             <Menu.Item key='2' icon={<OrderedListOutlined />}>
-              <Link to='/images' style={{color: 'white'}}>Images</Link>
+              <Link to='/images' style={{ color: 'white' }}>
+                Images
+              </Link>
             </Menu.Item>
             <Menu.Item
               style={{ position: 'relative', top: 'calc(100% - 172px)' }}
               key='3'
               icon={<SettingOutlined />}
             >
-              Settings
+              <Link to='/settings' style={{ color: 'white' }}>
+                Settings
+              </Link>
             </Menu.Item>
           </Menu>
         </Sider>
         <Layout className='site-layout'>
           <Suspense fallback={<div>Loading...</div>}>
             <Switch>
-              <Route exact path='/' component={BuildImage}></Route>
+              <Route exact path='/' component={BuildImage} />
+              <Route path='/settings' component={Settings} />
               <Route path='/images'>
                 <Content style={{ margin: '0 16px' }}>
                   <Breadcrumb style={{ margin: '16px 0' }}>
