@@ -1,6 +1,6 @@
 {
   "name": "crane",
-  "version": "0.1.0",
+  "version": "2.1.0",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.4",
@@ -16,7 +16,7 @@
     "uuid": "^8.3.1",
     "web-vitals": "^1.0.1"
   },
-  "main": "public/electron.js",
+  "main": "public/index.js",
   "scripts": {
     "start:ui": "react-scripts start",
     "start:electron": "electron .",

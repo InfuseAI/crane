@@ -6,9 +6,7 @@ const path = require('path');
 
 const workingDir = path.join(app.getPath('userData'), 'workingDir')
 
-
 let clientWin
-let serverWin
 let serverProcess
 
 function createWindow(args) {
@@ -19,11 +17,11 @@ function createWindow(args) {
       nodeIntegration: false,
       contextIsolation: true,
       additionalArguments: args,
-      preload: __dirname + '/client-preload.js'
+      preload: `${__dirname}/client-preload.js`
     }
   })
 
-  clientWin.loadFile('client-index.html')
+  clientWin.loadFile('public/client-index.html')
 }
 
 function createBackgroundWindow(args) {
@@ -40,24 +38,22 @@ function createBackgroundWindow(args) {
     }
   })
   win.loadURL(`file://${__dirname}/server-dev.html`)
-
-  serverWin = win
 }
 
 function createBackgroundProcess(args) {
-  serverProcess = fork(__dirname + '/server.js', ['--subprocess', ...args])
+  serverProcess = fork(`${__dirname}/server.js`, ['--subprocess', ...args])
   serverProcess.on('message', msg => { console.log("index", msg) })
 }
 
 const socketAppspace = `myapp.${process.pid}.`
 const socketId = "server"
 
-function createAppDirectory() {     
+function createAppDirectory() {
   if (!fs.existsSync(workingDir)) {
-      fs.mkdir(workingDir, (err) => { 
-          if (err) { 
-              return console.error(err); 
-          } 
+      fs.mkdir(workingDir, (err) => {
+          if (err) {
+              return console.error(err);
+          }
           console.log('Directory created successfully!', workingDir); 
       });
   }
