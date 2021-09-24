@@ -9,18 +9,19 @@ export default function Settings() {
   const onFinish = async (values) => {
     const result = await send('save-dockerhub-credential', {
       account: values['docker-account'],
-      password: values['docker-password']});
+      password: values['docker-password'],
+    });
     console.log('Save values', result);
   };
-  useEffect( async () => {
+  useEffect(async () => {
     const credential = await send('get-dockerhub-credential');
     if (credential) {
-      form.setFieldsValue({'docker-account': credential.account});
-      form.setFieldsValue({'docker-password': credential.password});
+      form.setFieldsValue({ 'docker-account': credential.account });
+      form.setFieldsValue({ 'docker-password': credential.password });
     } else {
-      console.log('No credential found')
+      console.log('No credential found');
     }
-  })
+  });
   const initialValues = {};
   return (
     <Content style={{ margin: '0 16px' }}>
