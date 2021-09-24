@@ -5,6 +5,8 @@ const fs = require('fs');
 const path = require('path');
 
 let handlers = {}
+
+handlers.build_events = []
 handlers.build_status = ''
 
 function generateDockerfile(options) {
@@ -39,6 +41,7 @@ function writeDockerfile(dockerfileContent) {
 }
 
 handlers["build-image"] = async ({ base_image_url, apt, conda, pip }) => {
+  handlers.build_events = []
   handlers.build_status = 'preparing'
   let image_name = 'infuseaidev/cranetest:latest'
 
@@ -51,6 +54,7 @@ handlers["build-image"] = async ({ base_image_url, apt, conda, pip }) => {
 
   docker.modem.followProgress(build_stream, buildFinished, (event) => {
     console.log(event);
+    handlers.build_events.push(event)
     handlers.build_status = 'building'
   });
 
@@ -68,6 +72,7 @@ handlers["build-image"] = async ({ base_image_url, apt, conda, pip }) => {
     }, (event) => {
       handlers.build_status = 'pushing'
       console.log(event);
+      handlers.build_events.push(event)
     });
   }
 
@@ -75,31 +80,5 @@ handlers["build-image"] = async ({ base_image_url, apt, conda, pip }) => {
   return "Start building"
 }
 
-
-handlers._history = []
-
-handlers['ring-ring'] = async () => {
-  let stream = await docker.pull('busybox');
-  await new Promise((resolve, reject) => {
-    docker.modem.followProgress(stream, (err, res) => err ? reject(err) : resolve(res));
-    console.log('inside')
-  });
-  // docker.pull('busybox', function (err, stream) {
-  //   await new Promise()
-  //   docker.modem.followProgress(stream, onFinished, onProgress);
-
-  //   function onFinished(err, output) {
-  //     console.log(err)
-  //     console.log("======")
-  //     console.log(output)
-  //     ipc.send('build-finished', { message: 'done' })
-  //   }
-  //   function onProgress(event) {
-  //     console.log("---->" + event)
-  //   }
-  // });
-  console.log('picking up the phone')
-  return 'hello!'
-}
 
 module.exports = handlers
