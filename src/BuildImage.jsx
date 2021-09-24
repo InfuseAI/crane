@@ -38,7 +38,7 @@ export default function BuildImage() {
           <Form.Item label='Base Image' name='base_image_url' required>
             <Input placeholder='e.g., jupyter/base-notebook, jupyter/scipy-notebook' />
           </Form.Item>
-          <Form.Item label='Image Name' required>
+          <Form.Item label='Image Name' name='image_name'>
             <Input />
           </Form.Item>
           <Row gutter={8}>
