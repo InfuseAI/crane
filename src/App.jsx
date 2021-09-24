@@ -50,7 +50,13 @@ const Crane = () => {
           </Menu>
         </Sider>
         <Layout className='site-layout'>
-          <Suspense fallback={<Skeleton active />}>
+          <Suspense
+            fallback={
+              <div className='site-layout-background'>
+                <Skeleton active />
+              </div>
+            }
+          >
             <Switch>
               <Route exact path='/' component={BuildImage} />
               <Route path='/settings' component={Settings} />
@@ -60,12 +66,7 @@ const Crane = () => {
                     <Breadcrumb.Item>Crane</Breadcrumb.Item>
                     <Breadcrumb.Item>Images</Breadcrumb.Item>
                   </Breadcrumb>
-                  <div
-                    className='site-layout-background'
-                    style={{ padding: 24, minHeight: 360 }}
-                  >
-                    Image List
-                  </div>
+                  <div className='site-layout-background'>Image List</div>
                 </Content>
               </Route>
             </Switch>

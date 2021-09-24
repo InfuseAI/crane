@@ -13,3 +13,8 @@
 .site-layout .site-layout-background {
   background: #fff;
 }
+
+.site-layout-background {
+  min-height: 360px;
+  padding: 24px;
+}
