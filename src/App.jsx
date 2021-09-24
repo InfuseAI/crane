@@ -8,7 +8,7 @@ import {
   SettingOutlined,
 } from '@ant-design/icons';
 const BuildImage = lazy(() => import('./BuildImage'));
-const { Content, Footer, Sider } = Layout;
+const { Content, Sider } = Layout;
 
 const Crane = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -27,10 +27,10 @@ const Crane = () => {
             style={{ position: 'relative', height: 'calc(100% - 32px)' }}
           >
             <Menu.Item key='1' icon={<PlusOutlined />}>
-              <Link to='/'>Build a new Image</Link>
+              <Link to='/' style={{color: 'white'}}>Build a new Image</Link>
             </Menu.Item>
             <Menu.Item key='2' icon={<OrderedListOutlined />}>
-              <Link to='/images'>Images</Link>
+              <Link to='/images' style={{color: 'white'}}>Images</Link>
             </Menu.Item>
             <Menu.Item
               style={{ position: 'relative', top: 'calc(100% - 172px)' }}
@@ -61,9 +61,6 @@ const Crane = () => {
               </Route>
             </Switch>
           </Suspense>
-          <Footer style={{ textAlign: 'center' }}>
-            Crane ©2021 Created by InfuseAI
-          </Footer>
         </Layout>
       </Router>
     </Layout>
