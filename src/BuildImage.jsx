@@ -10,13 +10,13 @@ export default function BuildImage() {
   const [form] = Form.useForm();
   const onFinish = async (values) => {
     console.log('form values', values);
-    const result = await send('build-image', values)
+    const result = await send('build-image', values);
     console.log(result);
   };
   const initialValues = {
     base_image_url: 'ubuntu:xenial',
     apt: `curl\ngit
-    `
+    `,
   };
   return (
     <Content style={{ margin: '0 16px' }}>
