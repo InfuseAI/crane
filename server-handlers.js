@@ -1,20 +1,12 @@
-let Docker = require('dockerode');
+const Docker = require('dockerode');
+const opts = require('./server-opts')
+const docker = new Docker();
 
-let docker = new Docker();
 let handlers = {}
 
-function parseArgs(argv) {
-  return argv.reduce((args, arg) => {
-    const match = arg.split("=")
-    args.set(match[0], match[1] || true)
-    return args
-  }, new Map())
-}
-const opts = parseArgs(process.argv)
-const workingDir = opts.get("--workingDir")
-
 handlers["build-image"] = async ({ base_image_url, apt, conda, pip }) => {
-  console.log(workingDir);
+  console.log(opts.workingDir);
+
   return "Start building"
 }
 
