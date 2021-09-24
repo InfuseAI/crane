@@ -3,6 +3,7 @@ const opts = require('./server-opts')
 const docker = new Docker();
 const fs = require('fs');
 const path = require('path');
+const keytar = require('keytar');
 
 let handlers = {}
 
@@ -36,9 +37,31 @@ ${pip}`
   return dockerfileContent
 }
 
+async function getDockerHubCredential() {
+  const credentials = await keytar.findCredentials('Crane-DockerHub');
+  if (!credentials || credentials.length === 0) {
+    return null;
+  }
+  console.log('[Get DockerHub Credential]', credentials[0])
+  return credentials[0];
+}
+
+async function saveDockerHubCredential(account, password) {
+  const existCredential = await getDockerHubCredential();
+  if (existCredential) {
+    await keytar.deletePassword('Crane-DockerHub', existCredential.account);
+  }
+  await keytar.setPassword('Crane-DockerHub', account, password);
+  console.log('[DockerHub Credential Saved]');
+  return {account, password};
+}
+
 function writeDockerfile(dockerfileContent) {
   fs.writeFileSync(path.join(opts.workingDir, 'Dockerfile'), dockerfileContent);
 }
+
+handlers["get-dockerhub-credential"] = getDockerHubCredential;
+handlers["save-dockerhub-credential"] = async (args) => await saveDockerHubCredential(args.account, args.password);
 
 handlers["build-image"] = async ({ base_image_url, apt, conda, pip }) => {
   handlers.build_events = []
@@ -59,27 +82,30 @@ handlers["build-image"] = async ({ base_image_url, apt, conda, pip }) => {
     handlers.build_status = 'building'
   });
 
-  var auth = {
-    username: '',
-    password: '',
-    serveraddress: 'https://index.docker.io/v1'
-  };
-
   async function buildFinished(err, output) {
-    const push_stream = await docker.getImage(image_name).push({'authconfig': auth})
-    docker.modem.followProgress(push_stream, (err, output) => {
-      handlers.build_status = 'finished'
-      console.log('push finished', err, output)
-    }, (event) => {
-      handlers.build_status = 'pushing'
-      console.log(event);
-      handlers.build_events.push(event)
-    });
+    const credential = await getDockerHubCredential();
+    if (credential) {
+      const auth = {
+        username: credential.account,
+        password: credential.password,
+        serveraddress: 'https://index.docker.io/v1'
+      };
+      const push_stream = await docker.getImage(image_name).push({'authconfig': auth})
+      docker.modem.followProgress(push_stream, (err, output) => {
+        handlers.build_status = 'finished'
+        console.log('push finished', err, output)
+      }, (event) => {
+        handlers.build_status = 'pushing'
+        console.log(event);
+        handlers.build_events.push(event)
+      });
+    } else {
+      console.log('No Credential');
+    }
   }
 
   
   return "Start building"
 }
-
 
 module.exports = handlers
