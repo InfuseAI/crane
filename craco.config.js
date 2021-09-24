@@ -38,11 +38,6 @@ module.exports = {
       options: {
         lessLoaderOptions: {
           lessOptions: {
-            modifyVars: {
-              '@primary-color': '#DC477D',
-              '@layout-header-background': '#244764',
-              '@layout-trigger-background': '#1D3F5A',
-            },
             javascriptEnabled: true,
           },
         },
