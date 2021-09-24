@@ -49,6 +49,7 @@
     ]
   },
   "devDependencies": {
+    "circular-dependency-plugin": "^5.2.2",
     "concurrently": "^6.2.1",
     "prettier": "2.4.1",
     "simple-progress-webpack-plugin": "^2.0.0",
