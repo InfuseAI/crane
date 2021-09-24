@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 let handlers = {}
+handlers.build_status = ''
 
 function generateDockerfile(options) {
   let base_image_url = options['base_image_url'];
@@ -38,15 +39,39 @@ function writeDockerfile(dockerfileContent) {
 }
 
 handlers["build-image"] = async ({ base_image_url, apt, conda, pip }) => {
+  handlers.build_status = 'preparing'
+  let image_name = 'infuseaidev/cranetest:latest'
+
   console.log("build-image");
   writeDockerfile(generateDockerfile({base_image_url, apt, conda, pip}));
-  docker.buildImage({
+  const build_stream = await docker.buildImage({
     context: opts.workingDir,
     src: ['Dockerfile']
-  }, {t: 'cranetest'}, function (err, response) {
-    console.log(err)
-    console.log(response)
+  }, {t: image_name });
+
+  docker.modem.followProgress(build_stream, buildFinished, (event) => {
+    console.log(event);
+    handlers.build_status = 'building'
   });
+
+  var auth = {
+    username: '',
+    password: '',
+    serveraddress: 'https://index.docker.io/v1'
+  };
+
+  async function buildFinished(err, output) {
+    const push_stream = await docker.getImage(image_name).push({'authconfig': auth})
+    docker.modem.followProgress(push_stream, (err, output) => {
+      handlers.build_status = 'finished'
+      console.log('push finished', err, output)
+    }, (event) => {
+      handlers.build_status = 'pushing'
+      console.log(event);
+    });
+  }
+
+  
   return "Start building"
 }
 
