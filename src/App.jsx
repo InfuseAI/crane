@@ -12,9 +12,9 @@ const { Content, Footer, Sider } = Layout;
 
 const Crane = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const onCollapse = collapsed => {
+  const onCollapse = (collapsed) => {
     setCollapsed(collapsed);
-  }
+  };
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Router>
