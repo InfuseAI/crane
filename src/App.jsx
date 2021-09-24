@@ -7,6 +7,7 @@ import {
   PlusOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
+
 const BuildImage = lazy(() => import('./BuildImage'));
 const { Content, Sider } = Layout;
 

@@ -38,7 +38,7 @@ function writeDockerfile(dockerfileContent) {
 }
 
 handlers["build-image"] = async ({ base_image_url, apt, conda, pip }) => {
-  console.log("build-image");
+  console.log("build-image", base_image_url, apt, conda, pip);
   writeDockerfile(generateDockerfile({base_image_url, apt, conda, pip}));
   docker.buildImage({
     context: opts.workingDir,
