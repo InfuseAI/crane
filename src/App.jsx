@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useState } from 'react';
 import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
-import './App.css';
+import './App.less';
 import { Layout, Menu, Skeleton, Breadcrumb } from 'antd';
 import {
   OrderedListOutlined,
