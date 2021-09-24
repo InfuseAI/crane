@@ -6,11 +6,10 @@ const path = require('path');
 
 const workingDir = path.join(app.getPath('userData'), 'workingDir')
 
-let clientWin
 let serverProcess
 
 function createWindow(args) {
-  clientWin = new BrowserWindow({
+  const win = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
@@ -21,7 +20,10 @@ function createWindow(args) {
     }
   })
 
-  clientWin.loadFile('public/client-index.html')
+  win.loadURL(
+    isDev
+    ? 'http://localhost:3000'
+    : `file://${path.join(__dirname, '../build/index.html')}`)
 }
 
 function createBackgroundWindow(args) {
@@ -37,7 +39,7 @@ function createBackgroundWindow(args) {
       additionalArguments: args,
     }
   })
-  win.loadURL(`file://${__dirname}/server-dev.html`)
+  win.loadURL(`file://${path.join(__dirname, '/server-dev.html')}`)
 }
 
 function createBackgroundProcess(args) {

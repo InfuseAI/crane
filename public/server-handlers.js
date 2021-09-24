@@ -45,7 +45,8 @@ handlers["build-image"] = async ({ base_image_url, apt, conda, pip }) => {
   handlers.build_status = 'preparing'
   let image_name = 'infuseaidev/cranetest:latest'
 
-  console.log("build-image");
+  console.log("build-image", base_image_url, apt, conda, pip);
+
   writeDockerfile(generateDockerfile({base_image_url, apt, conda, pip}));
   const build_stream = await docker.buildImage({
     context: opts.workingDir,
