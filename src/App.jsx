@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useState } from 'react';
 import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
 import './App.css';
-import { Layout, Menu, Breadcrumb } from 'antd';
+import { Layout, Menu, Skeleton, Breadcrumb } from 'antd';
 import {
   OrderedListOutlined,
   PlusOutlined,
@@ -50,7 +50,7 @@ const Crane = () => {
           </Menu>
         </Sider>
         <Layout className='site-layout'>
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<Skeleton active />}>
             <Switch>
               <Route exact path='/' component={BuildImage} />
               <Route path='/settings' component={Settings} />
