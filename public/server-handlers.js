@@ -5,7 +5,8 @@ const fs = require('fs');
 const path = require('path');
 const keytar = require('keytar');
 const { send } = require('./server-ipc');
-const { resolve } = require('path');
+const axios = require('axios');
+const { createMarkdownArrayTableSync } = require('parse-markdown-table')
 let handlers = {}
 
 handlers.build_events = []
@@ -130,4 +131,25 @@ handlers["push-image-dockerhub"] = async ({ image_name }) => {
   return log_ipc_name;
 };
 
-module.exports = handlers
+handlers["get-primehub-notebooks"] = async () => {
+  let results = [];
+  const response = await axios.get('https://raw.githubusercontent.com/InfuseAI/primehub-site/master/docs/guide_manual/images-list.md');
+  const md = response.data;
+  const mdTableRegex = /(?:(?:\|[^|\r\n]*)+\|(?:\r?\n|\r)?)+/g;
+  const tables = md.match(mdTableRegex);
+
+  tables.forEach(markdown => {
+    let t = {};
+    let table = createMarkdownArrayTableSync(markdown);
+    t.headers = table.headers;
+    t.rows = [];
+    for (const row of table.rows) {
+      t.rows.push(row);
+    }
+    results.push(t);
+  });
+  
+  return results;
+}
+
+module.exports = handlers;
