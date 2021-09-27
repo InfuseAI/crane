@@ -13,15 +13,18 @@ export default function Settings() {
     });
     console.log('Save values', result);
   };
-  useEffect(async () => {
-    const credential = await send('get-dockerhub-credential');
-    if (credential) {
-      form.setFieldsValue({ 'docker-account': credential.account });
-      form.setFieldsValue({ 'docker-password': credential.password });
-    } else {
-      console.log('No credential found');
+  useEffect(() => {
+    async function fetchCredential() {
+      const credential = await send('get-dockerhub-credential');
+      if (credential) {
+        form.setFieldsValue({ 'docker-account': credential.account });
+        form.setFieldsValue({ 'docker-password': credential.password });
+      } else {
+        console.log('No credential found');
+      }
     }
-  });
+    fetchCredential();
+  }, [form]);
   const initialValues = {};
   return (
     <Content style={{ margin: '0 16px' }}>
