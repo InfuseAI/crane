@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const keytar = require('keytar');
 const { send } = require('./server-ipc');
+const { resolve } = require('path');
 let handlers = {}
 
 handlers.build_events = []
@@ -89,27 +90,44 @@ handlers["build-image"] = async ({ base_image_url, image_name, apt, conda, pip }
   return "Start building";
 }
 
+handlers["list-image"] = async () => {
+  console.log('[List Image] start');
+  return await docker.listImages();
+}
+
 handlers["push-image-dockerhub"] = async ({ image_name }) => {
   const credential = await getDockerHubCredential();
-  if (credential) {
-    const auth = {
-      username: credential.account,
-      password: credential.password,
-      serveraddress: 'https://index.docker.io/v1'
-    };
-    const push_stream = await docker.getImage(image_name).push({'authconfig': auth})
-    docker.modem.followProgress(push_stream, (err, output) => {
-      handlers.build_status = 'finished'
-      console.log('push finished', err, output);
-    }, (event) => {
-      console.log(event);
-      send('push-log', event);
-      handlers.build_events.push(event);
-    });
-  } else {
-      console.log('No Credential');
+  if (!credential) {
+    return null;
   }
-  return "Start pushing";
+
+  const auth = {
+    username: credential.account,
+    password: credential.password,
+    serveraddress: 'https://index.docker.io/v1'
+  };
+
+  const log_ipc_name = `push-log-${image_name}`;
+
+  const push_stream = await docker.getImage(image_name).push({'authconfig': auth})
+  docker.modem.followProgress(push_stream, (err, output) => {
+    handlers.build_status = 'finished'
+    console.log('push finished', err, output);
+    send(log_ipc_name, {
+      stage: 'finished',
+      error: err,
+      output: output
+    });
+  }, (event) => {
+    console.log(event);
+    send(log_ipc_name, {
+      stage: 'progressing',
+      output: event
+    });
+    handlers.build_events.push(event);
+  });
+
+  return log_ipc_name;
 };
 
 module.exports = handlers

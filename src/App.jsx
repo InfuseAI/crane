@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useState } from 'react';
 import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
 import './App.less';
-import { Layout, Menu, Skeleton, Breadcrumb } from 'antd';
+import { Layout, Menu, Skeleton } from 'antd';
 import {
   OrderedListOutlined,
   PlusOutlined,
@@ -9,8 +9,9 @@ import {
 } from '@ant-design/icons';
 
 const BuildImage = lazy(() => import('./BuildImage'));
+const ListImage = lazy(() => import('./ListImage'));
 const Settings = lazy(() => import('./Settings'));
-const { Content, Sider } = Layout;
+const { Sider } = Layout;
 
 const Crane = () => {
   const [collapsed, setCollapsed] = useState(true);
@@ -60,15 +61,7 @@ const Crane = () => {
             <Switch>
               <Route exact path='/' component={BuildImage} />
               <Route path='/settings' component={Settings} />
-              <Route path='/images'>
-                <Content style={{ margin: '0 16px' }}>
-                  <Breadcrumb style={{ margin: '16px 0' }}>
-                    <Breadcrumb.Item>Crane</Breadcrumb.Item>
-                    <Breadcrumb.Item>Images</Breadcrumb.Item>
-                  </Breadcrumb>
-                  <div className='site-layout-background'>Image List</div>
-                </Content>
-              </Route>
+              <Route path='/images' component={ListImage} />
             </Switch>
           </Suspense>
         </Layout>
