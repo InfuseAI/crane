@@ -6,14 +6,14 @@ import { send, listen , unlisten } from './utils/ipcClient';
 const { Content } = Layout;
 
 export default function ListImage() {
-  const [imageList, udpateImageList] = useState([]);
+  const [imageList, updateImageList] = useState([]);
 
   useEffect(() => {
     async function fetchImageList() {
       const results = await send('list-image');
       const images = results.map(x => (x.RepoTags) ? x.RepoTags[0] : x.Id);
       console.log(images);
-      udpateImageList(images);
+      updateImageList(images);
     }
     fetchImageList();
   }, []);
