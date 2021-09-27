@@ -29,8 +29,8 @@
     "test": "craco test",
     "eject": "react-scripts eject",
     "prettier": "prettier --write .",
-    "dev": "concurrently -k -n webpack,electron \"BROWSER=none yarn start:ui\" \"npm:electron\"",
-    "electron": "wait-on tcp:3000 && electron ."
+    "dev": "concurrently -k -n webpack,electron \"cross-env BROWSER=none PORT=16888 yarn start:ui\" \"yarn electron\"",
+    "electron": "wait-on tcp:16888 && electron ."
   },
   "eslintConfig": {
     "extends": [
