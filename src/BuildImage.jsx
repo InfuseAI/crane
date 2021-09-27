@@ -1,6 +1,6 @@
 import React from 'react';
 import { Layout, Breadcrumb, Form, Input, Button, Row, Col } from 'antd';
-import { send } from './utils/ipcClient';
+import { send, listen } from './utils/ipcClient';
 
 const { Content } = Layout;
 const { TextArea } = Input;
@@ -13,11 +13,17 @@ export default function BuildImage() {
     const result = await send('build-image', values);
     console.log(result);
   };
+  const buildLogReceiver = (payload) => {
+    console.log(payload);
+  };
   const initialValues = {
     base_image_url: 'ubuntu:xenial',
-    apt: `curl\ngit
-    `,
+    apt: `curl\ngit`,
   };
+  // Test for log streaming
+  listen('build-log', (payload) => {
+    buildLogReceiver(payload);
+  });
   return (
     <Content style={{ margin: '0 16px' }}>
       <Breadcrumb style={{ margin: '16px 0' }}>
