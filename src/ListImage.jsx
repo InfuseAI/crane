@@ -1,9 +1,72 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Breadcrumb, List, Button} from 'antd';
+import { Layout, Breadcrumb, List, Button, Tabs, Table, Tag, Space } from 'antd';
 import { CloudUploadOutlined } from '@ant-design/icons';
 import { send, listen , unlisten } from './utils/ipcClient';
 
 const { Content } = Layout;
+const { TabPane } = Tabs;
+
+const columns = [
+  {
+    title: 'NAME',
+    dataIndex: 'name',
+    key: 'name',
+  },
+  {
+    title: 'TAG',
+    dataIndex: 'tag',
+    key: 'tag',
+  },
+  {
+    title: 'IMAGE ID',
+    dataIndex: 'imageId',
+    key: 'imageId',
+  },
+  {
+    title: 'CREATED',
+    key: 'created',
+    dataIndex: 'created',
+  },
+  {
+    title: 'SIZE',
+    key: 'size',
+    dataIndex: 'size',
+  },
+  {
+    title: 'Action',
+    key: 'action',
+    render: (text, record) => (
+      <Space size="middle">
+        <a>Invite {record.name}</a>
+        <a>Delete</a>
+      </Space>
+    ),
+  },
+];
+
+const data = [
+  {
+    key: '1',
+    name: 'John Brown',
+    age: 32,
+    address: 'New York No. 1 Lake Park',
+    tags: ['nice', 'developer'],
+  },
+  {
+    key: '2',
+    name: 'Jim Green',
+    age: 42,
+    address: 'London No. 1 Lake Park',
+    tags: ['loser'],
+  },
+  {
+    key: '3',
+    name: 'Joe Black',
+    age: 32,
+    address: 'Sidney No. 1 Lake Park',
+    tags: ['cool', 'teacher'],
+  },
+];
 
 export default function ListImage() {
   const [imageList, updateImageList] = useState([]);
@@ -11,6 +74,7 @@ export default function ListImage() {
   useEffect(() => {
     async function fetchImageList() {
       const results = await send('list-image');
+      console.log(results);
       const images = results.map(x => (x.RepoTags) ? x.RepoTags[0] : x.Id);
       console.log(images);
       updateImageList(images);
@@ -48,24 +112,32 @@ export default function ListImage() {
         className='site-layout-background'
         style={{ padding: 24, minHeight: 360 }}
       >
-        <List
-          header={<h2>Docker Images</h2>}
-          bordered
-          dataSource={imageList}
-          renderItem={item => (
-            <List.Item actions={[
-                <Button 
-                  type="primary" 
-                  icon={<CloudUploadOutlined />}
-                  onClick={() => pushImage(item)}
-                >
-                  Push
-                </Button>
-              ]}>
-              {item}
-            </List.Item>
-          )}
-        />
+        <Tabs defaultActiveKey="1" size="large" style={{ marginBottom: 32 }}>
+          <TabPane tab="LOCAL" key="1">
+            <List
+            header={<h2>Docker Images</h2>}
+            bordered
+            dataSource={imageList}
+            renderItem={item => (
+              <List.Item actions={[
+                  <Button 
+                    type="primary" 
+                    icon={<CloudUploadOutlined />}
+                    onClick={() => pushImage(item)}
+                  >
+                    Push
+                  </Button>
+                ]}>
+                {item}
+              </List.Item>
+            )}
+            />
+          </TabPane>
+          <TabPane tab="REMOTE REPOSITORIES" key="2">
+            <Table columns={columns} dataSource={data} />
+          </TabPane>
+        </Tabs>
+
       </div>
     </Content>
   );
