@@ -27,7 +27,7 @@ const Crane = () => {
             theme='dark'
             defaultSelectedKeys={['1']}
             mode='inline'
-            style={{ position: 'relative', height: 'calc(100% - 32px)' }}
+            style={{ position: 'relative' }}
           >
             <Menu.Item key='1' icon={<PlusOutlined />}>
               <Link to='/' style={{ color: 'white' }}>
@@ -40,7 +40,7 @@ const Crane = () => {
               </Link>
             </Menu.Item>
             <Menu.Item
-              style={{ position: 'relative', top: 'calc(100% - 172px)' }}
+              style={{ position: 'relative', top: 'max(0px, 100vh - 252px)' }}
               key='3'
               icon={<SettingOutlined />}
             >
