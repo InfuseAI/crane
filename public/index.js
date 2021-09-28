@@ -73,8 +73,8 @@ app.on('ready', async () => {
   createAppDirectory()
 
   createWindow(args)
-
-  if (isDev) {
+  const forceToUseBackgroundProcess = (process.env.FORCE_BACKGROUND_PROCESS === '1');
+  if (isDev && !forceToUseBackgroundProcess) {
     createBackgroundWindow(args)
   } else {
     createBackgroundProcess(args)
