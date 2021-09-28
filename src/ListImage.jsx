@@ -15,7 +15,7 @@ export default function ListImage() {
     async function fetchImageList() {
       const results = await send('list-image');
       console.log(results);
-      const images = results.map(x => {
+      const images = results.filter(x => x.RepoTags).map(x => {
         let i = {};
         i.name = x.RepoTags[0].split(':')[0];
         i.tag = x.RepoTags[0].split(':')[1];
