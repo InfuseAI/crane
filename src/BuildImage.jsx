@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Breadcrumb, Form, Input, Button, Row, Col, AutoComplete } from 'antd';
+import { Layout, Breadcrumb, Form, Input, Button, Row, Col, AutoComplete, Drawer } from 'antd';
+import {SiPython} from 'react-icons/si';
 import { send, listen } from './utils/ipcClient';
 
 const { Content } = Layout;
 const { TextArea } = Input;
 
-const renderTitle = (title: string) => (
+const renderTitle = (title) => (
   <span>
     {title}
     <a
@@ -19,8 +20,8 @@ const renderTitle = (title: string) => (
   </span>
 );
 
-const renderItem = (title: string, version: number) => ({
-  value: title,
+const renderItem = (imageName, pythonVersion) => ({
+  value: imageName,
   label: (
     <div
       style={{
@@ -28,9 +29,9 @@ const renderItem = (title: string, version: number) => ({
         justifyContent: 'space-between',
       }}
     >
-      {title}
+      {imageName}
       <span>
-        {version}
+        {<SiPython/>} {pythonVersion}
       </span>
     </div>
   ),
@@ -38,15 +39,24 @@ const renderItem = (title: string, version: number) => ({
 
 export default function BuildImage() {
   const [options, updateOptions] = useState([]);
-  const placeholder = `one package per line. e.g., \npackage1\npackage2\n`;
+  const [logDrawerVisible, setLogDrawerVisible] = useState(false);
   const [form] = Form.useForm();
+  const placeholder = `one package per line. e.g., \npackage1\npackage2\n`;
   const onFinish = async (values) => {
     console.log('form values', values);
+    setLogDrawerVisible(true);
     const result = await send('build-image', values);
     console.log(result);
   };
+  const onCloseLogDrawer = () => {
+    setLogDrawerVisible(false);
+  };
   const buildLogReceiver = (payload) => {
-    console.log(payload);
+    if (payload.stage === 'finished') {
+      setLogDrawerVisible(false);
+    } else if (payload.stage === 'progressing') {
+      console.log(payload.output);
+    }
   };
   const initialValues = {
     base_image_url: 'ubuntu:xenial',
@@ -141,6 +151,16 @@ export default function BuildImage() {
             <Button style={{ margin: '0 8px' }}>Reset</Button>
           </Form.Item>
         </Form>
+        <Drawer
+          title="Image Build Log"
+          placement="bottom"
+          closable={true}
+          height='60%'
+          visible={logDrawerVisible}
+          onClose={onCloseLogDrawer}
+        >
+          <p>Show build logs...</p>
+        </Drawer>
       </div>
     </Content>
   );
