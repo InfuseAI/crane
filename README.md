@@ -25,6 +25,7 @@ yarn dev
 2. Click `Run and Debug` tab
 
 3. Click `JavaScript Debug Terminal`
+
 ![VSCode Debugger](imgs/vscode-debugger.png)
 
 4. Exec the following commands in the JavaScript Debug Terminal
