@@ -80,13 +80,23 @@ handlers["build-image"] = async ({ base_image_url, image_name, apt, conda, pip }
 
   docker.modem.followProgress(build_stream, buildFinished, (event) => {
     console.log(event);
-    send('build-log', event);
+    send('build-log', {
+      stage: 'progressing',
+      name: image_name,
+      output: event
+    });
     handlers.build_events.push(event)
     handlers.build_status = 'building'
   });
 
   async function buildFinished(err, output) {
     console.log('Build finished', err, output);
+    send('build-log', {
+      stage: 'finished',
+      name: image_name,
+      error: err,
+      output: output
+    });
   }
   return "Start building";
 }
