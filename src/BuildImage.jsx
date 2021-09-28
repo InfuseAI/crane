@@ -9,12 +9,29 @@ import {
   Col,
   AutoComplete,
   Drawer,
+  notification
 } from 'antd';
 import { SiPython } from 'react-icons/si';
 import { send, listen, unlisten } from './utils/ipcClient';
 
 const { Content } = Layout;
 const { TextArea } = Input;
+
+const buildNotification = (name, isSuccess) => {
+  if (isSuccess) {
+    notification['success']({
+      message: 'Build Success',
+      description:
+        `Image '${name}' is ready`,
+    });
+  } else {
+    notification['error']({
+      message: 'Build Failed',
+      description:
+      `Image '${name}' failed`,
+    });
+  }
+};
 
 const renderTitle = (title) => (
   <span>
@@ -67,16 +84,19 @@ export default function BuildImage() {
   };
   const buildLogReceiver = (payload) => {
     if (payload.stage === 'finished') {
-      // setLogDrawerVisible(false);
+      console.log(payload);
+      const name = payload.name;
+      buildNotification(name, !payload.output.find(x => x.error));
       unlisten('build-log');
     } else if (payload.stage === 'progressing') {
+      console.log(payload);
+      const logConsole = document.getElementById('build-console');
       if (payload.output.stream) {
-        console.log(payload.output.stream);
-        const log = payload.output.stream;
-        const logConsole = document.getElementById('build-console');
-        logConsole.innerHTML += `<p style='margin: 0'>${log}</p>`;
-        logConsole.scrollTop = logConsole.scrollHeight - logConsole.clientHeight;
+        logConsole.innerHTML += `<p style='margin: 0'>${payload.output.stream}</p>`;
+      } else if (payload.output.error) {
+        logConsole.innerHTML += `<p style='margin: 0;color:red'>${payload.output.error}</p>`;
       }
+      logConsole.scrollTop = logConsole.scrollHeight - logConsole.clientHeight;
     }
   };
   const initialValues = {
