@@ -47,7 +47,7 @@ export default function Settings() {
             <Input />
           </Form.Item>
           <Form.Item label='Password' name='docker-password'>
-            <Input type='password' />
+            <Input.Password />
           </Form.Item>
           <Form.Item style={{ textAlign: 'right' }}>
             <Button type='primary' htmlType='submit'>
