@@ -74,7 +74,8 @@ export default function BuildImage() {
         console.log(payload.output.stream);
         const log = payload.output.stream;
         const logConsole = document.getElementById('build-console');
-        logConsole.innerHTML += `<p>${log}</p>`;
+        logConsole.innerHTML += `<p style='margin: 0'>${log}</p>`;
+        logConsole.scrollTop = logConsole.scrollHeight - logConsole.clientHeight;
       }
     }
   };
@@ -175,7 +176,17 @@ export default function BuildImage() {
           visible={logDrawerVisible}
           onClose={onCloseLogDrawer}
         >
-          <div id='build-console' />
+          <div
+            id='build-console'
+            style={{
+              backgroundColor: '#222222',
+              color: 'white',
+              height: '99%',
+              overflow: 'scroll',
+              fontSize: 'small',
+              fontFamily: 'Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace'
+            }}
+          />
         </Drawer>
       </div>
     </Content>
