@@ -1,72 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Breadcrumb, List, Button, Tabs, Table, Tag, Space } from 'antd';
+import { Layout, Breadcrumb, Button, Tabs, Table, Empty } from 'antd';
 import { CloudUploadOutlined } from '@ant-design/icons';
 import { send, listen , unlisten } from './utils/ipcClient';
+import { format } from 'timeago.js';
+import filesize from 'filesize.js';
 
 const { Content } = Layout;
 const { TabPane } = Tabs;
-
-const columns = [
-  {
-    title: 'NAME',
-    dataIndex: 'name',
-    key: 'name',
-  },
-  {
-    title: 'TAG',
-    dataIndex: 'tag',
-    key: 'tag',
-  },
-  {
-    title: 'IMAGE ID',
-    dataIndex: 'imageId',
-    key: 'imageId',
-  },
-  {
-    title: 'CREATED',
-    key: 'created',
-    dataIndex: 'created',
-  },
-  {
-    title: 'SIZE',
-    key: 'size',
-    dataIndex: 'size',
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    render: (text, record) => (
-      <Space size="middle">
-        <a>Invite {record.name}</a>
-        <a>Delete</a>
-      </Space>
-    ),
-  },
-];
-
-const data = [
-  {
-    key: '1',
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park',
-    tags: ['nice', 'developer'],
-  },
-  {
-    key: '2',
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park',
-    tags: ['loser'],
-  },
-  {
-    key: '3',
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sidney No. 1 Lake Park',
-    tags: ['cool', 'teacher'],
-  },
-];
 
 export default function ListImage() {
   const [imageList, updateImageList] = useState([]);
@@ -75,12 +15,64 @@ export default function ListImage() {
     async function fetchImageList() {
       const results = await send('list-image');
       console.log(results);
-      const images = results.map(x => (x.RepoTags) ? x.RepoTags[0] : x.Id);
+      const images = results.map(x => {
+        let i = {};
+        i.name = x.RepoTags[0].split(':')[0];
+        i.tag = x.RepoTags[0].split(':')[1];
+        i.imageId = x.Id.split(':')[1].substring(0,12);
+        i.created = format(x.Created * 1000);
+        i.size = filesize(x.Size);
+        return i;
+      });
       console.log(images);
       updateImageList(images);
     }
     fetchImageList();
   }, []);
+
+  const columns = [
+    {
+      title: 'NAME',
+      dataIndex: 'name',
+      key: 'name',
+      sortDirections: ['ascend', 'descend'],
+      sorter: (a, b) => a.name.localeCompare(b.name),
+    },
+    {
+      title: 'TAG',
+      dataIndex: 'tag',
+      key: 'tag',
+    },
+    {
+      title: 'IMAGE ID',
+      dataIndex: 'imageId',
+      key: 'imageId',
+    },
+    {
+      title: 'CREATED',
+      key: 'created',
+      dataIndex: 'created',
+    },
+    {
+      title: 'SIZE',
+      key: 'size',
+      dataIndex: 'size',
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (text, record) => (
+        <Button 
+          type="primary" 
+          shape="round"
+          icon={<CloudUploadOutlined />}
+          onClick={() => pushImage(record.name + ':' + record.tag)}
+        >
+        </Button>
+      ),
+    },
+  ];
+
   const pushLogReceiver = (ipc_name) => {
     console.log('Start receive push log stream', ipc_name);
     listen(ipc_name, (payload) => {
@@ -114,27 +106,10 @@ export default function ListImage() {
       >
         <Tabs defaultActiveKey="1" size="large" style={{ marginBottom: 32 }}>
           <TabPane tab="LOCAL" key="1">
-            <List
-            header={<h2>Docker Images</h2>}
-            bordered
-            dataSource={imageList}
-            renderItem={item => (
-              <List.Item actions={[
-                  <Button 
-                    type="primary" 
-                    icon={<CloudUploadOutlined />}
-                    onClick={() => pushImage(item)}
-                  >
-                    Push
-                  </Button>
-                ]}>
-                {item}
-              </List.Item>
-            )}
-            />
+            <Table columns={columns} dataSource={imageList} pagination={false} />
           </TabPane>
           <TabPane tab="REMOTE REPOSITORIES" key="2">
-            <Table columns={columns} dataSource={data} />
+            <Empty />
           </TabPane>
         </Tabs>
 
