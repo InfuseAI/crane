@@ -21,12 +21,12 @@ const buildNotification = (name, isSuccess) => {
   if (isSuccess) {
     notification['success']({
       message: 'Build Success',
-      description: `Image '${name || '<none>'}' is ready`,
+      description: `Image ${name || ''} is ready`,
     });
   } else {
     notification['error']({
       message: 'Build Failed',
-      description: `Image '${name || '<none>'}' failed`,
+      description: `Image ${name || ''} failed`,
     });
   }
 };
