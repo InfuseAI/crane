@@ -16,30 +16,43 @@ const { Sider } = Layout;
 const Crane = () => {
   const [collapsed, setCollapsed] = useState(true);
   const siderWidth = {
-    collapsed : 80,
-    unCollapsed: 200,
-  }
+    collapsed: 80,
+    unCollapsed: 190,
+  };
   const [marginLeft, updateMarginLeft] = useState(siderWidth.collapsed);
 
   const onCollapse = (collapsed) => {
     setCollapsed(collapsed);
     // Make the collapse animation smoother
-    setTimeout(() => {
-      updateMarginLeft(collapsed ? siderWidth.collapsed : siderWidth.unCollapsed);
-    },collapsed ? 100 : 0)
+    setTimeout(
+      () => {
+        updateMarginLeft(
+          collapsed ? siderWidth.collapsed : siderWidth.unCollapsed
+        );
+      },
+      collapsed ? 100 : 0
+    );
   };
   return (
-    <Layout style={{
-      minHeight: '100vh',
-      marginLeft: marginLeft,
-    }}>
+    <Layout
+      style={{
+        minHeight: '100vh',
+        marginLeft: marginLeft,
+      }}
+    >
       <Router>
-        <Sider collapsible collapsed={collapsed} onCollapse={onCollapse} style={{
-        overflow: 'auto',
-        height: '100vh',
-        position: 'fixed',
-        left: 0,
-      }}>
+        <Sider
+          collapsible
+          collapsed={collapsed}
+          onCollapse={onCollapse}
+          width={siderWidth.unCollapsed}
+          style={{
+            overflow: 'auto',
+            height: '100vh',
+            position: 'fixed',
+            left: 0,
+          }}
+        >
           <div className='logo' />
           <Menu
             theme='dark'
