@@ -2,7 +2,7 @@
 
 A desktop application for build docker images without docker command-line knowledge.
 
-![Crane Screen Shot](imgs/crane-screenshot.png)
+![Crane Screen Shot](public/images/crane-screenshot.png)
 ## How to run
 
 ### Requirement
@@ -26,7 +26,7 @@ yarn dev
 
 3. Click `JavaScript Debug Terminal`
 
-![VSCode Debugger](imgs/vscode-debugger.png)
+![VSCode Debugger](public/images/vscode-debugger.png)
 
 4. Exec the following commands in the JavaScript Debug Terminal
 
