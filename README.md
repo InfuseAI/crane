@@ -1,6 +1,6 @@
 <img src="https://raw.githubusercontent.com/InfuseAI/crane/main/public/images/Logo_hori.png" alt="Crane" style="height: 130px;">
 
-## Crane
+[![InfuseAI Discord Invite](https://img.shields.io/discord/664381609771925514?color=%237289DA&label=chat&logo=discord&logoColor=white)](https://discord.com/invite/s5n62K7SjE)
 
 A desktop application for build docker images without docker command-line knowledge.
 
