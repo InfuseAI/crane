@@ -1,4 +1,6 @@
-![Crane](public/images/Logo_hori.png)
+<img src="https://raw.githubusercontent.com/InfuseAI/crane/main/public/images/Logo_hori.png" alt="Crane" style="height: 130px;">
+
+## Crane
 
 A desktop application for build docker images without docker command-line knowledge.
 
