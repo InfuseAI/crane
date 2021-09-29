@@ -9,7 +9,7 @@ import {
   Col,
   AutoComplete,
   Drawer,
-  notification
+  notification,
 } from 'antd';
 import { SiPython } from 'react-icons/si';
 import { send, listen, unlisten } from './utils/ipcClient';
@@ -21,14 +21,12 @@ const buildNotification = (name, isSuccess) => {
   if (isSuccess) {
     notification['success']({
       message: 'Build Success',
-      description:
-        `Image '${name}' is ready`,
+      description: `Image '${name || '<none>'}' is ready`,
     });
   } else {
     notification['error']({
       message: 'Build Failed',
-      description:
-      `Image '${name}' failed`,
+      description: `Image '${name || '<none>'}' failed`,
     });
   }
 };
@@ -67,10 +65,12 @@ const renderItem = (imageName, pythonVersion) => ({
 export default function BuildImage() {
   const [options, updateOptions] = useState([]);
   const [logDrawerVisible, setLogDrawerVisible] = useState(false);
+  const [blockBuildButton, setBlockBuildButton] = useState(false);
   const [form] = Form.useForm();
   const placeholder = `one package per line. e.g., \npackage1\npackage2\n`;
   const onFinish = async (values) => {
     console.log('form values', values);
+    setBlockBuildButton(true);
     setLogDrawerVisible(true);
     document.getElementById('build-console').innerHTML = '';
     const result = await send('build-image', values);
@@ -86,7 +86,8 @@ export default function BuildImage() {
     if (payload.stage === 'finished') {
       console.log(payload);
       const name = payload.name;
-      buildNotification(name, !payload.output.find(x => x.error));
+      buildNotification(name, !payload.output.find((x) => x.error));
+      setBlockBuildButton(false);
       unlisten('build-log');
     } else if (payload.stage === 'progressing') {
       console.log(payload);
@@ -182,10 +183,15 @@ export default function BuildImage() {
             </Col>
           </Row>
           <Form.Item style={{ textAlign: 'right' }}>
-            <Button type='primary' htmlType='submit'>
-              Submit
+            <Button type='primary' htmlType='submit' loading={blockBuildButton}>
+              Build
             </Button>
-            <Button style={{ margin: '0 8px' }}>Reset</Button>
+            <Button
+              style={{ margin: '0 8px' }}
+              onClick={() => setLogDrawerVisible(!logDrawerVisible)}
+            >
+              Console
+            </Button>
           </Form.Item>
         </Form>
         <Drawer
@@ -204,7 +210,8 @@ export default function BuildImage() {
               height: '99%',
               overflow: 'scroll',
               fontSize: 'small',
-              fontFamily: 'Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace'
+              fontFamily:
+                'Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace',
             }}
           />
         </Drawer>
