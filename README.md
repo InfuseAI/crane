@@ -1,4 +1,4 @@
-# crane
+![Crane](public/images/Logo_hori.png)
 
 A desktop application for build docker images without docker command-line knowledge.
 
