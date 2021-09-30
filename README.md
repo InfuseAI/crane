@@ -2,7 +2,9 @@
 
 [![InfuseAI Discord Invite](https://img.shields.io/discord/664381609771925514?color=%237289DA&label=chat&logo=discord&logoColor=white)](https://discord.com/invite/ZE8pQ8gRWy)
 
-A desktop application for build docker images without docker command-line knowledge.
+An easier, mode modern way to manage your docker images.
+
+> Like crane? Crane works better with [PrimeHub](https://primehub.io). Crane is the best companion of PrimeHub when it comes to managing docker images. [Try PrimeHub Now](http://one.primehub.io/) and join our [discord community](https://discord.com/invite/ZE8pQ8gRW)!
 
 ![Crane Screen Shot](public/images/crane-screenshot.png)
 ## How to run
