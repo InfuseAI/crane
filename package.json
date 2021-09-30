@@ -27,7 +27,7 @@
     "uuid": "^8.3.1",
     "web-vitals": "^1.0.1"
   },
-  "main": "public/index.js",
+  "main": "src/electron/index.js",
   "scripts": {
     "start:ui": "craco start",
     "start:electron": "electron .",
