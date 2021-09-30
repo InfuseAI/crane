@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Layout,
   Breadcrumb,
@@ -13,9 +13,19 @@ import {
 } from 'antd';
 import { SiPython } from 'react-icons/si';
 import { send, listen, unlisten } from './utils/ipcClient';
+import { LazyLog, ScrollFollow } from 'react-lazylog';
 
 const { Content } = Layout;
 const { TextArea } = Input;
+
+const EMPTY_STRING = 'No Result';
+
+const Status = {
+  PREPARING: 'preparing',
+  FINISHED: 'finished',
+  BUILDING: 'building',
+  PROGRESSING: 'progressing'
+};
 
 const buildNotification = (name, isSuccess) => {
   if (isSuccess) {
@@ -66,15 +76,17 @@ export default function BuildImage() {
   const [options, updateOptions] = useState([]);
   const [logDrawerVisible, setLogDrawerVisible] = useState(false);
   const [blockBuildButton, setBlockBuildButton] = useState(false);
+  const [logText, setLogText] = useState(EMPTY_STRING);
   const [form] = Form.useForm();
   const placeholder = `one package per line. e.g., \npackage1\npackage2\n`;
+  console.log(logText, 82);
   const onFinish = async (values) => {
     console.log('form values', values);
     setBlockBuildButton(true);
     setLogDrawerVisible(true);
-    document.getElementById('build-console').innerHTML = '';
+    setLogText(EMPTY_STRING);
     const result = await send('build-image', values);
-    console.log(result);
+    console.log(result, 89);
     listen('build-log', (payload) => {
       buildLogReceiver(payload);
     });
@@ -83,28 +95,35 @@ export default function BuildImage() {
     setLogDrawerVisible(false);
   };
   const buildLogReceiver = (payload) => {
-    if (payload.stage === 'finished') {
+    console.log(payload);
+    if (payload.stage === Status.FINISHED) {
       console.log(payload);
       const name = payload.name;
       buildNotification(name, !payload.output.find((x) => x.error));
+      setLogText(`${payload.output.map((p) => p.stream).join('')}`);
       setBlockBuildButton(false);
       unlisten('build-log');
-    } else if (payload.stage === 'progressing') {
+    } else if (payload.stage === Status.PROGRESSING) {
       console.log(payload);
-      const logConsole = document.getElementById('build-console');
-      if (payload.output.stream) {
-        logConsole.innerHTML += `<p style='margin: 0'>${payload.output.stream}</p>`;
-      } else if (payload.output.error) {
-        logConsole.innerHTML += `<p style='margin: 0;color:red'>${payload.output.error}</p>`;
-      }
-      logConsole.scrollTop = logConsole.scrollHeight - logConsole.clientHeight;
+      console.log(logText);
+      setLogText(`${logText}\n${payload.output.stream}`);
     }
   };
+
   const initialValues = {
     base_image_url: 'ubuntu:xenial',
     apt: `curl\ngit`,
   };
+
   useEffect(() => {
+    async function fetchCurrntBuild() {
+      const buildStatus = await send('build-status');
+      if (buildStatus === Status.BUILDING || buildStatus === Status.PREPARING) {
+        listen('build-log', (payload) => {
+          buildLogReceiver(payload);
+        });
+      }
+    }
     async function fetchPrimeHubNotebooks() {
       const primehubNotebooks = await send('get-primehub-notebooks');
       if (primehubNotebooks) {
@@ -122,6 +141,7 @@ export default function BuildImage() {
       }
     }
     fetchPrimeHubNotebooks();
+    fetchCurrntBuild();
   }, []);
   return (
     <Content style={{ margin: '0 16px' }}>
@@ -140,6 +160,9 @@ export default function BuildImage() {
           initialValues={initialValues}
           onFinish={onFinish}
         >
+          <Form.Item label='Image Name' name='image_name' required>
+            <Input />
+          </Form.Item>
           <Form.Item label='Base Image' name='base_image_url' required>
             <AutoComplete
               dropdownClassName='certain-category-search-dropdown'
@@ -149,9 +172,6 @@ export default function BuildImage() {
             >
               <Input.Search size='large' placeholder='' />
             </AutoComplete>
-          </Form.Item>
-          <Form.Item label='Image Name' name='image_name'>
-            <Input />
           </Form.Item>
           <Row gutter={8}>
             <Col span={8}>
@@ -202,17 +222,11 @@ export default function BuildImage() {
           visible={logDrawerVisible}
           onClose={onCloseLogDrawer}
         >
-          <div
-            id='build-console'
-            style={{
-              backgroundColor: '#222222',
-              color: 'white',
-              height: '99%',
-              overflow: 'scroll',
-              fontSize: 'small',
-              fontFamily:
-                'Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace',
-            }}
+          <ScrollFollow
+            startFollowing={true}
+            render={({ follow, onScroll }) => (
+              <LazyLog text={logText} follow={follow} onScroll={onScroll} />
+            )}
           />
         </Drawer>
       </div>

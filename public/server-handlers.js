@@ -7,10 +7,6 @@ const keytar = require('keytar');
 const { send } = require('./server-ipc');
 const axios = require('axios');
 const { createMarkdownArrayTableSync } = require('parse-markdown-table')
-let handlers = {}
-
-handlers.build_events = []
-handlers.build_status = ''
 
 function generateDockerfile(options) {
   let base_image_url = options['base_image_url'];
@@ -62,104 +58,105 @@ function writeDockerfile(dockerfileContent) {
   fs.writeFileSync(path.join(opts.workingDir, 'Dockerfile'), dockerfileContent);
 }
 
-handlers["get-dockerhub-credential"] = getDockerHubCredential;
-handlers["save-dockerhub-credential"] = async (args) => await saveDockerHubCredential(args.account, args.password);
+const handlers = {
+  build_events: [],
+  build_status: '',
+  'get-dockerhub-credential': getDockerHubCredential,
+  'save-dockerhub-credential': async (args) => await saveDockerHubCredential(args.account, args.password),
+  'build-status': async () => {
+    return handlers.build_status;
+  },
+  'build-image': async ({ base_image_url, image_name, apt, conda, pip }) => {
+    handlers.build_events = []
+    handlers.build_status = 'preparing'
 
-handlers["build-image"] = async ({ base_image_url, image_name, apt, conda, pip }) => {
-  handlers.build_events = []
-  handlers.build_status = 'preparing'
-  // let image_name = 'infuseaidev/cranetest:latest'
+    console.log("build-image", base_image_url, apt, conda, pip);
 
-  console.log("build-image", base_image_url, apt, conda, pip);
+    writeDockerfile(generateDockerfile({base_image_url, apt, conda, pip}));
+    const build_stream = await docker.buildImage({
+      context: opts.workingDir,
+      src: ['Dockerfile']
+    }, {t: image_name });
 
-  writeDockerfile(generateDockerfile({base_image_url, apt, conda, pip}));
-  const build_stream = await docker.buildImage({
-    context: opts.workingDir,
-    src: ['Dockerfile']
-  }, {t: image_name });
-
-  docker.modem.followProgress(build_stream, buildFinished, (event) => {
-    console.log(event);
-    send('build-log', {
-      stage: 'progressing',
-      name: image_name,
-      output: event
+    docker.modem.followProgress(build_stream, buildFinished, (event) => {
+      console.log(event);
+      send('build-log', {
+        stage: 'progressing',
+        name: image_name,
+        output: event
+      });
+      handlers.build_events.push(event)
+      handlers.build_status = 'building'
     });
-    handlers.build_events.push(event)
-    handlers.build_status = 'building'
-  });
 
-  async function buildFinished(err, output) {
-    console.log('Build finished', err, output);
-    send('build-log', {
-      stage: 'finished',
-      name: image_name,
-      error: err,
-      output: output
-    });
-  }
-  return "Start building";
-}
-
-handlers["list-image"] = async () => {
-  console.log('[List Image] start');
-  return await docker.listImages();
-}
-
-handlers["push-image-dockerhub"] = async ({ image_name }) => {
-  const credential = await getDockerHubCredential();
-  if (!credential) {
-    return null;
-  }
-
-  const auth = {
-    username: credential.account,
-    password: credential.password,
-    serveraddress: 'https://index.docker.io/v1'
-  };
-
-  const log_ipc_name = `push-log-${image_name}`;
-
-  const push_stream = await docker.getImage(image_name).push({'authconfig': auth})
-  docker.modem.followProgress(push_stream, (err, output) => {
-    handlers.build_status = 'finished'
-    console.log('push finished', err, output);
-    send(log_ipc_name, {
-      stage: 'finished',
-      error: err,
-      output: output
-    });
-  }, (event) => {
-    console.log(event);
-    send(log_ipc_name, {
-      stage: 'progressing',
-      output: event
-    });
-    handlers.build_events.push(event);
-  });
-
-  return log_ipc_name;
-};
-
-handlers["get-primehub-notebooks"] = async () => {
-  let results = [];
-  const response = await axios.get('https://raw.githubusercontent.com/InfuseAI/primehub-site/master/docs/guide_manual/images-list.md');
-  const md = response.data;
-  const mdTableRegex = /(?:(?:\|[^|\r\n]*)+\|(?:\r?\n|\r)?)+/g;
-  const tables = md.match(mdTableRegex);
-
-  tables.forEach(markdown => {
-    let t = {};
-    let table = createMarkdownArrayTableSync(markdown);
-    t.headers = table.headers;
-    t.rows = [];
-    for (const row of table.rows) {
-      t.rows.push(row);
+    async function buildFinished(err, output) {
+      console.log('Build finished', err, output);
+      send('build-log', {
+        stage: 'finished',
+        name: image_name,
+        error: err,
+        output: output
+      });
     }
-    results.push(t);
-  });
-  
-  return results;
+    return "Start building";
+  },
+  'list-image': async ({ image_name }) => {
+    console.log('[List Image] start');
+    return await docker.listImages();
+  },
+  'push-image-dockerhub': async ({ image_name }) => {
+    const credential = await getDockerHubCredential();
+    if (!credential) {
+      return null;
+    }
+    const auth = {
+      username: credential.account,
+      password: credential.password,
+      serveraddress: 'https://index.docker.io/v1'
+    };
+
+    const log_ipc_name = `push-log-${image_name}`;
+
+    const push_stream = await docker.getImage(image_name).push({'authconfig': auth})
+    docker.modem.followProgress(push_stream, (err, output) => {
+      handlers.build_status = 'finished'
+      console.log('push finished', err, output);
+      send(log_ipc_name, {
+        stage: 'finished',
+        error: err,
+        output: output
+      });
+    }, (event) => {
+      console.log(event);
+      send(log_ipc_name, {
+        stage: 'progressing',
+        output: event
+      });
+      handlers.build_events.push(event);
+    });
+
+    return log_ipc_name;
+  },
+  'get-primehub-notebook': async () => {
+    let results = [];
+    const response = await axios.get('https://raw.githubusercontent.com/InfuseAI/primehub-site/master/docs/guide_manual/images-list.md');
+    const md = response.data;
+    const mdTableRegex = /(?:(?:\|[^|\r\n]*)+\|(?:\r?\n|\r)?)+/g;
+    const tables = md.match(mdTableRegex);
+
+    tables.forEach(markdown => {
+      let t = {};
+      let table = createMarkdownArrayTableSync(markdown);
+      t.headers = table.headers;
+      t.rows = [];
+      for (const row of table.rows) {
+        t.rows.push(row);
+      }
+      results.push(t);
+    });
+
+    return results;
+  }
 }
 
 module.exports = handlers;
