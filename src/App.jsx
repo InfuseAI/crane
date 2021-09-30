@@ -17,7 +17,7 @@ import {
 const BuildImage = lazy(() => import('./BuildImage'));
 const ListImage = lazy(() => import('./ListImage'));
 const Settings = lazy(() => import('./Settings'));
-const { Sider } = Layout;
+const { Sider, Footer } = Layout;
 
 const CraneMenu = () => {
   const location = useLocation();
@@ -108,6 +108,10 @@ const Crane = () => {
               <Route path='/images' component={ListImage} />
             </Switch>
           </Suspense>
+          <Footer style={{ textAlign: 'center' }}>
+            <div>Crane, an <a href='https://infuseai.io' target='_blank'>InfuseAI</a> product.</div>
+            <div>Made with Love. ❤️ </div>
+          </Footer>
         </Layout>
       </Router>
     </Layout>

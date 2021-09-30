@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, shell } = require('electron')
 const { fork } = require('child_process')
 const isDev = require('electron-is-dev')
 const fs = require('fs')
@@ -10,8 +10,8 @@ let serverProcess
 
 function createWindow(args) {
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1024,
+    height: 640,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -19,6 +19,11 @@ function createWindow(args) {
       preload: `${__dirname}/client-preload.js`
     }
   })
+
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
 
   win.loadURL(
     isDev
