@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Layout, Breadcrumb, Button, Tabs, Table, Empty } from 'antd';
 import { CloudUploadOutlined } from '@ant-design/icons';
-import { send, listen , unlisten } from './utils/ipcClient';
+import { send, listen, unlisten } from './utils/ipcClient';
 import { format } from 'timeago.js';
 import filesize from 'filesize.js';
 
@@ -15,15 +15,17 @@ export default function ListImage() {
     async function fetchImageList() {
       const results = await send('list-image');
       console.log(results);
-      const images = results.filter(x => x.RepoTags).map(x => {
-        let i = {};
-        i.name = x.RepoTags[0].split(':')[0];
-        i.tag = x.RepoTags[0].split(':')[1];
-        i.imageId = x.Id.split(':')[1].substring(0,12);
-        i.created = format(x.Created * 1000);
-        i.size = filesize(x.Size);
-        return i;
-      });
+      const images = results
+        .filter((x) => x.RepoTags)
+        .map((x) => {
+          let i = {};
+          i.name = x.RepoTags[0].split(':')[0];
+          i.tag = x.RepoTags[0].split(':')[1];
+          i.imageId = x.Id.split(':')[1].substring(0, 12);
+          i.created = format(x.Created * 1000);
+          i.size = filesize(x.Size);
+          return i;
+        });
       console.log(images);
       updateImageList(images);
     }
@@ -62,13 +64,12 @@ export default function ListImage() {
       title: 'Action',
       key: 'action',
       render: (text, record) => (
-        <Button 
-          type="primary" 
-          shape="round"
+        <Button
+          type='primary'
+          shape='round'
           icon={<CloudUploadOutlined />}
           onClick={() => pushImage(record.name + ':' + record.tag)}
-        >
-        </Button>
+        ></Button>
       ),
     },
   ];
@@ -85,10 +86,10 @@ export default function ListImage() {
         console.log(payload.output);
       }
     });
-  }
+  };
   const pushImage = async (image_name) => {
     console.log('Push Image: ', image_name);
-    const ipc_name = await send('push-image-dockerhub', {image_name});
+    const ipc_name = await send('push-image-dockerhub', { image_name });
     console.log(ipc_name);
     if (ipc_name) {
       pushLogReceiver(ipc_name);
@@ -104,15 +105,18 @@ export default function ListImage() {
         className='site-layout-background'
         style={{ padding: 24, minHeight: 360 }}
       >
-        <Tabs defaultActiveKey="1" size="large" style={{ marginBottom: 32 }}>
-          <TabPane tab="LOCAL" key="1">
-            <Table columns={columns} dataSource={imageList} pagination={false} />
+        <Tabs defaultActiveKey='1' size='large' style={{ marginBottom: 32 }}>
+          <TabPane tab='LOCAL' key='1'>
+            <Table
+              columns={columns}
+              dataSource={imageList}
+              pagination={false}
+            />
           </TabPane>
-          <TabPane tab="REMOTE REPOSITORIES" key="2">
+          <TabPane tab='REMOTE REPOSITORIES' key='2'>
             <Empty />
           </TabPane>
         </Tabs>
-
       </div>
     </Content>
   );

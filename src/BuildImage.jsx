@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Breadcrumb, Form, Input, Button, Row, Col, AutoComplete, Drawer } from 'antd';
-import {SiPython} from 'react-icons/si';
-import { send, listen } from './utils/ipcClient';
+import {
+  Layout,
+  Breadcrumb,
+  Form,
+  Input,
+  Button,
+  Row,
+  Col,
+  AutoComplete,
+  Drawer,
+} from 'antd';
+import { SiPython } from 'react-icons/si';
+import { send, listen, unlisten } from './utils/ipcClient';
 
 const { Content } = Layout;
 const { TextArea } = Input;
@@ -11,9 +21,9 @@ const renderTitle = (title) => (
     {title}
     <a
       style={{ float: 'right' }}
-      href="https://docs.primehub.io/docs/guide_manual/images-list"
-      target="_blank"
-      rel="noopener noreferrer"
+      href='https://docs.primehub.io/docs/guide_manual/images-list'
+      target='_blank'
+      rel='noopener noreferrer'
     >
       details
     </a>
@@ -31,7 +41,7 @@ const renderItem = (imageName, pythonVersion) => ({
     >
       {imageName}
       <span>
-        {<SiPython/>} {pythonVersion}
+        {<SiPython />} {pythonVersion}
       </span>
     </div>
   ),
@@ -45,38 +55,44 @@ export default function BuildImage() {
   const onFinish = async (values) => {
     console.log('form values', values);
     setLogDrawerVisible(true);
+    document.getElementById('build-console').innerHTML = '';
     const result = await send('build-image', values);
     console.log(result);
+    listen('build-log', (payload) => {
+      buildLogReceiver(payload);
+    });
   };
   const onCloseLogDrawer = () => {
     setLogDrawerVisible(false);
   };
   const buildLogReceiver = (payload) => {
     if (payload.stage === 'finished') {
-      setLogDrawerVisible(false);
+      // setLogDrawerVisible(false);
+      unlisten('build-log');
     } else if (payload.stage === 'progressing') {
-      console.log(payload.output);
+      if (payload.output.stream) {
+        console.log(payload.output.stream);
+        const log = payload.output.stream;
+        const logConsole = document.getElementById('build-console');
+        logConsole.innerHTML += `<p>${log}</p>`;
+      }
     }
   };
   const initialValues = {
     base_image_url: 'ubuntu:xenial',
     apt: `curl\ngit`,
   };
-  // Test for log streaming
-  listen('build-log', (payload) => {
-    buildLogReceiver(payload);
-  });
   useEffect(() => {
     async function fetchPrimeHubNotebooks() {
       const primehubNotebooks = await send('get-primehub-notebooks');
       if (primehubNotebooks) {
-        let primehubNotebookOptions = primehubNotebooks.map((x)=>{
-          let row = {}
-          row.label = renderTitle(x.rows[0][0].replace(/ [0-9.]+$/,''));
+        let primehubNotebookOptions = primehubNotebooks.map((x) => {
+          let row = {};
+          row.label = renderTitle(x.rows[0][0].replace(/ [0-9.]+$/, ''));
           row.options = x.rows.map((y) => {
             return renderItem(y[1], y[3]);
           });
-          return row
+          return row;
         });
         updateOptions(primehubNotebookOptions);
       } else {
@@ -103,14 +119,14 @@ export default function BuildImage() {
           onFinish={onFinish}
         >
           <Form.Item label='Base Image' name='base_image_url' required>
-          <AutoComplete
-            dropdownClassName="certain-category-search-dropdown"
-            dropdownMatchSelectWidth={500}
-            style={{ width: '100%' }}
-            options={options}
-          >
-            <Input.Search size="large" placeholder="" />
-          </AutoComplete>
+            <AutoComplete
+              dropdownClassName='certain-category-search-dropdown'
+              dropdownMatchSelectWidth={500}
+              style={{ width: '100%' }}
+              options={options}
+            >
+              <Input.Search size='large' placeholder='' />
+            </AutoComplete>
           </Form.Item>
           <Form.Item label='Image Name' name='image_name'>
             <Input />
@@ -152,14 +168,14 @@ export default function BuildImage() {
           </Form.Item>
         </Form>
         <Drawer
-          title="Image Build Log"
-          placement="bottom"
+          title='Image Build Log'
+          placement='bottom'
           closable={true}
           height='60%'
           visible={logDrawerVisible}
           onClose={onCloseLogDrawer}
         >
-          <p>Show build logs...</p>
+          <div id='build-console' />
         </Drawer>
       </div>
     </Content>
