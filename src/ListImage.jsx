@@ -15,7 +15,6 @@ import { CloudUploadOutlined } from '@ant-design/icons';
 import { send, listen, unlisten } from './utils/ipcClient';
 import { format } from 'timeago.js';
 import filesize from 'filesize.js';
-const EMPTY_STRING = '\r\n';
 const Status = {
   PREPARING: 'preparing',
   FINISHED: 'finished',
@@ -73,7 +72,7 @@ export default function ListImage() {
     console.log(ipc_name);
     if (ipc_name) {
       setLogDrawerVisible(true);
-      setLogText('\n');
+      setLogText(`Start receive push log stream: ${image_name}`);
       pushLogReceiver(ipc_name);
     }
   };
