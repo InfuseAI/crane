@@ -14,6 +14,7 @@ export default function ListImage() {
   useEffect(() => {
     async function fetchImageList() {
       const results = await send('list-image');
+      console.log(results);
       const images = results
         .filter((x) => x.RepoTags)
         .map((x) => {

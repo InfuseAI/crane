@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Layout,
   Breadcrumb,
@@ -11,6 +11,7 @@ import {
   Drawer,
   notification,
 } from 'antd';
+import useLocalStorage from './hooks/useLocalStorage';
 import { SiPython } from 'react-icons/si';
 import { send, listen, unlisten } from './utils/ipcClient';
 import { LazyLog, ScrollFollow } from 'react-lazylog';
@@ -18,13 +19,13 @@ import { LazyLog, ScrollFollow } from 'react-lazylog';
 const { Content } = Layout;
 const { TextArea } = Input;
 
-const EMPTY_STRING = 'No Result';
+const EMPTY_STRING = '\r\n';
 
 const Status = {
   PREPARING: 'preparing',
   FINISHED: 'finished',
   BUILDING: 'building',
-  PROGRESSING: 'progressing'
+  PROGRESSING: 'progressing',
 };
 
 const buildNotification = (name, isSuccess) => {
@@ -76,26 +77,20 @@ export default function BuildImage() {
   const [options, updateOptions] = useState([]);
   const [logDrawerVisible, setLogDrawerVisible] = useState(false);
   const [blockBuildButton, setBlockBuildButton] = useState(false);
-  const [logText, setLogText] = useState(EMPTY_STRING);
+  const [logText, setLogText] = useLocalStorage('build_log');
   const [form] = Form.useForm();
   const placeholder = `one package per line. e.g., \npackage1\npackage2\n`;
-  console.log(logText, 82);
   const onFinish = async (values) => {
     console.log('form values', values);
     setBlockBuildButton(true);
     setLogDrawerVisible(true);
-    setLogText(EMPTY_STRING);
-    const result = await send('build-image', values);
-    console.log(result, 89);
-    listen('build-log', (payload) => {
-      buildLogReceiver(payload);
-    });
+    setLogText('');
+    await send('build-image', values);
   };
   const onCloseLogDrawer = () => {
     setLogDrawerVisible(false);
   };
   const buildLogReceiver = (payload) => {
-    console.log(payload);
     if (payload.stage === Status.FINISHED) {
       console.log(payload);
       const name = payload.name;
@@ -104,9 +99,10 @@ export default function BuildImage() {
       setBlockBuildButton(false);
       unlisten('build-log');
     } else if (payload.stage === Status.PROGRESSING) {
-      console.log(payload);
-      console.log(logText);
-      setLogText(`${logText}\n${payload.output.stream}`);
+      if (payload.output.stream) {
+        console.log(payload.output.stream);
+        setLogText((prevData) => prevData + payload.output.stream);
+      }
     }
   };
 
@@ -118,11 +114,18 @@ export default function BuildImage() {
   useEffect(() => {
     async function fetchCurrntBuild() {
       const buildStatus = await send('build-status');
+      console.log('Build Status:', buildStatus);
       if (buildStatus === Status.BUILDING || buildStatus === Status.PREPARING) {
-        listen('build-log', (payload) => {
-          buildLogReceiver(payload);
-        });
+        setBlockBuildButton(true);
+        setLogDrawerVisible(true);
+      } else {
+        setLogText(EMPTY_STRING);
       }
+      unlisten('build-log');
+      listen('build-log', (payload) => {
+        buildLogReceiver(payload);
+      });
+      console.log('Listening build log...');
     }
     async function fetchPrimeHubNotebooks() {
       const primehubNotebooks = await send('get-primehub-notebooks');
@@ -225,7 +228,12 @@ export default function BuildImage() {
           <ScrollFollow
             startFollowing={true}
             render={({ follow, onScroll }) => (
-              <LazyLog text={logText} follow={follow} onScroll={onScroll} />
+              <LazyLog
+                text={logText}
+                stream
+                follow={follow}
+                onScroll={onScroll}
+              />
             )}
           />
         </Drawer>

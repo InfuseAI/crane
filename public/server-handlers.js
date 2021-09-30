@@ -97,10 +97,11 @@ const handlers = {
         error: err,
         output: output
       });
+      handlers.build_status = 'finished'
     }
     return "Start building";
   },
-  'list-image': async ({ image_name }) => {
+  'list-image': async () => {
     console.log('[List Image] start');
     return await docker.listImages();
   },
