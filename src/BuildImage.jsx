@@ -43,7 +43,7 @@ export default function BuildImage() {
         message: 'Build Success',
         description: `Image ${name || ''} is ready`,
       });
-      history.push('/images');
+      history.push('/images/');
     } else {
       notification['error']({
         message: 'Build Failed',
