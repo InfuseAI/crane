@@ -22,6 +22,7 @@ export default function ListImage() {
           i.name = x.RepoTags[0].split(':')[0];
           i.tag = x.RepoTags[0].split(':')[1];
           i.imageId = x.Id.split(':')[1].substring(0, 12);
+          i.key = i.imageId;
           i.created = format(x.Created * 1000);
           i.size = filesize(x.Size);
           return i;
@@ -30,7 +31,7 @@ export default function ListImage() {
       updateImageList(images);
     }
     fetchImageList();
-  }, []);
+  }, [imageList]);
 
   const columns = [
     {
