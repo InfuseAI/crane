@@ -138,7 +138,7 @@ const handlers = {
 
     return log_ipc_name;
   },
-  'get-primehub-notebook': async () => {
+  'get-primehub-notebooks': async () => {
     let results = [];
     const response = await axios.get('https://raw.githubusercontent.com/InfuseAI/primehub-site/master/docs/guide_manual/images-list.md');
     const md = response.data;

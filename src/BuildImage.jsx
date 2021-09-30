@@ -164,7 +164,7 @@ export default function BuildImage() {
           onFinish={onFinish}
         >
           <Form.Item label='Image Name' name='image_name' required>
-            <Input />
+            <Input disabled={blockBuildButton}/>
           </Form.Item>
           <Form.Item label='Base Image' name='base_image_url' required>
             <AutoComplete
@@ -172,8 +172,9 @@ export default function BuildImage() {
               dropdownMatchSelectWidth={500}
               style={{ width: '100%' }}
               options={options}
+              disabled={blockBuildButton}
             >
-              <Input.Search size='large' placeholder='' />
+              <Input.Search size='large' placeholder='' disabled={blockBuildButton} />
             </AutoComplete>
           </Form.Item>
           <Row gutter={8}>
@@ -183,6 +184,7 @@ export default function BuildImage() {
                   allowClear={true}
                   autoSize={{ minRows: 5, maxRows: 5 }}
                   placeholder={placeholder}
+                  disabled={blockBuildButton}
                 />
               </Form.Item>
             </Col>
@@ -192,6 +194,7 @@ export default function BuildImage() {
                   allowClear={true}
                   autoSize={{ minRows: 5, maxRows: 5 }}
                   placeholder={placeholder}
+                  disabled={blockBuildButton}
                 />
               </Form.Item>
             </Col>
@@ -201,6 +204,7 @@ export default function BuildImage() {
                   allowClear={true}
                   autoSize={{ minRows: 5, maxRows: 5 }}
                   placeholder={placeholder}
+                  disabled={blockBuildButton}
                 />
               </Form.Item>
             </Col>
