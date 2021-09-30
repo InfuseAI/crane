@@ -1,12 +1,16 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import React, { Suspense } from 'react';
+import {
+  HashRouter as Router,
+  Redirect,
+  Route,
+  Switch,
+} from 'react-router-dom';
 import './App.less';
 import { Layout, Skeleton } from 'antd';
 import Sidebar from './Sidebar';
-
-const BuildImage = lazy(() => import('./BuildImage'));
-const ListImage = lazy(() => import('./ListImage'));
-const Settings = lazy(() => import('./Settings'));
+import BuildImage from './BuildImage';
+import ListImage from './ListImage';
+import Settings from './Settings';
 const { Footer } = Layout;
 
 const Crane = () => {
@@ -35,6 +39,7 @@ const Crane = () => {
               <Route exact path='/' component={BuildImage} />
               <Route path='/settings' component={Settings} />
               <Route path='/images' component={ListImage} />
+              <Redirect to='/' />
             </Switch>
           </Suspense>
           <Footer style={{ textAlign: 'center' }}>
