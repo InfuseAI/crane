@@ -84,6 +84,9 @@ export default function BuildImage() {
     setBlockBuildButton(true);
     setLogDrawerVisible(true);
     setLogText('');
+    listen('build-log', (payload) => {
+      buildLogReceiver(payload);
+    });
     await send('build-image', values);
   };
   const onCloseLogDrawer = () => {
@@ -97,10 +100,8 @@ export default function BuildImage() {
       unlisten('build-log');
     } else if (payload.stage === Status.PROGRESSING) {
       if (payload.output.stream) {
-        console.log(payload.output.stream);
         setLogText((prevData) => prevData + payload.output.stream);
       } else  if (payload.output.progress) {
-        console.log(payload.output.progress);
         // If has progress replace last line make progress bar like animation
         setLogText((prevData) => prevData.replace(/\n.*$/, '\n') + payload.output.progress);
       }
@@ -119,14 +120,15 @@ export default function BuildImage() {
       if (buildStatus === Status.BUILDING || buildStatus === Status.PREPARING) {
         setBlockBuildButton(true);
         setLogDrawerVisible(true);
+        unlisten('build-log');
+        listen('build-log', (payload) => {
+          buildLogReceiver(payload);
+        });
+        console.log('Listening build log...');
       } else {
+        unlisten('build-log');
         setLogText(EMPTY_STRING);
       }
-      unlisten('build-log');
-      listen('build-log', (payload) => {
-        buildLogReceiver(payload);
-      });
-      console.log('Listening build log...');
     }
     async function fetchPrimeHubNotebooks() {
       const primehubNotebooks = await send('get-primehub-notebooks');
