@@ -29,7 +29,7 @@ module.exports = {
           allowAsyncCycles: false,
           cwd: process.cwd(),
         }),
-      ]),
+      ], []),
     ],
   },
   plugins: [
