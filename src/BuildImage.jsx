@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Layout,
   Breadcrumb,
@@ -92,7 +92,7 @@ export default function BuildImage() {
   const onCloseLogDrawer = () => {
     setLogDrawerVisible(false);
   };
-  const buildLogReceiver = (payload) => {
+  const buildLogReceiver = useCallback((payload) => {
     if (payload.stage === Status.FINISHED) {
       const name = payload.name;
       buildNotification(name, !payload.output.find((x) => x.error));
@@ -106,7 +106,7 @@ export default function BuildImage() {
         setLogText((prevData) => prevData.replace(/\n.*$/, '\n') + payload.output.progress);
       }
     }
-  };
+  }, [setLogText]);
 
   const initialValues = {
     base_image_url: 'ubuntu:xenial',
