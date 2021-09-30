@@ -1,5 +1,8 @@
 <img src="https://raw.githubusercontent.com/InfuseAI/crane/main/public/images/Logo_hori.png" alt="Crane" style="height: 130px;">
 
+![](https://img.shields.io/badge/develop-passing-brightgreen)
+![](https://img.shields.io/badge/Present-InfuseAI-blue)
+![](https://img.shields.io/badge/Made%20with-%E2%9D%A4-red)
 [![InfuseAI Discord Invite](https://img.shields.io/discord/664381609771925514?color=%237289DA&label=chat&logo=discord&logoColor=white)](https://discord.com/invite/ZE8pQ8gRWy)
 
 An easier, mode modern way to manage your docker images.
