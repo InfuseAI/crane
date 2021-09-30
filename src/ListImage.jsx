@@ -1,15 +1,82 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Breadcrumb, Button, Tabs, Table, Empty } from 'antd';
+import {
+  Layout,
+  Breadcrumb,
+  Button,
+  Tabs,
+  Table,
+  Empty,
+  Drawer,
+  notification,
+} from 'antd';
+import useLocalStorage from './hooks/useLocalStorage';
+import { LazyLog, ScrollFollow } from 'react-lazylog';
 import { CloudUploadOutlined } from '@ant-design/icons';
 import { send, listen, unlisten } from './utils/ipcClient';
 import { format } from 'timeago.js';
 import filesize from 'filesize.js';
+const EMPTY_STRING = '\r\n';
+const Status = {
+  PREPARING: 'preparing',
+  FINISHED: 'finished',
+  BUILDING: 'building',
+  PROGRESSING: 'progressing',
+};
 
 const { Content } = Layout;
 const { TabPane } = Tabs;
 
 export default function ListImage() {
   const [imageList, updateImageList] = useState([]);
+  const [logDrawerVisible, setLogDrawerVisible] = useState(false);
+  const [logText, setLogText] = useLocalStorage('push_log');
+  const buildNotification = (name, isSuccess) => {
+    if (isSuccess) {
+      notification['success']({
+        message: 'Push Success',
+        description: `Image ${name || ''} pushed`,
+      });
+    } else {
+      notification['error']({
+        message: 'Push Failed',
+        description: `Image ${name || ''} push failed`,
+      });
+    }
+  };
+  const pushLogReceiver = (ipc_name) => {
+    console.log('Start receive push log stream', ipc_name);
+    listen(ipc_name, (payload) => {
+      if (payload.stage === Status.FINISHED) {
+        const name = ipc_name.replace('push-log-', '');
+        buildNotification(name, !payload.output.find((x) => x.error));
+        setLogDrawerVisible(false);
+        unlisten(ipc_name);
+      } else if (payload.stage === Status.PROGRESSING) {
+        if (payload.output.stream) {
+          setLogText((prevData) => prevData + payload.output.stream);
+        } else if (payload.output.progress) {
+          // If has progress replace last line make progress bar like animation
+          setLogText(
+            (prevData) =>
+              prevData.replace(/\n.*$/, '\n') + payload.output.progress
+          );
+        } else if (payload.output.status) {
+          const output = `\n${payload.output.id ? `${payload.output.id}: ` : ''}${payload.output.status}`;
+          setLogText((prevData) => prevData + output);
+        }
+      }
+    });
+  };
+  const pushImage = async (image_name) => {
+    console.log('Push Image: ', image_name);
+    const ipc_name = await send('push-image-dockerhub', { image_name });
+    console.log(ipc_name);
+    if (ipc_name) {
+      setLogDrawerVisible(true);
+      setLogText('\n');
+      pushLogReceiver(ipc_name);
+    }
+  };
 
   useEffect(() => {
     async function fetchImageList() {
@@ -75,27 +142,6 @@ export default function ListImage() {
     },
   ];
 
-  const pushLogReceiver = (ipc_name) => {
-    console.log('Start receive push log stream', ipc_name);
-    listen(ipc_name, (payload) => {
-      if (payload.stage === 'finished') {
-        console.log('output:', payload.output);
-        console.log('error:', payload.error);
-        unlisten(ipc_name);
-        console.log('Stop receive push log stream', ipc_name);
-      } else if (payload.stage === 'progressing') {
-        console.log(payload.output);
-      }
-    });
-  };
-  const pushImage = async (image_name) => {
-    console.log('Push Image: ', image_name);
-    const ipc_name = await send('push-image-dockerhub', { image_name });
-    console.log(ipc_name);
-    if (ipc_name) {
-      pushLogReceiver(ipc_name);
-    }
-  };
   return (
     <Content style={{ margin: '0 16px' }}>
       <Breadcrumb style={{ margin: '16px 0' }}>
@@ -119,6 +165,26 @@ export default function ListImage() {
           </TabPane>
         </Tabs>
       </div>
+      <Drawer
+        title='Push Log'
+        placement='bottom'
+        closable={true}
+        height='60%'
+        visible={logDrawerVisible}
+        onClose={() => setLogDrawerVisible(false)}
+      >
+        <ScrollFollow
+          startFollowing={true}
+          render={({ follow, onScroll }) => (
+            <LazyLog
+              text={logText}
+              stream
+              follow={follow}
+              onScroll={onScroll}
+            />
+          )}
+        />
+      </Drawer>
     </Content>
   );
 }

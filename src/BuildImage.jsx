@@ -237,7 +237,7 @@ export default function BuildImage() {
           </Form.Item>
         </Form>
         <Drawer
-          title='Image Build Log'
+          title='Build Log'
           placement='bottom'
           closable={true}
           height='60%'

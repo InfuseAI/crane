@@ -21,26 +21,28 @@ const { Sider, Footer } = Layout;
 
 const CraneMenu = () => {
   const location = useLocation();
+  console.log('pathname:', location.pathname);
   return (
     <Menu
       theme='dark'
-      defaultSelectedKeys={[location.pathname]}
+      defaultSelectedKeys={[location.pathname.replaceAll('/', '')]}
+      selectedKeys={[location.pathname.replaceAll('/', '')]}
       mode='inline'
       style={{ position: 'relative' }}
     >
-      <Menu.Item key='/' icon={<PlusOutlined />}>
+      <Menu.Item key='' icon={<PlusOutlined />}>
         <Link to='/' style={{ color: 'white' }}>
           Build a new Image
         </Link>
       </Menu.Item>
-      <Menu.Item key='/images/' icon={<OrderedListOutlined />}>
+      <Menu.Item key='images' icon={<OrderedListOutlined />}>
         <Link to='/images' style={{ color: 'white' }}>
           Images
         </Link>
       </Menu.Item>
       <Menu.Item
         style={{ position: 'relative', top: 'max(0px, 100vh - 252px)' }}
-        key='/settings/'
+        key='settings'
         icon={<SettingOutlined />}
       >
         <Link to='/settings' style={{ color: 'white' }}>
@@ -109,7 +111,7 @@ const Crane = () => {
             </Switch>
           </Suspense>
           <Footer style={{ textAlign: 'center' }}>
-            <div>Crane, an <a href='https://infuseai.io' target='_blank'>InfuseAI</a> product.</div>
+            <div>Crane, an <a href='https://infuseai.io' target='_blank' rel='noreferrer'>InfuseAI</a> product.</div>
             <div>Made with Love. ❤️ </div>
           </Footer>
         </Layout>
