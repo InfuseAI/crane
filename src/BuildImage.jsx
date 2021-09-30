@@ -102,6 +102,9 @@ export default function BuildImage() {
       if (payload.output.stream) {
         console.log(payload.output.stream);
         setLogText((prevData) => prevData + payload.output.stream);
+      } else  if (payload.output.progress) {
+        console.log(payload.output.progress);
+        setLogText((prevData) => prevData + payload.output.progress + '\r\n');
       }
     }
   };
