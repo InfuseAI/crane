@@ -81,7 +81,6 @@ export default function BuildImage() {
   const [form] = Form.useForm();
   const placeholder = `one package per line. e.g., \npackage1\npackage2\n`;
   const onFinish = async (values) => {
-    console.log('form values', values);
     setBlockBuildButton(true);
     setLogDrawerVisible(true);
     setLogText('');
@@ -92,10 +91,8 @@ export default function BuildImage() {
   };
   const buildLogReceiver = (payload) => {
     if (payload.stage === Status.FINISHED) {
-      console.log(payload);
       const name = payload.name;
       buildNotification(name, !payload.output.find((x) => x.error));
-      setLogText(`${payload.output.map((p) => p.stream).join('')}`);
       setBlockBuildButton(false);
       unlisten('build-log');
     } else if (payload.stage === Status.PROGRESSING) {
@@ -104,7 +101,8 @@ export default function BuildImage() {
         setLogText((prevData) => prevData + payload.output.stream);
       } else  if (payload.output.progress) {
         console.log(payload.output.progress);
-        setLogText((prevData) => prevData + payload.output.progress + '\r\n');
+        // If has progress replace last line make progress bar like animation
+        setLogText((prevData) => prevData.replace(/\n.*$/, '\n') + payload.output.progress);
       }
     }
   };
