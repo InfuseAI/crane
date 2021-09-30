@@ -20,6 +20,7 @@ function createWindow(args) {
     }
   })
 
+  win.setMenuBarVisibility(false)
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: 'deny' };
