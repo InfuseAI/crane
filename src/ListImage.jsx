@@ -14,7 +14,6 @@ export default function ListImage() {
   useEffect(() => {
     async function fetchImageList() {
       const results = await send('list-image');
-      console.log(results);
       const images = results
         .filter((x) => x.RepoTags)
         .map((x) => {
@@ -31,7 +30,7 @@ export default function ListImage() {
       updateImageList(images);
     }
     fetchImageList();
-  }, [imageList]);
+  }, []);
 
   const columns = [
     {
