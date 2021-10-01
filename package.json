@@ -99,7 +99,8 @@
   "config": {
     "forge": {
       "packagerConfig": {
-        "asar": true
+        "asar": true,
+        "icon": "./assets/logo_pink_256.icns"
       },
       "makers": [
         {
