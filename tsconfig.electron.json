@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
+    "target": "es5",
     "allowJs": true,
     "module": "commonjs",
     "noImplicitAny": false,
+    "downlevelIteration": true,
     "sourceMap": true,
     "baseUrl": ".",
     "outDir": "dist",

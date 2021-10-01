@@ -42,10 +42,10 @@ function createWindow(args) {
 
 function createBackgroundWindow(args) {
   const win = new BrowserWindow({
-    x: 500,
-    y: 300,
-    width: 700,
-    height: 500,
+    width: 1024,
+    height: 640,
+    minWidth: 1024,
+    minHeight: 640,
     show: false,
     webPreferences: {
       nodeIntegration: true,

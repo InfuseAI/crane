@@ -165,13 +165,15 @@ const handlers = {
     const md = response.data;
     const mdTableRegex = /(?:(?:\|[^|\r\n]*)+\|(?:\r?\n|\r)?)+/g;
     const tables = md.match(mdTableRegex);
-
-    tables.forEach((markdown) => {
+    console.log(tables,1111);
+    tables.forEach(async (markdown) => {
       const t: any = {};
       const table: any = createMarkdownArrayTableSync(markdown);
       t.headers = table.headers;
       t.rows = [];
+      console.log(table, 99999);
       for (const row of table.rows) {
+        console.log(row, 333);
         t.rows.push(row);
       }
       results.push(t);
