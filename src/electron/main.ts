@@ -3,7 +3,9 @@ import { fork } from 'child_process';
 import * as isDev from 'electron-is-dev';
 import * as fs from 'fs';
 import * as path from 'path';
-//const isDev = false;
+import * as squirrelStartup from 'electron-squirrel-startup';
+
+if (squirrelStartup) app.quit();
 
 const workingDir = path.resolve(app.getPath('userData'), 'workingDir');
 
