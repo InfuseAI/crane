@@ -162,7 +162,7 @@ const handlers = {
     const response = await axios.get(
       'https://raw.githubusercontent.com/InfuseAI/primehub-site/master/docs/guide_manual/images-list.md'
     );
-    const md = response.data;
+    const md: any = response.data;
     const mdTableRegex = /(?:(?:\|[^|\r\n]*)+\|(?:\r?\n|\r)?)+/g;
     const tables = md.match(mdTableRegex);
     console.log(tables,1111);

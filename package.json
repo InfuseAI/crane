@@ -16,6 +16,7 @@
     "@types/react-dom": "^17.0.0",
     "@types/react-router-dom": "^5.3.0",
     "antd": "^4.16.13",
+    "axios": "^0.22.0",
     "craco-less": "^1.20.0",
     "dockerode": "^3.3.1",
     "electron-is-dev": "^1.2.0",
@@ -94,7 +95,8 @@
   },
   "config": {
     "forge": {
-      "packagerConfig": {},
+      "packagerConfig": {
+      },
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",

@@ -3,8 +3,9 @@ import { fork } from 'child_process';
 import * as isDev from 'electron-is-dev';
 import * as fs from 'fs';
 import * as path from 'path';
+//const isDev = false;
 
-const workingDir = path.join(app.getPath('userData'), 'workingDir');
+const workingDir = path.resolve(app.getPath('userData'), 'workingDir');
 
 let serverProcess;
 
@@ -20,7 +21,7 @@ function createWindow(args) {
       nodeIntegration: false,
       contextIsolation: true,
       additionalArguments: args,
-      preload: `${__dirname}/client-preload.js`,
+      preload: path.resolve(__dirname, 'client-preload.js'),
     },
   });
 
@@ -34,7 +35,7 @@ function createWindow(args) {
     win.loadURL('http://localhost:16888');
     win.webContents.openDevTools();
   } else {
-    win.loadFile(path.resolve('build', 'index.html'));
+    win.loadFile(path.resolve(__dirname, '../build', 'index.html'));
   }
 
   win.once('ready-to-show', () => win.show());
@@ -53,12 +54,13 @@ function createBackgroundWindow(args) {
       additionalArguments: args,
     },
   });
-  win.loadURL(`file://${path.join(__dirname, '/server-dev.html')}`);
+  win.loadFile(path.resolve(__dirname, 'server-dev.html'));
   win.webContents.openDevTools();
 }
 
 function createBackgroundProcess(args) {
-  serverProcess = fork(`${__dirname}/server.js`, ['--subprocess', ...args]);
+  console.log('fork process', path.resolve(__dirname, 'server.js'));
+  serverProcess = fork(path.resolve(__dirname, 'server.js'), ['--subprocess', ...args]);
   serverProcess.on('message', (msg) => {
     console.log('index', msg);
   });
