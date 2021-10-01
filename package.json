@@ -47,13 +47,16 @@
     "test": "craco test",
     "prettier": "prettier --write .",
     "dev": "yarn build:electron && concurrently -k -n webpack,tsc,electron \"cross-env BROWSER=none PORT=16888 yarn start:ui\" \"yarn build:electron:watch\" \"yarn electron\"",
+    "dev:win": "yarn build:electron:win && concurrently -k -n webpack,tsc,electron \"cross-env BROWSER=none PORT=16888 yarn start:ui\" \"yarn build:electron:watch\" \"yarn electron\"",
     "electron": "wait-on tcp:16888 && electron-forge start",
     "build:electron": "tsc --project tsconfig.electron.json && cp ./src/electron/server-dev.html ./dist",
     "build:electron:win": "tsc --project tsconfig.electron.json && copy src\\electron\\server-dev.html dist\\",
     "build:electron:watch": "tsc --watch --project tsconfig.electron.json",
     "build:craco": "craco build",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "release": "yarn build:craco && yarn build:electron && yarn make",
+    "release:win": "yarn build:craco && yarn build:electron:win && yarn make"
   },
   "eslintConfig": {
     "extends": [
