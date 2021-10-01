@@ -38,15 +38,15 @@
   "main": "dist/main.js",
   "homepage": "./",
   "scripts": {
+    "clean": "rm -rf dist && rm -rf build",
+    "start": "yarn dev",
     "start:ui": "craco start",
-    "start:electron": "electron .",
-    "build": "craco build",
     "test": "craco test",
-    "eject": "react-scripts eject",
     "prettier": "prettier --write .",
     "dev": "concurrently -k -n webpack,electron \"cross-env BROWSER=none PORT=16888 yarn start:ui\" \"yarn electron\"",
     "electron": "wait-on tcp:16888 && yarn build:electron && electron .",
-    "build:electron": "tsc --project tsconfig.electron.json && cp ./src/electron/server-dev.html ./dist"
+    "build:electron": "tsc --project tsconfig.electron.json && cp ./src/electron/server-dev.html ./dist",
+    "build:craco": "craco build"
   },
   "eslintConfig": {
     "extends": [
