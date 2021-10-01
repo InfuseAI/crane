@@ -1,11 +1,9 @@
-const console = require('console')
-const ipc = require('node-ipc')
+import * as console from 'console';
+import * as ipc from 'node-ipc';
 
-function init(socketAppspace, socketId, handlers) {
+export function init(socketAppspace, socketId, handlers) {
   ipc.config.silent = true
-  ipc.appspace = socketAppspace
   console.log("server-ipc:init", socketAppspace, socketId)
-
   ipc.config.appspace = socketAppspace
   ipc.config.id = socketId
   ipc.serve(() => {
@@ -46,8 +44,6 @@ function init(socketAppspace, socketId, handlers) {
   ipc.server.start()
 }
 
-function send(name, args) {
+export function send(name, args) {
   ipc.server.broadcast('message', JSON.stringify({ type: 'push', name, args }))
 }
-
-module.exports = { init, send }

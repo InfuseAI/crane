@@ -1,8 +1,8 @@
-const { app, BrowserWindow, shell } = require('electron');
-const { fork } = require('child_process');
-const isDev = require('electron-is-dev');
-const fs = require('fs');
-const path = require('path');
+import { app, BrowserWindow, shell } from 'electron';
+import { fork } from 'child_process';
+import * as isDev from 'electron-is-dev';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const workingDir = path.join(app.getPath('userData'), 'workingDir');
 
@@ -46,7 +46,7 @@ function createBackgroundWindow(args) {
     y: 300,
     width: 700,
     height: 500,
-    show: true,
+    show: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -54,6 +54,7 @@ function createBackgroundWindow(args) {
     },
   });
   win.loadURL(`file://${path.join(__dirname, '/server-dev.html')}`);
+  win.webContents.openDevTools();
 }
 
 function createBackgroundProcess(args) {

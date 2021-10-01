@@ -1809,6 +1809,22 @@
   dependencies:
     "@babel/types" "^7.3.0"
 
+"@types/docker-modem@*":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@types/docker-modem/-/docker-modem-3.0.1.tgz#2a29c914dd64c4c9213510d2ce75fa85232934df"
+  integrity sha512-ZUXPF0WNnvs7AxoQRijt+DW2jsXnWCk8ac28tTYzTpBNnOEIAw83A+pYkCXjTFdJHMTc+wUmwNr71Zy2TRjlWg==
+  dependencies:
+    "@types/node" "*"
+    "@types/ssh2" "*"
+
+"@types/dockerode@^3.2.7":
+  version "3.2.7"
+  resolved "https://registry.yarnpkg.com/@types/dockerode/-/dockerode-3.2.7.tgz#0bc1f583b0e1edc4ca0c6179ef251382df35dcb3"
+  integrity sha512-Y8hMRQTwsOjz4qm6yilZKKjB/Y7+2EOiY3RPN1Xtu63wEUEDVv+3Ou+sgiisPE9+pVe3bmwhnF+E1Iwj/o4J6w==
+  dependencies:
+    "@types/docker-modem" "*"
+    "@types/node" "*"
+
 "@types/eslint@^7.2.6":
   version "7.2.6"
   resolved "https://registry.yarnpkg.com/@types/eslint/-/eslint-7.2.6.tgz"
@@ -1901,6 +1917,13 @@
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-3.0.3.tgz"
   integrity sha512-tHq6qdbT9U1IRSGf14CL0pUlULksvY9OZ+5eEgl1N7t+OA3tGvNpxJCzuKQlsNgCVwbAs670L1vcVQi8j9HjnA==
+
+"@types/node-ipc@^9.1.6":
+  version "9.1.6"
+  resolved "https://registry.yarnpkg.com/@types/node-ipc/-/node-ipc-9.1.6.tgz#b709e784c9e94f7674f7d9caca4373d3627b6d4a"
+  integrity sha512-KtWi2C1GufgdbPfUbvTPVqrd6UeZRSuyTB8O59LZyZ2XzVg9sQ26WkmLOmUhV2pMQxtppGThD6cXlhV3zhKdQg==
+  dependencies:
+    "@types/node" "*"
 
 "@types/node@*":
   version "14.14.31"
@@ -2006,6 +2029,21 @@
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/@types/source-list-map/-/source-list-map-0.1.2.tgz"
   integrity sha512-K5K+yml8LTo9bWJI/rECfIPrGgxdpeNbj+d53lwN4QjW1MCwlkhUms+gtdzigTeUyBr09+u8BwOIY3MXvHdcsA==
+
+"@types/ssh2-streams@*":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@types/ssh2-streams/-/ssh2-streams-0.1.9.tgz#8ca51b26f08750a780f82ee75ff18d7160c07a87"
+  integrity sha512-I2J9jKqfmvXLR5GomDiCoHrEJ58hAOmFrekfFqmCFd+A6gaEStvWnPykoWUwld1PNg4G5ag1LwdA+Lz1doRJqg==
+  dependencies:
+    "@types/node" "*"
+
+"@types/ssh2@*":
+  version "0.5.48"
+  resolved "https://registry.yarnpkg.com/@types/ssh2/-/ssh2-0.5.48.tgz#0d9e8654a76eaaf4cfeaeb88d74c4489cfcf7aea"
+  integrity sha512-cmQu0gp/6RtDXe1r2xXGgi0V0TeCdueDSRMEvBX8cTRT/sSREkUpgCYZLyh+iI8Ql+VNV8Az9toQoYa/IdgHbQ==
+  dependencies:
+    "@types/node" "*"
+    "@types/ssh2-streams" "*"
 
 "@types/stack-utils@^2.0.0":
   version "2.0.0"

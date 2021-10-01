@@ -8,8 +8,10 @@
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
+    "@types/dockerode": "^3.2.7",
     "@types/jest": "^26.0.15",
     "@types/node": "^12.0.0",
+    "@types/node-ipc": "^9.1.6",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "@types/react-router-dom": "^5.3.0",
@@ -33,7 +35,7 @@
     "uuid": "^8.3.1",
     "web-vitals": "^1.0.1"
   },
-  "main": "src/electron/index.js",
+  "main": "dist/main.js",
   "homepage": "./",
   "scripts": {
     "start:ui": "craco start",
@@ -43,7 +45,8 @@
     "eject": "react-scripts eject",
     "prettier": "prettier --write .",
     "dev": "concurrently -k -n webpack,electron \"cross-env BROWSER=none PORT=16888 yarn start:ui\" \"yarn electron\"",
-    "electron": "wait-on tcp:16888 && electron ."
+    "electron": "wait-on tcp:16888 && yarn build:electron && electron .",
+    "build:electron": "tsc --project tsconfig.electron.json && cp ./src/electron/server-dev.html ./dist"
   },
   "eslintConfig": {
     "extends": [
