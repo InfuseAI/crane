@@ -1,4 +1,5 @@
 const { whenDev } = require('@craco/craco');
+const CracoEsbuildPlugin = require('craco-esbuild');
 const SimpleProgressWebpackPlugin = require('simple-progress-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const CracoLessPlugin = require('craco-less');
@@ -44,6 +45,9 @@ module.exports = {
     ],
   },
   plugins: [
+    {
+      plugin: CracoEsbuildPlugin
+    },
     {
       plugin: CracoLessPlugin,
       options: {
