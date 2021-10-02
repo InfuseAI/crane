@@ -54,9 +54,10 @@ function createBackgroundWindow(args) {
       nodeIntegration: true,
       contextIsolation: false,
       additionalArguments: args,
+      preload: path.resolve(__dirname, 'server.js'),
     },
   });
-  win.loadFile(path.resolve(__dirname, 'server-dev.html'));
+  win.loadFile(path.resolve(__dirname, '../public/index.html'));
   win.webContents.openDevTools();
 }
 
