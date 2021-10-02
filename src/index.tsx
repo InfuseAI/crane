@@ -7,9 +7,7 @@ import * as ipcClient from './utils/ipcClient';
 ipcClient.init();
 
 ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+  <App />,
   document.getElementById('root')
 );
 
