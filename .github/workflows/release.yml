@@ -20,7 +20,7 @@ jobs:
     - name: publish
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: yarn publish
+      run: yarn run publish
 
   publish_on_win:
     runs-on: windows-latest
@@ -37,5 +37,5 @@ jobs:
     - name: publish
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: yarn publish
+      run: yarn run publish
 
