@@ -124,18 +124,18 @@
           "name": "@electron-forge/maker-rpm",
           "config": {}
         }
-      ]
-    },
-    "publishers": [
-      {
-        "name": "@electron-forge/publisher-github",
-        "config": {
-          "repository": {
-            "owner": "InfuseAI",
-            "name": "Crane"
+      ],
+      "publishers": [
+        {
+          "name": "@electron-forge/publisher-github",
+          "config": {
+            "repository": {
+              "owner": "InfuseAI",
+              "name": "Crane"
+            }
           }
         }
-      }
-    ]
+      ]
+    }
   }
 }
