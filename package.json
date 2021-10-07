@@ -53,7 +53,8 @@
     "build:electron:watch": "tsc --watch --project tsconfig.electron.json",
     "build:craco": "craco build",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "publish": "electron-forge publish"
   },
   "eslintConfig": {
     "extends": [
@@ -124,6 +125,17 @@
           "config": {}
         }
       ]
-    }
+    },
+    "publishers": [
+      {
+        "name": "@electron-forge/publisher-github",
+        "config": {
+          "repository": {
+            "owner": "InfuseAI",
+            "name": "Crane"
+          }
+        }
+      }
+    ]
   }
 }
