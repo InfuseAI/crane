@@ -1,6 +1,14 @@
 import React, { useEffect } from 'react';
-import { Layout, Breadcrumb, Form, Input, Button, Tabs } from 'antd';
+import { Layout, Breadcrumb, Form, Input, Button, Tabs, notification } from 'antd';
 import { send } from './utils/ipcClient';
+import {
+  ApolloClient,
+  InMemoryCache,
+  createHttpLink,
+  useQuery,
+  gql
+} from "@apollo/client";
+import { setContext } from '@apollo/client/link/context';
 
 const { Content } = Layout;
 const { TabPane } = Tabs;
@@ -21,6 +29,50 @@ export default function Settings() {
       token: values['primehub-api-token'],
     });
     console.log('Save values', result);
+  };
+  const onPrimeHubTest = async () => {
+    const uri = primeHubForm.getFieldValue('primehub-api-endpoint');
+    const token = primeHubForm.getFieldValue('primehub-api-token');
+    const httpLink = createHttpLink({
+      uri,
+    });
+    const authLink = setContext((_, { headers }) => {
+      return {
+        headers: {
+          ...headers,
+          authorization: token ? `Bearer ${token}` : "",
+        }
+      }
+    });
+    const client = new ApolloClient({
+      link: authLink.concat(httpLink),
+      cache: new InMemoryCache()
+    });
+    try {
+      const result = await client
+      .query({
+        query: gql`
+          query {
+            me {
+              id
+            }
+          }
+        `
+      });
+      console.log(result);
+      notification.success({
+        message: 'PrimeHub Connected',
+        description: ``,
+      });
+    } catch (error) {
+      console.log(error);
+      notification.error({
+        message: 'PrimeHub Connection Failed',
+        description: ``,
+      });
+    }
+
+
   };
   useEffect(() => {
     async function fetchCredential() {
@@ -92,7 +144,7 @@ export default function Settings() {
                 <Input />
               </Form.Item>
               <Form.Item label='API Token' name='primehub-api-token'>
-                <Input.Password />
+                <Input.Password addonAfter={<Button type='text' onClick={onPrimeHubTest}>Test</Button>}/>
               </Form.Item>
               <Form.Item style={{ textAlign: 'right' }}>
                 <Button type='primary' htmlType='submit'>
