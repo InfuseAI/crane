@@ -8,6 +8,8 @@ import axios from 'axios';
 import { createMarkdownArrayTableSync } from 'parse-markdown-table';
 
 const docker = new Docker();
+const dockerHubCredentialKeyName = "Crane-DockerHub";
+const primeHubCredentialKeyName = "Crane-PrimeHub";
 
 export function generateDockerfile(options) {
   let base_image_url = options['base_image_url'];
@@ -44,22 +46,22 @@ ${pip}`;
   return dockerfileContent;
 }
 
-export async function getDockerHubCredential() {
-  const credentials = await keytar.findCredentials('Crane-DockerHub');
+export async function getCredential(keyname) {
+  const credentials = await keytar.findCredentials(keyname);
   if (!credentials || credentials.length === 0) {
     return null;
   }
-  console.log('[Get DockerHub Credential]', credentials[0]);
+  console.log('[Get ' + keyname + ' Credential]', credentials[0]);
   return credentials[0];
 }
 
-export async function saveDockerHubCredential(account, password) {
-  const existCredential = await getDockerHubCredential();
+export async function saveCredential(keyname, account, password) {
+  const existCredential = await getCredential(keyname);
   if (existCredential) {
-    await keytar.deletePassword('Crane-DockerHub', existCredential.account);
+    await keytar.deletePassword(keyname, existCredential.account);
   }
-  await keytar.setPassword('Crane-DockerHub', account, password);
-  console.log('[DockerHub Credential Saved]');
+  await keytar.setPassword(keyname, account, password);
+  console.log('[' + keyname + ' Credential Saved]');
   return { account, password };
 }
 
@@ -70,9 +72,16 @@ export function writeDockerfile(dockerfileContent) {
 const handlers = {
   build_events: [],
   build_status: '',
-  'get-dockerhub-credential': getDockerHubCredential,
+  'get-dockerhub-credential': async () => {
+    return await getCredential(dockerHubCredentialKeyName);
+  },
+  'get-primehub-credential': async () => {
+    return await getCredential(primeHubCredentialKeyName);
+  },
   'save-dockerhub-credential': async (args) =>
-    await saveDockerHubCredential(args.account, args.password),
+    await saveCredential(dockerHubCredentialKeyName ,args.account, args.password),
+  'save-primehub-credential': async (args) =>
+    await saveCredential(primeHubCredentialKeyName, args.endpoint, args.token),
   'build-status': async () => {
     return handlers.build_status;
   },
@@ -119,7 +128,7 @@ const handlers = {
     return await docker.listImages();
   },
   'push-image-dockerhub': async ({ image_name }) => {
-    const credential = await getDockerHubCredential();
+    const credential = await getCredential(dockerHubCredentialKeyName);
     if (!credential) {
       return null;
     }
