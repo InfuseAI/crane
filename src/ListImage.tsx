@@ -60,7 +60,9 @@ export default function ListImage() {
               prevData.replace(/\n.*$/, '\n') + payload.output.progress
           );
         } else if (payload.output.status) {
-          const output = `\n${payload.output.id ? `${payload.output.id}: ` : ''}${payload.output.status}`;
+          const output = `\n${
+            payload.output.id ? `${payload.output.id}: ` : ''
+          }${payload.output.status}`;
           setLogText((prevData) => prevData + output);
         }
       }

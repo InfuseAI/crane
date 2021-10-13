@@ -1,13 +1,20 @@
 import React, { useEffect } from 'react';
-import { Layout, Breadcrumb, Form, Input, Button, Tabs, notification } from 'antd';
+import {
+  Layout,
+  Breadcrumb,
+  Form,
+  Input,
+  Button,
+  Tabs,
+  notification,
+} from 'antd';
 import { send } from './utils/ipcClient';
 import {
   ApolloClient,
   InMemoryCache,
   createHttpLink,
-  useQuery,
-  gql
-} from "@apollo/client";
+  gql,
+} from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 
 const { Content } = Layout;
@@ -40,24 +47,23 @@ export default function Settings() {
       return {
         headers: {
           ...headers,
-          authorization: token ? `Bearer ${token}` : "",
-        }
-      }
+          authorization: token ? `Bearer ${token}` : '',
+        },
+      };
     });
     const client = new ApolloClient({
       link: authLink.concat(httpLink),
-      cache: new InMemoryCache()
+      cache: new InMemoryCache(),
     });
     try {
-      const result = await client
-      .query({
+      const result = await client.query({
         query: gql`
           query {
             me {
               id
             }
           }
-        `
+        `,
       });
       console.log(result);
       notification.success({
@@ -71,15 +77,15 @@ export default function Settings() {
         description: ``,
       });
     }
-
-
   };
   useEffect(() => {
     async function fetchCredential() {
       const credential = await send('get-dockerhub-credential');
       if (credential) {
         dockerHubForm.setFieldsValue({ 'docker-account': credential.account });
-        dockerHubForm.setFieldsValue({ 'docker-password': credential.password });
+        dockerHubForm.setFieldsValue({
+          'docker-password': credential.password,
+        });
       } else {
         console.log('No DockerHub credential found');
       }
@@ -90,8 +96,12 @@ export default function Settings() {
     async function fetchCredential() {
       const credential = await send('get-primehub-credential');
       if (credential) {
-        primeHubForm.setFieldsValue({ 'primehub-api-endpoint': credential.account });
-        primeHubForm.setFieldsValue({ 'primehub-api-token': credential.password });
+        primeHubForm.setFieldsValue({
+          'primehub-api-endpoint': credential.account,
+        });
+        primeHubForm.setFieldsValue({
+          'primehub-api-token': credential.password,
+        });
       } else {
         console.log('No PrimeHub credential found');
       }
@@ -133,7 +143,7 @@ export default function Settings() {
             </Form>
           </TabPane>
           <TabPane tab='PRIMEHUB' key='2' forceRender={true}>
-          <Form
+            <Form
               layout='vertical'
               form={primeHubForm}
               name='settings'
@@ -144,7 +154,13 @@ export default function Settings() {
                 <Input />
               </Form.Item>
               <Form.Item label='API Token' name='primehub-api-token'>
-                <Input.Password addonAfter={<Button type='text' onClick={onPrimeHubTest}>Test</Button>}/>
+                <Input.Password
+                  addonAfter={
+                    <Button type='text' onClick={onPrimeHubTest}>
+                      Test
+                    </Button>
+                  }
+                />
               </Form.Item>
               <Form.Item style={{ textAlign: 'right' }}>
                 <Button type='primary' htmlType='submit'>
@@ -155,7 +171,6 @@ export default function Settings() {
             </Form>
           </TabPane>
         </Tabs>
-
       </div>
     </Content>
   );
