@@ -6,8 +6,4 @@ import * as ipcClient from './utils/ipcClient';
 
 ipcClient.init();
 
-ReactDOM.render(
-  <App />,
-  document.getElementById('root')
-);
-
+ReactDOM.render(<App />, document.getElementById('root'));

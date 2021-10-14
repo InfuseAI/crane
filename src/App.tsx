@@ -11,6 +11,7 @@ import Sidebar from './Sidebar';
 import BuildImage from './BuildImage';
 import ListImage from './ListImage';
 import Settings from './Settings';
+import CreatePrimeHubImage from './CreatePrimeHubImage';
 const { Footer } = Layout;
 
 const Crane = () => {
@@ -39,6 +40,10 @@ const Crane = () => {
               <Route exact path='/' component={BuildImage} />
               <Route path='/settings' component={Settings} />
               <Route path='/images' component={ListImage} />
+              <Route
+                path='/createPrimeHubImage'
+                component={CreatePrimeHubImage}
+              />
               <Redirect to='/' />
             </Switch>
           </Suspense>
