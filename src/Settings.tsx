@@ -24,7 +24,7 @@ export default function Settings() {
   const [dockerHubForm] = Form.useForm();
   const [primeHubForm] = Form.useForm();
   const onDockerHubFinish = async (values) => {
-    const result = await send('save-dockerhub-credential', {
+     await send('save-dockerhub-credential', {
       account: values['docker-account'],
       password: values['docker-password'],
     });
@@ -33,7 +33,7 @@ export default function Settings() {
     });
   };
   const onPrimeHubFinish = async (values) => {
-    const result = await send('save-primehub-credential', {
+     await send('save-primehub-credential', {
       endpoint: values['primehub-api-endpoint'],
       token: values['primehub-api-token'],
     });
