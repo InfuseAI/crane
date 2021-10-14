@@ -135,6 +135,7 @@ export default function ListImage() {
       key: 'action',
       render: (text, record) => (
         <Button
+          size='small'
           type='primary'
           shape='round'
           icon={<CloudUploadOutlined />}

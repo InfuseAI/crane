@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Button, Table, Tag, notification } from 'antd';
-import { CloudUploadOutlined } from '@ant-design/icons';
+import { ExportOutlined } from '@ant-design/icons';
 import { get } from 'lodash';
 import { send } from './utils/ipcClient';
 import { format } from 'timeago.js';
@@ -108,9 +108,10 @@ export default function ListRemoteImages() {
         width: '10%',
         render: (text, record) => (
           <Button
+            size='small'
             type='primary'
             shape='round'
-            icon={<CloudUploadOutlined />}
+            icon={<ExportOutlined />}
           ></Button>
         ),
       },
