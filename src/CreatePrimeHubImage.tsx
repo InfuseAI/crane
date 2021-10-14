@@ -137,7 +137,7 @@ export default function CreatePrimeHubImage() {
     <Content style={{ margin: '0 16px' }}>
       <Breadcrumb style={{ margin: '16px 0' }}>
         <Breadcrumb.Item>Crane</Breadcrumb.Item>
-        <Breadcrumb.Item>Create PrimeHub Image</Breadcrumb.Item>
+        <Breadcrumb.Item>Create a PrimeHub Image</Breadcrumb.Item>
       </Breadcrumb>
       <div
         className='site-layout-background'
