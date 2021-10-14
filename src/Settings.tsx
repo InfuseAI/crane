@@ -151,7 +151,7 @@ export default function Settings() {
           <TabPane tab='PRIMEHUB' key='2' forceRender={true}>
             <Alert
               style={{ margin: '8px 0 16px'}}
-              className='primehub-promote'
+              className='primehub-alert'
               showIcon
               message={`Looking for a full-stack ML platform?`}
               description={`It'll just take few minutes by our 1-click installer to setup PrimeHub on AWS`}
@@ -177,10 +177,10 @@ export default function Settings() {
               initialValues={initialValues}
               onFinish={onPrimeHubFinish}
             >
-              <Form.Item label='API Endpoint' name='primehub-api-endpoint'>
-                <Input />
+              <Form.Item label='PrimeHub API Endpoint' name='primehub-api-endpoint'>
+                <Input placeholder='https://example.com/primehub/api/graphql'/>
               </Form.Item>
-              <Form.Item label='API Token' name='primehub-api-token'>
+              <Form.Item label='PrimeHub API Token' name='primehub-api-token'>
                 <Input.Password
                   addonAfter={
                     <Button type='text' onClick={onPrimeHubTest}>
