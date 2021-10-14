@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { send } from './utils/ipcClient';
+import { useLocation, useHistory } from 'react-router-dom';
 import {
   Layout,
   Breadcrumb,
@@ -17,14 +18,17 @@ import {
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { get } from 'lodash';
-;
 const { Content } = Layout;
 const { Option } = Select;
 
 export default function CreatePrimeHubImage() {
+  const hisotry = useHistory();
+  const location = useLocation();
+  const { search } = location;
   const [form] = Form.useForm();
-  const [groupList, setGroupList] = useState([]); 
+  const [groupList, setGroupList] = useState([]);
   const [client, setClient] = useState(null);
+  const tag = new URLSearchParams(search).get('tag');
   useEffect(() => {
     const createClient = async () => {
       const credential = await send('get-primehub-credential');
@@ -53,7 +57,7 @@ export default function CreatePrimeHubImage() {
     if (!client) {
       return;
     }
-    async function fetchGroup(){
+    async function fetchGroup() {
       try {
         const result = await client.query({
           query: gql`
@@ -72,7 +76,9 @@ export default function CreatePrimeHubImage() {
         });
         const username = get(result, 'data.me.username', '');
         const groups = get(result, 'data.me.groups', []);
-        const adminGroups = groups.filter((group) => { return group.admins.split(',').includes(username) });
+        const adminGroups = groups.filter((group) => {
+          return group.admins.split(',').includes(username);
+        });
         console.log(adminGroups);
         setGroupList(adminGroups);
       } catch (error) {
@@ -82,7 +88,7 @@ export default function CreatePrimeHubImage() {
           description: `Unable to fetch PrimeHub user group info.`,
         });
       }
-    };
+    }
     fetchGroup();
   }, [client]);
   const onFinish = async (values) => {
@@ -90,9 +96,14 @@ export default function CreatePrimeHubImage() {
       const payload = {
         ...values,
         groups: {
-          connect: [ { id: groupList.filter((group)=>{return group.name === values.groupName})[0].id } ],
+          connect: [
+            {
+              id: groupList.filter((group) => {
+                return group.name === values.groupName;
+              })[0].id,
+            },
+          ],
         },
-        url: 'testurl',
       };
       console.log(payload);
       const result = await client.mutate({
@@ -110,6 +121,7 @@ export default function CreatePrimeHubImage() {
         message: 'PrimeHub Image Created',
         description: ``,
       });
+      hisotry.push('/images/');
     } catch (error) {
       console.log(error);
       notification.error({
@@ -117,7 +129,9 @@ export default function CreatePrimeHubImage() {
         description: ``,
       });
     }
-    
+  };
+  const initialValues = {
+    url: tag,
   };
   return (
     <Content style={{ margin: '0 16px' }}>
@@ -133,14 +147,30 @@ export default function CreatePrimeHubImage() {
           layout='vertical'
           form={form}
           name='create_primehub_image'
+          initialValues={initialValues}
           onFinish={onFinish}
         >
-          <Form.Item label='Group' name='groupName' rules={[{ required: true }]}>
+          <Form.Item
+            label='Group'
+            name='groupName'
+            rules={[{ required: true }]}
+          >
             <Select style={{ width: 120 }}>
-              {groupList.map((group)=>{
-                return <Option key={group.id} value={group.name}>{group.name}</Option>
+              {groupList.map((group) => {
+                return (
+                  <Option key={group.id} value={group.name}>
+                    {group.name}
+                  </Option>
+                );
               })}
             </Select>
+          </Form.Item>
+          <Form.Item
+            label='Container Image URL'
+            name='url'
+            rules={[{ required: true }]}
+          >
+            <Input disabled />
           </Form.Item>
           <Form.Item
             label='Image Name'
@@ -160,7 +190,7 @@ export default function CreatePrimeHubImage() {
             <Input />
           </Form.Item>
           <Form.Item label='Type' name='type' rules={[{ required: true }]}>
-            <Select style={{ width: 120 }}>            
+            <Select style={{ width: 120 }}>
               <Option value='cpu'>CPU</Option>
               <Option value='gpu'>GPU</Option>
               <Option value='both'>Universal</Option>

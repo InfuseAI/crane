@@ -5,6 +5,7 @@ import { ExportOutlined } from '@ant-design/icons';
 import { get } from 'lodash';
 import { send } from './utils/ipcClient';
 import { format } from 'timeago.js';
+import { useHistory } from 'react-router-dom';
 import filesize from 'filesize.js';
 const API_BASE_URL = 'https://hub.docker.com';
 const API_VERSION = 'v2';
@@ -44,6 +45,7 @@ interface Tag {
 }
 
 export default function ListRemoteImages() {
+  const history = useHistory();
   const [dockerhub, setDockerhub] = useState<Partial<Credential>>({});
   const [client, setClient] = useState<any>(null);
   const [nestedData, setNestedData] = useState({});
@@ -75,7 +77,7 @@ export default function ListRemoteImages() {
         dataIndex: 'name',
         key: 'name',
         width: '50%',
-        render: (name, tag) => `${record.namespace}/${record.name}:${name}`
+        render: (name, tag) => `${record.namespace}/${record.name}:${name}`,
       },
       {
         title: 'STATUS',
@@ -106,17 +108,21 @@ export default function ListRemoteImages() {
         key: 'action',
         align: 'center',
         width: '10%',
-        render: (text, record) => (
+        render: (name, tag) => (
           <Button
             size='small'
             type='primary'
             shape='round'
             icon={<ExportOutlined />}
+            onClick={() => {
+              const tag = `${record.namespace}/${record.name}:${name}`;
+              history.push(`/createPrimeHubImage?tag=${tag}`);
+            }}
           ></Button>
         ),
       },
     ];
-    const data = nestedData[record.name];
+    const data: Tag[] = nestedData[record.name];
     return (
       <Table
         showHeader={false}
@@ -207,18 +213,18 @@ export default function ListRemoteImages() {
       width: '10%',
       render: (is_private) => {
         if (is_private) {
-          return <Tag color='orange'>Private</Tag>
+          return <Tag color='orange'>Private</Tag>;
         } else {
-          return <Tag color='green'>Public</Tag>
+          return <Tag color='green'>Public</Tag>;
         }
-      }
+      },
     },
     {
       title: 'SIZE',
       key: 'full_size',
       align: 'right',
       width: '10%',
-      render: () => '-'
+      render: () => '-',
     },
     {
       title: 'LAST UPDATED',
@@ -226,7 +232,7 @@ export default function ListRemoteImages() {
       key: 'last_updated',
       align: 'right',
       width: '20%',
-      render: (value) => format(value)
+      render: (value) => format(value),
     },
     {
       title: 'ACTION',

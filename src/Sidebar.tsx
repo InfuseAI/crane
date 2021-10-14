@@ -50,11 +50,6 @@ export default function Sidebar(prop) {
             Images
           </Link>
         </Menu.Item>
-        <Menu.Item key='createPrimeHubImage' icon={<OrderedListOutlined />}>
-          <Link to='/createPrimeHubImage' style={{ color: 'white' }}>
-            Create PrimeHub Image
-          </Link>
-        </Menu.Item>
         <Menu.Item
           style={{ position: 'relative', top: 'max(0px, 100vh - 252px)' }}
           key='settings'
