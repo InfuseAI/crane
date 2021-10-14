@@ -20,6 +20,7 @@ function createWindow(args) {
     backgroundColor: '#244764',
     show: false,
     webPreferences: {
+      webSecurity: false,
       nodeIntegration: false,
       contextIsolation: true,
       additionalArguments: args,

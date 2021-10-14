@@ -13,6 +13,7 @@ import useLocalStorage from './hooks/useLocalStorage';
 import { LazyLog, ScrollFollow } from 'react-lazylog';
 import { CloudUploadOutlined } from '@ant-design/icons';
 import { send, listen, unlisten } from './utils/ipcClient';
+import ListRemoteImages from './ListRemoteImage';
 import { format } from 'timeago.js';
 import filesize from 'filesize.js';
 const Status = {
@@ -162,7 +163,7 @@ export default function ListImage() {
             />
           </TabPane>
           <TabPane tab='REMOTE REPOSITORIES' key='2'>
-            <Empty />
+            <ListRemoteImages />
           </TabPane>
         </Tabs>
       </div>
