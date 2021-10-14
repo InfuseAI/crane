@@ -85,6 +85,7 @@ export default function ListRemoteImages() {
         key: 'tag_status',
         align: 'center',
         width: '10%',
+        render: (status) => <Tag color='cyan'>{status}</Tag>
       },
       {
         title: 'SIZE',
