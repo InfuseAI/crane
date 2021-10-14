@@ -5,7 +5,6 @@ import {
   Button,
   Tabs,
   Table,
-  Empty,
   Drawer,
   notification,
 } from 'antd';

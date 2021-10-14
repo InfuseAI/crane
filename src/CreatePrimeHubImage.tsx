@@ -118,15 +118,15 @@ export default function CreatePrimeHubImage() {
         variables: { data: payload },
       });
       notification.success({
-        message: 'PrimeHub Image Created',
-        description: ``,
+        message: 'PrimeHub',
+        description: `Image: ${get(result, 'data.createImage.name')} created.`,
       });
       hisotry.push('/images/');
     } catch (error) {
       console.log(error);
       notification.error({
-        message: 'Create PrimeHub Image Failed',
-        description: ``,
+        message: 'PrimeHub',
+        description: `Create PrimeHub Image Failed`,
       });
     }
   };

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Button, Table, Tag, notification } from 'antd';
+import { Tooltip, Button, Table, Tag, notification } from 'antd';
 import { ExportOutlined } from '@ant-design/icons';
 import { get } from 'lodash';
 import { send } from './utils/ipcClient';
@@ -36,7 +36,7 @@ interface Image {
   status: string;
 }
 
-interface Tag {
+interface ImageTag {
   key: any;
   name: string;
   tag_active: string;
@@ -77,7 +77,8 @@ export default function ListRemoteImages() {
         dataIndex: 'name',
         key: 'name',
         width: '50%',
-        render: (name, tag) => `${record.namespace}/${record.name}:${name}`,
+        render: (name, tag: ImageTag) =>
+          `${record.namespace}/${record.name}:${name}`,
       },
       {
         title: 'STATUS',
@@ -85,7 +86,7 @@ export default function ListRemoteImages() {
         key: 'tag_status',
         align: 'center',
         width: '10%',
-        render: (status) => <Tag color='cyan'>{status}</Tag>
+        render: (status) => <Tag color='cyan'>{status}</Tag>,
       },
       {
         title: 'SIZE',
@@ -110,20 +111,25 @@ export default function ListRemoteImages() {
         align: 'center',
         width: '10%',
         render: (name, tag) => (
-          <Button
-            size='small'
-            type='primary'
-            shape='round'
-            icon={<ExportOutlined />}
-            onClick={() => {
-              const tag = `${record.namespace}/${record.name}:${name}`;
-              history.push(`/createPrimeHubImage?tag=${tag}`);
-            }}
-          ></Button>
+          <Tooltip
+            placement='top'
+            title='Add to PrimeHub'
+          >
+            <Button
+              size='small'
+              type='primary'
+              shape='round'
+              icon={<ExportOutlined />}
+              onClick={() => {
+                const tag = `${record.namespace}/${record.name}:${name}`;
+                history.push(`/createPrimeHubImage?tag=${tag}`);
+              }}
+            ></Button>
+        </Tooltip>
         ),
       },
     ];
-    const data: Tag[] = nestedData[record.name];
+    const data: ImageTag[] = nestedData[record.name];
     return (
       <Table
         showHeader={false}
@@ -149,11 +155,12 @@ export default function ListRemoteImages() {
         tag.key = tag.id;
         return tag;
       });
-      console.log('Tags: ', results);
       setTagsLoading({
+        ...tagsLoading,
         [record.name]: false,
       });
       setNestedData({
+        ...nestedData,
         [record.name]: results,
       });
     })();
@@ -164,7 +171,6 @@ export default function ListRemoteImages() {
   }, []);
 
   useEffect(() => {
-    console.log('DockerHub Credential: ', dockerhub);
     if (dockerhub.account && dockerhub.password) {
       genClient(dockerhub.account, dockerhub.password).then((api) => {
         setClient({ api });
@@ -187,7 +193,6 @@ export default function ListRemoteImages() {
         });
         setLoading(false);
         setRepos(result);
-        console.log('Repos: ', result);
       } catch (error) {
         notification.error({
           message: 'Something wrong when fetch remote repositories :(..',
