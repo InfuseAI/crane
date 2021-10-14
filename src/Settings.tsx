@@ -6,7 +6,9 @@ import {
   Input,
   Button,
   Tabs,
+  Alert,
   notification,
+  Space
 } from 'antd';
 import { send } from './utils/ipcClient';
 import {
@@ -24,21 +26,21 @@ export default function Settings() {
   const [dockerHubForm] = Form.useForm();
   const [primeHubForm] = Form.useForm();
   const onDockerHubFinish = async (values) => {
-     await send('save-dockerhub-credential', {
+    await send('save-dockerhub-credential', {
       account: values['docker-account'],
       password: values['docker-password'],
     });
     notification.info({
-      message: 'DockerHub setup saved.'
+      message: 'DockerHub setup saved.',
     });
   };
   const onPrimeHubFinish = async (values) => {
-     await send('save-primehub-credential', {
+    await send('save-primehub-credential', {
       endpoint: values['primehub-api-endpoint'],
       token: values['primehub-api-token'],
     });
     notification.info({
-      message: 'PrimeHub setup saved.'
+      message: 'PrimeHub setup saved.',
     });
   };
   const onPrimeHubTest = async () => {
@@ -147,6 +149,27 @@ export default function Settings() {
             </Form>
           </TabPane>
           <TabPane tab='PRIMEHUB' key='2' forceRender={true}>
+            <Alert
+              style={{ margin: '8px 0 16px'}}
+              className='primehub-promote'
+              showIcon
+              message={`Looking for a full-stack ML platform?`}
+              description={`It'll just take few minutes by our 1-click installer to setup PrimeHub on AWS`}
+              action={
+                <Space>
+                  <Button size='small' type='primary' href='https://one.primehub.io' target='_blank'>
+                    Ok Let's Do It
+                  </Button>
+                </Space>
+              }
+              closable
+              closeText={
+                <Button size='small' type='text' style={{color: '#aaa'}}>
+                  Not right now
+                </Button>
+              }
+              type='info'
+            />
             <Form
               layout='vertical'
               form={primeHubForm}
