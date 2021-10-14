@@ -28,14 +28,18 @@ export default function Settings() {
       account: values['docker-account'],
       password: values['docker-password'],
     });
-    console.log('Save values', result);
+    notification.info({
+      message: 'DockerHub setup saved.'
+    });
   };
   const onPrimeHubFinish = async (values) => {
     const result = await send('save-primehub-credential', {
       endpoint: values['primehub-api-endpoint'],
       token: values['primehub-api-token'],
     });
-    console.log('Save values', result);
+    notification.info({
+      message: 'PrimeHub setup saved.'
+    });
   };
   const onPrimeHubTest = async () => {
     const uri = primeHubForm.getFieldValue('primehub-api-endpoint');

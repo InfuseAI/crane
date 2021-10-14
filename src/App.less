@@ -26,3 +26,18 @@ body {
   min-height: 360px;
   padding: 24px;
 }
+
+.tags-table, .images-table {
+  padding-left: 16px;
+  .tags-row, .images-row {
+    .actionBtn {
+      opacity: 0;
+    }
+    background: #fbfbfb;
+    &:hover {
+      .actionBtn {
+        opacity: 1;
+      }
+    }
+  }
+}

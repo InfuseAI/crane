@@ -6,7 +6,7 @@ import { get } from 'lodash';
 import { send } from './utils/ipcClient';
 import { format } from 'timeago.js';
 import { useHistory } from 'react-router-dom';
-import filesize from 'filesize.js';
+import filesize from 'filesize';
 const API_BASE_URL = 'https://hub.docker.com';
 const API_VERSION = 'v2';
 const API_URL = `${API_BASE_URL}/${API_VERSION}`;
@@ -76,7 +76,7 @@ export default function ListRemoteImages() {
         title: 'NAME',
         dataIndex: 'name',
         key: 'name',
-        width: '50%',
+        width: '40%',
         render: (name, tag: ImageTag) =>
           `${record.namespace}/${record.name}:${name}`,
       },
@@ -86,15 +86,15 @@ export default function ListRemoteImages() {
         key: 'tag_status',
         align: 'center',
         width: '10%',
-        render: (status) => <Tag color='cyan'>{status}</Tag>,
+        render: (status) => <Tag color='cyan'>{status.toUpperCase()}</Tag>,
       },
       {
         title: 'SIZE',
         dataIndex: 'full_size',
         key: 'full_size',
         align: 'right',
-        render: (value) => filesize(value),
-        width: '10%',
+        render: (value) => filesize(value, {round: 1}),
+        width: '15%',
       },
       {
         title: 'LAST UPDATED',
@@ -105,26 +105,24 @@ export default function ListRemoteImages() {
         render: (value) => format(value),
       },
       {
-        title: 'Action',
         dataIndex: 'name',
         key: 'action',
         align: 'center',
-        width: '10%',
+        width: '15%',
         render: (name, tag) => (
           <Tooltip
             placement='top'
             title='Add to PrimeHub'
           >
             <Button
+              className='actionBtn'
               size='small'
-              type='primary'
-              shape='round'
               icon={<ExportOutlined />}
               onClick={() => {
                 const tag = `${record.namespace}/${record.name}:${name}`;
                 history.push(`/createPrimeHubImage?tag=${tag}`);
               }}
-            ></Button>
+            >ADD</Button>
         </Tooltip>
         ),
       },
@@ -132,11 +130,14 @@ export default function ListRemoteImages() {
     const data: ImageTag[] = nestedData[record.name];
     return (
       <Table
+        size='small'
         showHeader={false}
         loading={tagsLoading[record.name] || !data}
         columns={columns}
         dataSource={data}
         pagination={false}
+        className='tags-table'
+        rowClassName='tags-row'
       />
     );
   };
@@ -205,10 +206,10 @@ export default function ListRemoteImages() {
 
   const columns = [
     {
-      title: 'TAG NAME',
+      title: 'TAG',
       dataIndex: 'name',
       key: 'name',
-      width: '50%',
+      width: '40%',
       render: (value, record) => `${record.namespace}/${value}`,
     },
     {
@@ -219,9 +220,9 @@ export default function ListRemoteImages() {
       width: '10%',
       render: (is_private) => {
         if (is_private) {
-          return <Tag color='orange'>Private</Tag>;
+          return <Tag color='orange'>PRIVATE</Tag>;
         } else {
-          return <Tag color='green'>Public</Tag>;
+          return <Tag color='green'>PUBLIC</Tag>;
         }
       },
     },
@@ -229,7 +230,7 @@ export default function ListRemoteImages() {
       title: 'SIZE',
       key: 'full_size',
       align: 'right',
-      width: '10%',
+      width: '15%',
       render: () => '-',
     },
     {
@@ -241,15 +242,15 @@ export default function ListRemoteImages() {
       render: (value) => format(value),
     },
     {
-      title: 'ACTION',
       key: 'action',
       align: 'center',
-      width: '10%',
+      width: '15%'
     },
   ];
   return (
     <React.Fragment>
       <Table
+        size='small'
         columns={columns}
         dataSource={repos}
         pagination={false}
@@ -259,6 +260,7 @@ export default function ListRemoteImages() {
           expandRowByClick: true,
           onExpand,
         }}
+        sticky={true}
       />
     </React.Fragment>
   );

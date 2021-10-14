@@ -14,7 +14,7 @@ import { CloudUploadOutlined } from '@ant-design/icons';
 import { send, listen, unlisten } from './utils/ipcClient';
 import ListRemoteImages from './ListRemoteImage';
 import { format } from 'timeago.js';
-import filesize from 'filesize.js';
+import filesize from 'filesize';
 const Status = {
   PREPARING: 'preparing',
   FINISHED: 'finished',
@@ -92,7 +92,7 @@ export default function ListImage() {
           i.imageId = x.Id.split(':')[1].substring(0, 12);
           i.key = i.imageId;
           i.created = format(x.Created * 1000);
-          i.size = filesize(x.Size);
+          i.size = filesize(x.Size, {round: 1});
           return i;
         });
       console.log(images);
@@ -130,16 +130,15 @@ export default function ListImage() {
       dataIndex: 'size',
     },
     {
-      title: 'Action',
       key: 'action',
+      align: 'center',
       render: (text, record) => (
         <Button
+          className='actionBtn'
           size='small'
-          type='primary'
-          shape='round'
           icon={<CloudUploadOutlined />}
           onClick={() => pushImage(record.name + ':' + record.tag)}
-        ></Button>
+        >PUSH</Button>
       ),
     },
   ];
@@ -157,6 +156,9 @@ export default function ListImage() {
         <Tabs defaultActiveKey='1' size='large' style={{ marginBottom: 32 }}>
           <TabPane tab='LOCAL' key='1'>
             <Table
+              className='images-table'
+              rowClassName='images-row'
+              size='small'
               columns={columns}
               dataSource={imageList}
               pagination={false}
