@@ -50,7 +50,7 @@ function createBackgroundWindow(args) {
     height: 640,
     minWidth: 1024,
     minHeight: 640,
-    show: false,
+    show: true,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,

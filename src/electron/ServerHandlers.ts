@@ -75,6 +75,15 @@ export function writeDockerfile(dockerfileContent) {
 const handlers = {
   build_events: [],
   build_status: '',
+  ping_docker: async (args) => {
+    try {
+      await docker.ping();
+    } catch (error) {
+      return error;
+    }
+
+    return 'ok';
+  },
   'get-dockerhub-credential': async () => {
     return await getCredential(dockerHubCredentialKeyName);
   },
