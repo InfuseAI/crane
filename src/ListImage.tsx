@@ -92,7 +92,7 @@ export default function ListImage() {
           i.imageId = x.Id.split(':')[1].substring(0, 12);
           i.key = i.imageId;
           i.created = format(x.Created * 1000);
-          i.size = filesize(x.Size, {round: 1});
+          i.size = filesize(x.Size, { round: 1 });
           return i;
         });
       console.log(images);
@@ -138,7 +138,9 @@ export default function ListImage() {
           size='small'
           icon={<CloudUploadOutlined />}
           onClick={() => pushImage(record.name + ':' + record.tag)}
-        >PUSH</Button>
+        >
+          PUSH
+        </Button>
       ),
     },
   ];

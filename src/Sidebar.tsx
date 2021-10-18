@@ -45,13 +45,16 @@ export default function Sidebar(prop) {
             Build
           </Link>
         </Menu.Item>
-        <Menu.Item key={(() => {
-          const path = location.pathname.replaceAll('/', '');
-          if (path === 'createPrimeHubImage') {
-            return 'createPrimeHubImage';
-          }
-          return 'images'
-        })()} icon={<OrderedListOutlined />}>
+        <Menu.Item
+          key={(() => {
+            const path = location.pathname.replaceAll('/', '');
+            if (path === 'createPrimeHubImage') {
+              return 'createPrimeHubImage';
+            }
+            return 'images';
+          })()}
+          icon={<OrderedListOutlined />}
+        >
           <Link to='/images' style={{ color: 'white' }}>
             Images
           </Link>

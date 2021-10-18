@@ -86,14 +86,18 @@ export default function ListRemoteImages() {
         key: 'tag_status',
         align: 'center',
         width: '10%',
-        render: (status) => <Tag color='cyan'>{status.toUpperCase()}</Tag>,
+        render: (status) => (
+          <Tag className='tag-status' color='cyan'>
+            {status.toUpperCase()}
+          </Tag>
+        ),
       },
       {
         title: 'SIZE',
         dataIndex: 'full_size',
         key: 'full_size',
         align: 'right',
-        render: (value) => filesize(value, {round: 1}),
+        render: (value) => filesize(value, { round: 1 }),
         width: '15%',
       },
       {
@@ -110,10 +114,7 @@ export default function ListRemoteImages() {
         align: 'center',
         width: '15%',
         render: (name, tag) => (
-          <Tooltip
-            placement='top'
-            title='Add to PrimeHub'
-          >
+          <Tooltip placement='top' title='Add to PrimeHub'>
             <Button
               className='actionBtn'
               size='small'
@@ -122,8 +123,10 @@ export default function ListRemoteImages() {
                 const tag = `${record.namespace}/${record.name}:${name}`;
                 history.push(`/createPrimeHubImage?tag=${tag}`);
               }}
-            >ADD</Button>
-        </Tooltip>
+            >
+              ADD
+            </Button>
+          </Tooltip>
         ),
       },
     ];
@@ -222,7 +225,7 @@ export default function ListRemoteImages() {
         if (is_private) {
           return <Tag color='orange'>PRIVATE</Tag>;
         } else {
-          return <Tag color='green'>PUBLIC</Tag>;
+          return <Tag className='tag-public'>PUBLIC</Tag>;
         }
       },
     },
@@ -244,13 +247,14 @@ export default function ListRemoteImages() {
     {
       key: 'action',
       align: 'center',
-      width: '15%'
+      width: '15%',
     },
   ];
   return (
     <React.Fragment>
       <Table
         size='small'
+        className='repo-table'
         columns={columns}
         dataSource={repos}
         pagination={false}

@@ -8,7 +8,7 @@ import {
   Tabs,
   Alert,
   notification,
-  Space
+  Space,
 } from 'antd';
 import { send } from './utils/ipcClient';
 import {
@@ -150,21 +150,26 @@ export default function Settings() {
           </TabPane>
           <TabPane tab='PRIMEHUB' key='2' forceRender={true}>
             <Alert
-              style={{ margin: '8px 0 16px'}}
+              style={{ margin: '8px 0 16px' }}
               className='primehub-alert'
               showIcon
               message={`Looking for a full-stack ML platform?`}
               description={`It'll just take few minutes by our 1-click installer to setup PrimeHub on AWS`}
               action={
                 <Space>
-                  <Button size='small' type='primary' href='https://one.primehub.io' target='_blank'>
+                  <Button
+                    size='small'
+                    type='primary'
+                    href='https://one.primehub.io'
+                    target='_blank'
+                  >
                     Ok Let's Do It
                   </Button>
                 </Space>
               }
               closable
               closeText={
-                <Button size='small' type='text' style={{color: '#aaa'}}>
+                <Button size='small' type='text' style={{ color: '#aaa' }}>
                   Not right now
                 </Button>
               }
@@ -177,8 +182,11 @@ export default function Settings() {
               initialValues={initialValues}
               onFinish={onPrimeHubFinish}
             >
-              <Form.Item label='PrimeHub API Endpoint' name='primehub-api-endpoint'>
-                <Input placeholder='https://example.com/primehub/api/graphql'/>
+              <Form.Item
+                label='PrimeHub API Endpoint'
+                name='primehub-api-endpoint'
+              >
+                <Input placeholder='https://example.com/primehub/api/graphql' />
               </Form.Item>
               <Form.Item label='PrimeHub API Token' name='primehub-api-token'>
                 <Input.Password

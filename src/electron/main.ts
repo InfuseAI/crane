@@ -64,7 +64,10 @@ function createBackgroundWindow(args) {
 
 function createBackgroundProcess(args) {
   console.log('fork process', path.resolve(__dirname, 'server.js'));
-  serverProcess = fork(path.resolve(__dirname, 'server.js'), ['--subprocess', ...args]);
+  serverProcess = fork(path.resolve(__dirname, 'server.js'), [
+    '--subprocess',
+    ...args,
+  ]);
   serverProcess.on('message', (msg) => {
     console.log('index', msg);
   });
