@@ -128,8 +128,7 @@ export default function Settings() {
         style={{ padding: 24, minHeight: 360 }}
       >
         <Tabs
-          defaultActiveKey='dockerhub'
-          activeKey={tabName}
+          defaultActiveKey={tabName}
           size='large'
           style={{ marginBottom: 32 }}
         >

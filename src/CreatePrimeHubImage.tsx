@@ -89,6 +89,7 @@ export default function CreatePrimeHubImage() {
           description: (
             <div>
               Unable to fetch PrimeHub user group info.{' '}
+              {/* eslint-disable-next-line */}
               <a onClick={() => history.push('/settings/primehub')}>
                 App Settings
               </a>
