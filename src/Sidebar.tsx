@@ -64,7 +64,7 @@ export default function Sidebar(prop) {
           key='settings'
           icon={<SettingOutlined />}
         >
-          <Link to='/settings' style={{ color: 'white' }}>
+          <Link to='/settings/dockerhub' style={{ color: 'white' }}>
             Settings
           </Link>
         </Menu.Item>

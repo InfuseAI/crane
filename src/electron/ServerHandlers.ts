@@ -81,7 +81,6 @@ const handlers = {
     } catch (error) {
       return error;
     }
-
     return 'ok';
   },
   'get-dockerhub-credential': async () => {
