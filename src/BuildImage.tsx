@@ -118,7 +118,6 @@ export default function BuildImage() {
 
   const initialValues = {
     base_image_url: 'jupyter/base-notebook:latest',
-    apt: `curl\ngit`,
   };
 
   useEffect(() => {
