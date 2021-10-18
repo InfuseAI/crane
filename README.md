@@ -11,7 +11,12 @@ An easy and beautiful way to manage your docker images.
 > Like crane? Crane works better with [PrimeHub](https://primehub.io). Crane is the best companion of PrimeHub when it comes to managing docker images. [Try PrimeHub Now](http://one.primehub.io/) and join our [discord community](https://discord.com/invite/ZE8pQ8gRW)!
 
 ![Crane Screen Shot](public/images/crane-screenshot.png)
-## How to run
+
+## Install
+
+See our [releases](https://github.com/infuseAI/crane/releases).
+
+## Build and development
 
 ### Requirement
 
