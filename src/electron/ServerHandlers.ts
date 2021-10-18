@@ -8,8 +8,8 @@ import axios from 'axios';
 import { createMarkdownArrayTableSync } from 'parse-markdown-table';
 
 const docker = new Docker();
-const dockerHubCredentialKeyName = "Crane-DockerHub";
-const primeHubCredentialKeyName = "Crane-PrimeHub";
+const dockerHubCredentialKeyName = 'Crane-DockerHub';
+const primeHubCredentialKeyName = 'Crane-PrimeHub';
 
 export function generateDockerfile(options) {
   let base_image_url = options['base_image_url'];
@@ -66,7 +66,10 @@ export async function saveCredential(keyname, account, password) {
 }
 
 export function writeDockerfile(dockerfileContent) {
-  fs.writeFileSync(path.join(config.workingDir, 'Dockerfile'), dockerfileContent);
+  fs.writeFileSync(
+    path.join(config.workingDir, 'Dockerfile'),
+    dockerfileContent
+  );
 }
 
 const handlers = {
@@ -79,7 +82,11 @@ const handlers = {
     return await getCredential(primeHubCredentialKeyName);
   },
   'save-dockerhub-credential': async (args) =>
-    await saveCredential(dockerHubCredentialKeyName ,args.account, args.password),
+    await saveCredential(
+      dockerHubCredentialKeyName,
+      args.account,
+      args.password
+    ),
   'save-primehub-credential': async (args) =>
     await saveCredential(primeHubCredentialKeyName, args.endpoint, args.token),
   'build-status': async () => {

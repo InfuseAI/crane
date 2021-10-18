@@ -93,7 +93,7 @@ export default function ListRemoteImages() {
         dataIndex: 'full_size',
         key: 'full_size',
         align: 'right',
-        render: (value) => filesize(value, {round: 1}),
+        render: (value) => filesize(value, { round: 1 }),
         width: '15%',
       },
       {
@@ -110,10 +110,7 @@ export default function ListRemoteImages() {
         align: 'center',
         width: '15%',
         render: (name, tag) => (
-          <Tooltip
-            placement='top'
-            title='Add to PrimeHub'
-          >
+          <Tooltip placement='top' title='Add to PrimeHub'>
             <Button
               className='actionBtn'
               size='small'
@@ -122,8 +119,10 @@ export default function ListRemoteImages() {
                 const tag = `${record.namespace}/${record.name}:${name}`;
                 history.push(`/createPrimeHubImage?tag=${tag}`);
               }}
-            >ADD</Button>
-        </Tooltip>
+            >
+              ADD
+            </Button>
+          </Tooltip>
         ),
       },
     ];
@@ -244,7 +243,7 @@ export default function ListRemoteImages() {
     {
       key: 'action',
       align: 'center',
-      width: '15%'
+      width: '15%',
     },
   ];
   return (
