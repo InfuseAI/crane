@@ -1,5 +1,6 @@
 <img src="https://raw.githubusercontent.com/InfuseAI/crane/main/public/images/Logo_hori.png" alt="Crane" style="height: 130px;">
 
+[![GitHub release](https://img.shields.io/github/release/infuseAI/crane/all.svg)](https://github.com/infuseAI/crane/releases)
 ![](https://img.shields.io/badge/develop-passing-brightgreen)
 ![](https://img.shields.io/badge/Present-InfuseAI-blue)
 ![](https://img.shields.io/badge/Made%20with-%E2%9D%A4-red)
