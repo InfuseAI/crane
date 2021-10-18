@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { send } from './utils/ipcClient';
 import { useLocation, useHistory } from 'react-router-dom';
 import {
-  Space,
   Layout,
   Breadcrumb,
   Form,
