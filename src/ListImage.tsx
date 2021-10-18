@@ -29,16 +29,28 @@ export default function ListImage() {
   const [imageList, updateImageList] = useState([]);
   const [logDrawerVisible, setLogDrawerVisible] = useState(false);
   const [logText, setLogText] = useLocalStorage('push_log');
-  const buildNotification = (name, isSuccess) => {
+  const buildNotification = (name, isSuccess, payload) => {
     if (isSuccess) {
       notification['success']({
         message: 'Push Success',
         description: `Image ${name || ''} pushed`,
       });
     } else {
+      const err = payload.output.find((x) => x.error);
       notification['error']({
         message: 'Push Failed',
-        description: `Image ${name || ''} push failed`,
+        description: (
+          <div>
+            Image ${name || ''} push failed
+            <br />
+            {err.error.split('\n').map((line) => (
+              <span>
+                {line}
+                <br />
+              </span>
+            ))}
+          </div>
+        ),
       });
     }
   };
@@ -47,7 +59,7 @@ export default function ListImage() {
     listen(ipc_name, (payload) => {
       if (payload.stage === Status.FINISHED) {
         const name = ipc_name.replace('push-log-', '');
-        buildNotification(name, !payload.output.find((x) => x.error));
+        buildNotification(name, !payload.output.find((x) => x.error), payload);
         setLogDrawerVisible(false);
         unlisten(ipc_name);
       } else if (payload.stage === Status.PROGRESSING) {

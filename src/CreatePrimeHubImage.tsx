@@ -22,7 +22,7 @@ const { Content } = Layout;
 const { Option } = Select;
 
 export default function CreatePrimeHubImage() {
-  const hisotry = useHistory();
+  const history = useHistory();
   const location = useLocation();
   const { search } = location;
   const [form] = Form.useForm();
@@ -85,7 +85,16 @@ export default function CreatePrimeHubImage() {
         console.log(error);
         notification.error({
           message: 'PrimeHub Connection Failed',
-          description: `Unable to fetch PrimeHub user group info.`,
+          duration: 5,
+          description: (
+            <div>
+              Unable to fetch PrimeHub user group info.{' '}
+              {/* eslint-disable-next-line */}
+              <a onClick={() => history.push('/settings/primehub')}>
+                App Settings
+              </a>
+            </div>
+          ),
         });
       }
     }
@@ -121,7 +130,7 @@ export default function CreatePrimeHubImage() {
         message: 'PrimeHub',
         description: `Image: ${get(result, 'data.createImage.name')} created.`,
       });
-      hisotry.push('/images/');
+      history.push('/images/');
     } catch (error) {
       console.log(error);
       notification.error({

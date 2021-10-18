@@ -10,6 +10,7 @@ import {
   notification,
   Space,
 } from 'antd';
+import { useParams } from 'react-router-dom';
 import { send } from './utils/ipcClient';
 import {
   ApolloClient,
@@ -23,6 +24,7 @@ const { Content } = Layout;
 const { TabPane } = Tabs;
 
 export default function Settings() {
+  const { tabName } = useParams<{ tabName: string }>();
   const [dockerHubForm] = Form.useForm();
   const [primeHubForm] = Form.useForm();
   const onDockerHubFinish = async (values) => {
@@ -125,8 +127,12 @@ export default function Settings() {
         className='site-layout-background'
         style={{ padding: 24, minHeight: 360 }}
       >
-        <Tabs defaultActiveKey='1' size='large' style={{ marginBottom: 32 }}>
-          <TabPane tab='DOCKER HUB' key='1'>
+        <Tabs
+          defaultActiveKey={tabName}
+          size='large'
+          style={{ marginBottom: 32 }}
+        >
+          <TabPane tab='DOCKER HUB' key='dockerhub'>
             <Form
               layout='vertical'
               form={dockerHubForm}
@@ -148,7 +154,7 @@ export default function Settings() {
               </Form.Item>
             </Form>
           </TabPane>
-          <TabPane tab='PRIMEHUB' key='2' forceRender={true}>
+          <TabPane tab='PRIMEHUB' key='primehub' forceRender={true}>
             <Alert
               style={{ margin: '8px 0 16px' }}
               className='primehub-alert'
