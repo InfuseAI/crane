@@ -86,7 +86,11 @@ export default function ListRemoteImages() {
         key: 'tag_status',
         align: 'center',
         width: '10%',
-        render: (status) => <Tag color='cyan'>{status.toUpperCase()}</Tag>,
+        render: (status) => (
+          <Tag className='tag-status' color='cyan'>
+            {status.toUpperCase()}
+          </Tag>
+        ),
       },
       {
         title: 'SIZE',
@@ -221,7 +225,7 @@ export default function ListRemoteImages() {
         if (is_private) {
           return <Tag color='orange'>PRIVATE</Tag>;
         } else {
-          return <Tag color='green'>PUBLIC</Tag>;
+          return <Tag className='tag-public'>PUBLIC</Tag>;
         }
       },
     },
@@ -250,6 +254,7 @@ export default function ListRemoteImages() {
     <React.Fragment>
       <Table
         size='small'
+        className='repo-table'
         columns={columns}
         dataSource={repos}
         pagination={false}

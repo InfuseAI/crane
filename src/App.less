@@ -34,12 +34,24 @@ body {
   .images-row {
     .actionBtn {
       opacity: 0;
+      color: @primary-color;
+      border-color: @primary-color;
     }
     background: #fbfbfb;
     &:hover {
       .actionBtn {
         opacity: 1;
       }
+    }
+  }
+}
+
+.repo-table {
+  .ant-tag {
+    font-weight: 700;
+    &.tag-public {
+      border: 1px solid #244764;
+      color: #244764;
     }
   }
 }
