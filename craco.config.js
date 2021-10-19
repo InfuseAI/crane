@@ -16,7 +16,7 @@ module.exports = {
         runtimeChunk: false,
         splitChunks: {
           chunks(chunk) {
-            return false
+            return false;
           },
         },
       },
@@ -33,20 +33,23 @@ module.exports = {
       new SimpleProgressWebpackPlugin({
         format: 'compact',
       }),
-      ...whenDev(() => [
-        new CircularDependencyPlugin({
-          exclude: /node_modules/,
-          include: /src/,
-          failOnError: true,
-          allowAsyncCycles: false,
-          cwd: process.cwd(),
-        }),
-      ], []),
+      ...whenDev(
+        () => [
+          new CircularDependencyPlugin({
+            exclude: /node_modules/,
+            include: /src/,
+            failOnError: true,
+            allowAsyncCycles: false,
+            cwd: process.cwd(),
+          }),
+        ],
+        []
+      ),
     ],
   },
   plugins: [
     {
-      plugin: CracoEsbuildPlugin
+      plugin: CracoEsbuildPlugin,
     },
     {
       plugin: CracoLessPlugin,

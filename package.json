@@ -48,7 +48,7 @@
     "dev": "yarn start",
     "start": "yarn build:electron && concurrently -k -n webpack,tsc,electron \"cross-env BROWSER=none PORT=16888 yarn craco start\" \"yarn build:electron:watch\" \"yarn electron\"",
     "test": "craco test",
-    "format": "prettier --write .",
+    "format": "prettier --write",
     "build": "yarn build:craco && yarn build:electron",
     "release": "yarn clean && yarn build && yarn make",
     "electron": "wait-on tcp:16888 && electron-forge start",

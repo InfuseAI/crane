@@ -8,34 +8,33 @@ jobs:
   publish_on_mac:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
-      with:
-        node-version: 14
-        cache: 'yarn'
-    - name: install dependencies
-      run: yarn install
-    - name: build
-      run: yarn build
-    - name: publish
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: yarn run publish
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          cache: 'yarn'
+      - name: install dependencies
+        run: yarn install
+      - name: build
+        run: yarn build
+      - name: publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: yarn run publish
 
   publish_on_win:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
-      with:
-        node-version: 14
-        cache: 'yarn'
-    - name: install dependencies
-      run: yarn install
-    - name: build
-      run: yarn build
-    - name: publish
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: yarn run publish
-
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          cache: 'yarn'
+      - name: install dependencies
+        run: yarn install
+      - name: build
+        run: yarn build
+      - name: publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: yarn run publish
