@@ -4,7 +4,7 @@
 ![](https://img.shields.io/badge/develop-passing-brightgreen)
 ![](https://img.shields.io/badge/Present-InfuseAI-blue)
 ![](https://img.shields.io/badge/Made%20with-%E2%9D%A4-red)
-[![InfuseAI Discord Invite](https://img.shields.io/discord/664381609771925514?color=%237289DA&label=chat&logo=discord&logoColor=white)](https://discord.gg/CrAxQznedH)
+[![InfuseAI Discord Invite](https://img.shields.io/discord/664381609771925514?color=%237289DA&label=chat&logo=discord&logoColor=white)](https://discord.gg/ZE8pQ8gRWy)
 
 An easy and beautiful way to manage and build your docker images.
 
