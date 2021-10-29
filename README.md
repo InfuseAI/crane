@@ -15,7 +15,7 @@ An easy and beautiful way to manage and build your docker images.
 
 ## Install
 
-See our [releases](https://github.com/infuseAI/crane/releases).
+Download the latest version from our [releases](https://github.com/infuseAI/crane/releases) page.
 
 ## Build and development
 
