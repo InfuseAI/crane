@@ -6,6 +6,8 @@
 ![](https://img.shields.io/badge/Made%20with-%E2%9D%A4-red)
 [![InfuseAI Discord Invite](https://img.shields.io/discord/664381609771925514?color=%237289DA&label=chat&logo=discord&logoColor=white)](https://discord.gg/ZE8pQ8gRWy)
 
+[![](https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=crane)](https://www.producthunt.com/posts/crane)
+
 An easy and beautiful way to manage and build your docker images.
 
 > Like crane? Crane works better with [PrimeHub](http://one.primehub.io/). Crane is the best companion of PrimeHub when it comes to managing docker images. [Try PrimeHub Now](http://one.primehub.io/) and join our [discord community](https://discord.com/invite/ZE8pQ8gRW)!
