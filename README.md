@@ -49,3 +49,21 @@ yarn dev
 ```bash
 cross-env FORCE_BACKGROUND_PROCESS=1 yarn dev
 ```
+
+### Let's chat about Crane 🦩
+
+**So, what is Crane?**
+
+Crane is a minimalist container image builder. You can extend an existing container image with custom apt/conda/pip packages without writing any Dockerfile.
+
+**How does Crane work?**
+
+Crane generates Dockerfile that installs packages according to your settings, and builds the container image with your local docker engine. You can also push images to your Docker Hub registry.
+
+**Why we built Crane?**
+
+Container images are used in many different use cases such as ML. There are lots of ready-to-run container images with Jupyter and various libraries, however people still want to customize images, and this is mostly done through authoring Dockerfile with commands installing additional packages.
+
+Dockerfile is the canonical way for building container images. However, people still want a no-frills way to just simply adding packages to existing images. Crane provides an easier way to build container images without any knowledge of Dockerfile, so the process is more approachable.
+
+We've always had this feature in our open source ML platform PrimeHub to allow customizing container images for a shared and consistent environment. And it's now also available as a standalone desktop app - Crane. 
