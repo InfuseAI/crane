@@ -8,49 +8,47 @@
 
 [![](https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=crane)](https://www.producthunt.com/posts/crane)
 
-An easy and beautiful way to manage and build your docker images.
+An easy and beautiful way to manage and build your container images.
+
+Crane helps people building machine-learning notebook container images.
+
+Check [this article](https://medium.com/infuseai/crane-the-minimalist-container-image-builder-68253722be8c) for more initiatives about Crane.
 
 > Like crane? Crane works better with [PrimeHub](http://one.primehub.io/). Crane is the best companion of PrimeHub when it comes to managing docker images. [Try PrimeHub Now](http://one.primehub.io/) and join our [discord community](https://discord.com/invite/ZE8pQ8gRW)!
-
-<img width="1136" alt="CleanShot 2021-10-19 at 02 41 12@2x" src="https://user-images.githubusercontent.com/935988/137788380-f5632f67-a5f4-42fe-b802-da2387cfa41f.png">
-<img width="1136" alt="CleanShot 2021-10-19 at 02 41 36@2x" src="https://user-images.githubusercontent.com/935988/137788310-d48dc8e9-cc47-479f-95da-5c651129b57f.png">
 
 ## Install
 
 Download the latest version from our [releases](https://github.com/infuseAI/crane/releases) page.
 
-## Build and development
+## Features
 
-### Requirement
+### Building a Container Image
 
-- Node JS >= 14
-- Yarn
-- cross-env
+Install packages with apt, conda and pip, which should work in most notebook images. And you can also find a list of our [pre-built container images](https://docs.primehub.io/docs/guide_manual/images-list) in the Base Image dropdown menu.
 
-### Run with dev mode
+<img width="1136" alt="CleanShot 2021-10-19 at 02 41 12@2x" src="https://user-images.githubusercontent.com/935988/137788380-f5632f67-a5f4-42fe-b802-da2387cfa41f.png">
 
-```bash
-yarn install
-yarn dev
-```
+### Manage Credentials
 
-### Run with VSCode debugger
+Manage your remote registry credentials and PrimeHub API token securely. Now only docker hub is supported. More on the way.
 
-1. Open the project with VSCode
+Credentials are stored safely in the Keychain(MacOS), libsecret(Linux) or Credential Vault(Windows).
 
-2. Click `Run and Debug` tab
+<img width="1136" alt="CleanShot 2021-10-19 at 03 14 32@2x" src="https://user-images.githubusercontent.com/88208/140909366-7bd2b1cd-6522-4440-98c7-95aa73225da8.png">
 
-3. Click `JavaScript Debug Terminal`
+### Manage Local And Remote Images
 
-![VSCode Debugger](public/images/vscode-debugger.png)
+Simple yet informative GUI. For now to manipulate local and remote images.
 
-4. Exec the following commands in the JavaScript Debug Terminal
+<img width="1136" alt="CleanShot 2021-10-19 at 02 41 36@2x" src="https://user-images.githubusercontent.com/935988/137788310-d48dc8e9-cc47-479f-95da-5c651129b57f.png">
 
-```bash
-cross-env FORCE_BACKGROUND_PROCESS=1 yarn dev
-```
+### Import Remote Image Into PrimeHub
 
-### Let's chat about Crane 🦩
+From the Remote Repository list, users can import the image into the connected PrimeHub cluster. This feature only works with public container images for now.
+
+<img width="1136" alt="CleanShot 2021-11-02 at 17 50 15@2x" src="https://user-images.githubusercontent.com/88208/140909656-62c1dbf6-57d9-4743-a83e-7e44ff522b88.png">
+
+## Let's chat about Crane 🦩
 
 **So, what is Crane?**
 
