@@ -58,7 +58,7 @@ Crane is a minimalist container image builder. You can extend an existing contai
 
 Crane generates Dockerfile that installs packages according to your settings, and builds the container image with your local docker engine. You can also push images to your Docker Hub registry.
 
-**Why we built Crane?**
+**Why do we build Crane?**
 
 Container images are used in many different use cases such as ML. There are lots of ready-to-run container images with Jupyter and various libraries, however people still want to customize images, and this is mostly done through authoring Dockerfile with commands installing additional packages.
 
