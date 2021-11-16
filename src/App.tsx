@@ -21,7 +21,7 @@ const Crane = () => {
   const [missingDocker, setMissingDocker] = useState(false);
   const siderWidth = {
     collapsed: 80,
-    unCollapsed: 190,
+    unCollapsed: 160,
   };
 
   useEffect(() => {
