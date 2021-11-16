@@ -107,15 +107,11 @@ const handlers = {
     console.log('build-image', base_image_url, apt, conda, pip);
 
     writeDockerfile(generateDockerfile({ base_image_url, apt, conda, pip }));
-    const build_stream = await docker.buildImage(
-      {
-        context: config.workingDir,
-        src: ['Dockerfile'],
-      },
-      { t: image_name }
-    );
+    const pull_stream = await docker.pull(base_image_url, {
+      platform: 'linux/amd64',
+    });
 
-    docker.modem.followProgress(build_stream, buildFinished, (event) => {
+    docker.modem.followProgress(pull_stream, pullFinished, (event) => {
       console.log(event);
       send('build-log', {
         stage: 'progressing',
@@ -125,6 +121,31 @@ const handlers = {
       handlers.build_events.push(event);
       handlers.build_status = 'building';
     });
+
+    async function pullFinished(err, output) {
+      console.log('Pull finished', err, output);
+      const build_stream = await docker.buildImage(
+        {
+          context: config.workingDir,
+          src: ['Dockerfile'],
+        },
+        {
+          t: image_name,
+          platform: 'linux/amd64',
+        }
+      );
+
+      docker.modem.followProgress(build_stream, buildFinished, (event) => {
+        console.log(event);
+        send('build-log', {
+          stage: 'progressing',
+          name: image_name,
+          output: event,
+        });
+        handlers.build_events.push(event);
+        handlers.build_status = 'building';
+      });
+    }
 
     async function buildFinished(err, output) {
       console.log('Build finished', err, output);

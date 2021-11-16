@@ -104,11 +104,30 @@ export default function BuildImage() {
       } else if (payload.stage === Status.PROGRESSING) {
         if (payload.output.stream) {
           setLogText((prevData) => prevData + payload.output.stream);
+        } else if (payload.output.status) {
+          // Handle the pulling image output
+          if (payload.output.id) {
+            const output = `${payload.output.id}: ${payload.output.status} ${
+              payload.output.progress || ''
+            }`;
+            setLogText((prevData) => {
+              if (prevData.search(payload.output.id) === -1) {
+                prevData = prevData + output + '\n';
+              } else {
+                prevData = prevData.replace(
+                  new RegExp(`${payload.output.id}:.*\n`),
+                  output + '\n'
+                );
+              }
+              return prevData;
+            });
+          } else {
+            setLogText((prevData) => prevData + payload.output.status + '\n');
+          }
         } else if (payload.output.progress) {
           // If has progress replace last line make progress bar like animation
           setLogText(
-            (prevData) =>
-              prevData.replace(/\n.*$/, '\n') + payload.output.progress
+            (prevData) => prevData.replace() + payload.output.progress
           );
         }
       }
