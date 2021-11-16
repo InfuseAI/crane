@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/InfuseAI/crane/main/public/images/Logo_hori.png" alt="Crane" style="height: 130px;">
+<img src="./public/images/Logo_hori.png" alt="Crane" style="height: 130px;">
 
 [![GitHub release](https://img.shields.io/github/release/infuseAI/crane/all.svg)](https://github.com/infuseAI/crane/releases)
 ![workflow](https://github.com/InfuseAI/crane/actions/workflows/build.yml/badge.svg?branch=main)
@@ -26,7 +26,7 @@ Download the latest version from our [releases](https://github.com/infuseAI/cran
 
 Install packages with apt, conda and pip, which should work in most notebook images. And you can also find a list of our [pre-built container images](https://docs.primehub.io/docs/guide_manual/images-list) in the Base Image dropdown menu.
 
-<img width="1136" alt="CleanShot 2021-10-19 at 02 41 12@2x" src="https://user-images.githubusercontent.com/935988/137788380-f5632f67-a5f4-42fe-b802-da2387cfa41f.png">
+<img width="1136" alt="Build a Container image" src="./public/screenshots/build-container-image.png">
 
 ### Manage Credentials
 
@@ -34,19 +34,19 @@ Manage your remote registry credentials and PrimeHub API token securely. Now onl
 
 Credentials are stored safely in the Keychain(MacOS), libsecret(Linux) or Credential Vault(Windows).
 
-<img width="1136" alt="CleanShot 2021-10-19 at 03 14 32@2x" src="https://user-images.githubusercontent.com/88208/140909366-7bd2b1cd-6522-4440-98c7-95aa73225da8.png">
+<img width="1136" alt="Manage Credentials" src="./public/screenshots/manage-credentials.png">
 
 ### Manage Local And Remote Images
 
 Simple yet informative GUI. For now to manipulate local and remote images.
 
-<img width="1136" alt="CleanShot 2021-10-19 at 02 41 36@2x" src="https://user-images.githubusercontent.com/935988/137788310-d48dc8e9-cc47-479f-95da-5c651129b57f.png">
+<img width="1136" alt="Manage Local And Remote Images" src="./public/screenshots/manage-remote-images.png">
 
 ### Import Remote Image Into PrimeHub
 
 From the Remote Repository list, users can import the image into the connected PrimeHub cluster. This feature only works with public container images for now.
 
-<img width="1136" alt="CleanShot 2021-11-02 at 17 50 15@2x" src="https://user-images.githubusercontent.com/88208/140909656-62c1dbf6-57d9-4743-a83e-7e44ff522b88.png">
+<img width="1136" alt="Import Remote Image Into PrimeHub" src="./public/screenshots/import-to-primehub.png">
 
 ## Let's chat about Crane 🦩
 
