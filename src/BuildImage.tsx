@@ -127,7 +127,7 @@ export default function BuildImage() {
         } else if (payload.output.progress) {
           // If has progress replace last line make progress bar like animation
           setLogText(
-            (prevData) => prevData.replace() + payload.output.progress
+            (prevData) => prevData.replace(/\n.*$/, '\n') + payload.output.progress
           );
         }
       }
