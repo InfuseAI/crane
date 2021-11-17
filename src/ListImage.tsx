@@ -13,6 +13,7 @@ import { LazyLog, ScrollFollow } from 'react-lazylog';
 import { CloudUploadOutlined } from '@ant-design/icons';
 import { send, listen, unlisten } from './utils/ipcClient';
 import ListRemoteImages from './ListRemoteImage';
+import ListAwsImages from './ListAwsImages';
 import { format } from 'timeago.js';
 import filesize from 'filesize';
 const Status = {
@@ -180,6 +181,9 @@ export default function ListImage() {
           </TabPane>
           <TabPane tab='REMOTE REPOSITORIES' key='2'>
             <ListRemoteImages />
+          </TabPane>
+          <TabPane tab='AWS REPOSITORIES' key='3'>
+            <ListAwsImages />
           </TabPane>
         </Tabs>
       </div>

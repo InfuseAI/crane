@@ -7,12 +7,22 @@ import { send } from './ServerIpc';
 import axios from 'axios';
 import { createMarkdownArrayTableSync } from 'parse-markdown-table';
 import * as ElectronStore from 'electron-store';
+import AwsAdapter from './AwsAdapter';
 
 const docker = new Docker();
 const localStore = new ElectronStore();
 const dockerHubCredentialKeyName = 'Crane-DockerHub';
 const primeHubCredentialKeyName = 'Crane-PrimeHub';
 const awsCredentialKeyName = 'Crane-AWS';
+
+// Init the AWS credential config
+getAwsCredential()
+  .then((credential) => AwsAdapter.setup(credential))
+  .then(() => {
+    const aws = AwsAdapter.getInstance();
+    return aws.verifyAccessPermission();
+  })
+  .then((data) => console.log(data));
 
 export function generateDockerfile(options) {
   let base_image_url = options['base_image_url'];
@@ -75,6 +85,22 @@ export function writeDockerfile(dockerfileContent) {
   );
 }
 
+export async function getAwsCredential() {
+  const awsCredential = {
+    accessKey: '',
+    secretKey: '',
+    region: '',
+  };
+  const credential = await getCredential(awsCredentialKeyName);
+  if (credential) {
+    awsCredential.accessKey = credential.account;
+    awsCredential.secretKey = credential.password;
+  }
+  awsCredential.region = (localStore.get('AWSRegion') as string) || '';
+  console.log('[Get Crane-AWS Region]', awsCredential.region);
+  return awsCredential;
+}
+
 const handlers = {
   build_events: [],
   build_status: '',
@@ -92,21 +118,7 @@ const handlers = {
   'get-primehub-credential': async () => {
     return await getCredential(primeHubCredentialKeyName);
   },
-  'get-aws-credential': async () => {
-    const awsCredential = {
-      accessKey: '',
-      secretKey: '',
-      region: ''
-    };
-    const credential = await getCredential(awsCredentialKeyName);
-    if (credential) {
-      awsCredential.accessKey = credential.account;
-      awsCredential.secretKey = credential.password;
-    }
-    awsCredential.region = localStore.get('AWSRegion') as string || '';
-    console.log('[Get Crane-AWS Region]', awsCredential.region);
-    return awsCredential;
-  },
+  'get-aws-credential': async () => await getAwsCredential(),
   'save-dockerhub-credential': async (args) =>
     await saveCredential(
       dockerHubCredentialKeyName,
@@ -119,6 +131,7 @@ const handlers = {
     const { accessKey, secretKey, region } = args;
     if (accessKey && secretKey) {
       await saveCredential(awsCredentialKeyName, accessKey, secretKey);
+      AwsAdapter.setup({ accessKey, secretKey, region });
     }
     localStore.set('AWSRegion', region);
   },
@@ -248,6 +261,10 @@ const handlers = {
 
     return results;
   },
+  'list-aws-ecr-repositories': async () =>
+    AwsAdapter.getInstance().listEcrRepositories(),
+  'list-aws-ecr-images': async (repositoryName: string) =>
+    AwsAdapter.getInstance().listEcrImages(repositoryName),
 };
 
 export default handlers;
