@@ -127,7 +127,8 @@ export default function BuildImage() {
         } else if (payload.output.progress) {
           // If has progress replace last line make progress bar like animation
           setLogText(
-            (prevData) => prevData.replace(/\n.*$/, '\n') + payload.output.progress
+            (prevData) =>
+              prevData.replace(/\n.*$/, '\n') + payload.output.progress
           );
         }
       }
@@ -192,10 +193,30 @@ export default function BuildImage() {
           initialValues={initialValues}
           onFinish={onFinish}
         >
-          <Form.Item label='Image Name' name='image_name' required>
+          <Form.Item
+            label='Image Name'
+            name='image_name'
+            rules={[
+              {
+                message:
+                  'Image name needs to be unique in that namespace, can be two to 255 characters, and can only contain lowercase letters, numbers, hyphens (-), and underscores (_).',
+                pattern:
+                  /^(?:([a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+)(?::(\d+))?\/)?((?:[a-zA-Z0-9_-]*\/)*?)([a-zA-Z0-9_-]+)(?::([\w.-]+))?$/gm,
+              },
+              { required: true, message: 'Image Name is required' },
+              {
+                max: 255,
+                message: 'Image Name cannot be longer than 255 characters',
+              },
+            ]}
+          >
             <Input disabled={blockBuildButton} />
           </Form.Item>
-          <Form.Item label='Base Image' name='base_image_url' required>
+          <Form.Item
+            label='Base Image'
+            name='base_image_url'
+            rules={[{ required: true, message: 'Base Image is required' }]}
+          >
             <AutoComplete
               dropdownClassName='certain-category-search-dropdown'
               dropdownMatchSelectWidth={500}
