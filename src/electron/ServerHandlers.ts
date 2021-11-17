@@ -6,10 +6,13 @@ import * as keytar from 'keytar';
 import { send } from './ServerIpc';
 import axios from 'axios';
 import { createMarkdownArrayTableSync } from 'parse-markdown-table';
+import * as ElectronStore from 'electron-store';
 
 const docker = new Docker();
+const localStore = new ElectronStore();
 const dockerHubCredentialKeyName = 'Crane-DockerHub';
 const primeHubCredentialKeyName = 'Crane-PrimeHub';
+const awsCredentialKeyName = 'Crane-AWS';
 
 export function generateDockerfile(options) {
   let base_image_url = options['base_image_url'];
@@ -89,6 +92,21 @@ const handlers = {
   'get-primehub-credential': async () => {
     return await getCredential(primeHubCredentialKeyName);
   },
+  'get-aws-credential': async () => {
+    const awsCredential = {
+      accessKey: '',
+      secretKey: '',
+      region: ''
+    };
+    const credential = await getCredential(awsCredentialKeyName);
+    if (credential) {
+      awsCredential.accessKey = credential.account;
+      awsCredential.secretKey = credential.password;
+    }
+    awsCredential.region = localStore.get('AWSRegion') as string || '';
+    console.log('[Get Crane-AWS Region]', awsCredential.region);
+    return awsCredential;
+  },
   'save-dockerhub-credential': async (args) =>
     await saveCredential(
       dockerHubCredentialKeyName,
@@ -97,6 +115,13 @@ const handlers = {
     ),
   'save-primehub-credential': async (args) =>
     await saveCredential(primeHubCredentialKeyName, args.endpoint, args.token),
+  'save-aws-credential': async (args) => {
+    const { accessKey, secretKey, region } = args;
+    if (accessKey && secretKey) {
+      await saveCredential(awsCredentialKeyName, accessKey, secretKey);
+    }
+    localStore.set('AWSRegion', region);
+  },
   'build-status': async () => {
     return handlers.build_status;
   },

@@ -24,6 +24,7 @@
     "dockerode": "^3.3.1",
     "electron-is-dev": "^1.2.0",
     "electron-squirrel-startup": "^1.0.0",
+    "electron-store": "^8.0.1",
     "filesize": "^8.0.3",
     "graphql": "^15.6.1",
     "keytar": "^7.7.0",
