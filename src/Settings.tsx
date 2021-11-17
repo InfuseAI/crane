@@ -19,15 +19,27 @@ import {
   gql,
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
+import { Select } from 'antd';
 
+const { Option } = Select;
 const { Content } = Layout;
 const { TabPane } = Tabs;
 
 export default function Settings() {
   const { tabName } = useParams<{ tabName: string }>();
   const [dockerHubForm] = Form.useForm();
+  const [awsForm] = Form.useForm();
   const [primeHubForm] = Form.useForm();
   const onDockerHubFinish = async (values) => {
+    await send('save-dockerhub-credential', {
+      account: values['docker-account'],
+      password: values['docker-password'],
+    });
+    notification.info({
+      message: 'DockerHub setup saved.',
+    });
+  };
+  const onAwsFinish = async (values) => {
     await send('save-dockerhub-credential', {
       account: values['docker-account'],
       password: values['docker-password'],
@@ -116,7 +128,6 @@ export default function Settings() {
     }
     fetchCredential();
   }, [primeHubForm]);
-  const initialValues = {};
   return (
     <Content style={{ margin: '0 16px' }}>
       <Breadcrumb style={{ margin: '16px 0' }}>
@@ -137,13 +148,70 @@ export default function Settings() {
               layout='vertical'
               form={dockerHubForm}
               name='settings'
-              initialValues={initialValues}
+              initialValues={{}}
               onFinish={onDockerHubFinish}
             >
               <Form.Item label='Account' name='docker-account'>
                 <Input />
               </Form.Item>
               <Form.Item label='Password' name='docker-password'>
+                <Input.Password />
+              </Form.Item>
+              <Form.Item style={{ textAlign: 'right' }}>
+                <Button type='primary' htmlType='submit'>
+                  Save
+                </Button>
+                <Button style={{ margin: '0 8px' }}>Reset</Button>
+              </Form.Item>
+            </Form>
+          </TabPane>
+          <TabPane tab='AWS' key='aws'>
+            <Form
+              layout='vertical'
+              form={awsForm}
+              name='settings'
+              initialValues={{}}
+              onFinish={onAwsFinish}
+            >
+              <Form.Item label='Region' name='aws-region'>
+              <Select
+                showSearch
+                style={{ width: 200 }}
+                placeholder="Select a region"
+                optionFilterProp="children"
+                defaultValue='us-east-1'
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+              >
+                <Option value='us-east-2'>US East (Ohio)</Option>
+                <Option value='us-east-1'>US East (N. Virginia)</Option>
+                <Option value='us-west-1'>US West (N. California)</Option>
+                <Option value='us-west-2'>US West (Oregon)</Option>
+                <Option value='ap-east-1'>Asia Pacific (Hong Kong)</Option>
+                <Option value='ap-south-1'>Asia Pacific (Mumbai)</Option>
+                <Option value='ap-northeast-2'>Asia Pacific (Seoul)</Option>
+                <Option value='ap-southeast-1'>Asia Pacific (Singapore)</Option>
+                <Option value='ap-southeast-2'>Asia Pacific (Sydney)</Option>
+                <Option value='ap-northeast-1'>Asia Pacific (Tokyo)</Option>
+                <Option value='ca-central-1'>Canada (Central)</Option>
+                <Option value='cn-north-1'>China (Beijing)</Option>
+                <Option value='cn-northwest-1'>China (Ningxia)</Option>
+                <Option value='eu-central-1'>Europe (Frankfurt)</Option>
+                <Option value='eu-west-1'>Europe (Ireland)</Option>
+                <Option value='eu-west-2'>Europe (London)</Option>
+                <Option value='eu-west-3'>Europe (Paris)</Option>
+                <Option value='eu-north-1'>Europe (Stockholm)</Option>
+                <Option value='me-south-1'>Middle East (Bahrain)</Option>
+                <Option value='sa-east-1'>South America (São Paulo)</Option>
+                <Option value='us-gov-east-1'>AWS GovCloud (US-East)</Option>
+                <Option value='us-gov-west-1'>AWS GovCloud (US-West)</Option>
+              </Select>
+              </Form.Item>
+              <Form.Item label='Access Key ID' name='aws-id'>
+                <Input />
+              </Form.Item>
+              <Form.Item label='Secret Access Key' name='aws-key'>
                 <Input.Password />
               </Form.Item>
               <Form.Item style={{ textAlign: 'right' }}>
@@ -185,7 +253,7 @@ export default function Settings() {
               layout='vertical'
               form={primeHubForm}
               name='settings'
-              initialValues={initialValues}
+              initialValues={{}}
               onFinish={onPrimeHubFinish}
             >
               <Form.Item
