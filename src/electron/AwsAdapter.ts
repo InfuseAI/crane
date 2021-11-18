@@ -1,4 +1,5 @@
 import * as AWS from 'aws-sdk';
+import { find } from 'lodash';
 
 interface AwsAdapterConfig {
   accessKey: string;
@@ -56,5 +57,18 @@ export default class AwsAdapter {
       .describeImages({ repositoryName: repositoryName })
       .promise();
     return result.imageDetails;
+  }
+  public async createRepository(repoName: string) {
+    const repos = await this.listEcrRepositories();
+    const repo = find(repos, (dict) => {
+      return dict.repositoryName === repoName;
+    });
+    if (!repo) {
+      return await this.ecr.createRepository({repositoryName: repoName}).promise();
+    };
+    return repo;
+  }
+  public async getAuthorizationToken() {
+    return await this.ecr.getAuthorizationToken().promise();
   }
 }

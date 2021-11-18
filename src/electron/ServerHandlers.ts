@@ -201,6 +201,57 @@ const handlers = {
     console.log('[List Image] start');
     return await docker.listImages();
   },
+  'push-image-aws': async ({ image_name }) => {
+    // Extract true name
+    let repoName = image_name.match(/amazonaws\.com\/([a-z0-9-_/]*)/);
+    if (repoName) {
+      repoName = repoName[1];
+    } else {
+      repoName = image_name;
+    }
+    const aws = AwsAdapter.getInstance();
+    await aws.createRepository(repoName);
+    const token = await aws.getAuthorizationToken();
+    console.log(token);
+    const authToken = token.authorizationData[0].authorizationToken;
+    const endpoint = token.authorizationData[0].proxyEndpoint;
+    const buff = Buffer.from(authToken, 'base64');
+    const str = buff.toString('utf-8');
+    const keypair = str.split(':');
+    const auth = {
+      username: keypair[0],
+      password: keypair[1],
+      serveraddress: endpoint,
+    };
+
+    const log_ipc_name = `push-log-${image_name}`;
+
+    const push_stream = await docker
+      .getImage(image_name)
+      .push({ authconfig: auth });
+    docker.modem.followProgress(
+      push_stream,
+      (err, output) => {
+        handlers.build_status = 'finished';
+        console.log('push finished', err, output);
+        send(log_ipc_name, {
+          stage: 'finished',
+          error: err,
+          output: output,
+        });
+      },
+      (event) => {
+        console.log(event);
+        send(log_ipc_name, {
+          stage: 'progressing',
+          output: event,
+        });
+        handlers.build_events.push(event);
+      }
+    );
+
+    return log_ipc_name;
+  },
   'push-image-dockerhub': async ({ image_name }) => {
     const credential = await getCredential(dockerHubCredentialKeyName);
     if (!credential) {

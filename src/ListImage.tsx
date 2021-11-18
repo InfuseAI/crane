@@ -92,6 +92,17 @@ export default function ListImage() {
     }
   };
 
+  const pushImageToAWS = async (image_name) => {
+    console.log('Push Image: ', image_name);
+    const ipc_name = await send('push-image-aws', { image_name });
+    console.log(ipc_name);
+    if (ipc_name) {
+      setLogDrawerVisible(true);
+      setLogText(`Start receive push log stream: ${image_name}`);
+      pushLogReceiver(ipc_name);
+    }
+  };
+
   useEffect(() => {
     async function fetchImageList() {
       const results = await send('list-image');
@@ -146,14 +157,24 @@ export default function ListImage() {
       key: 'action',
       align: 'center',
       render: (text, record) => (
-        <Button
+        <>
+          <Button
+            className='actionBtn'
+            size='small'
+            icon={<CloudUploadOutlined />}
+            onClick={() => pushImage(record.name + ':' + record.tag)}
+          >
+            PUSH
+          </Button>
+          <Button
           className='actionBtn'
           size='small'
           icon={<CloudUploadOutlined />}
-          onClick={() => pushImage(record.name + ':' + record.tag)}
-        >
-          PUSH
-        </Button>
+          onClick={() => pushImageToAWS(record.name + ':' + record.tag)}
+          >
+            PUSH AWS
+          </Button>
+        </>
       ),
     },
   ];
