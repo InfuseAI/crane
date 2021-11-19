@@ -233,26 +233,30 @@ export default function ListImage() {
       key: 'action',
       align: 'center',
       width: '10%',
-      render: (text, record) => (
-        <>
-          <Button
-            className='actionBtn'
-            size='small'
-            icon={<CloudUploadOutlined />}
-            onClick={() => pushImage(record.name + ':' + record.tag)}
-          >
-            PUSH
-          </Button>
-          <Button
-            className='actionBtn'
-            size='small'
-            icon={<CloudUploadOutlined />}
-            onClick={() => pushImageToAWS(record.name + ':' + record.tag)}
-          >
-            PUSH AWS
-          </Button>
-        </>
-      ),
+      render: (text, record) => {
+        if (record.name !== '<none>') {
+          return (
+            <>
+              <Button
+                className='actionBtn'
+                size='small'
+                icon={<CloudUploadOutlined />}
+                onClick={() => pushImage(record.name + ':' + record.tag)}
+              >
+                PUSH
+              </Button>
+              <Button
+                className='actionBtn'
+                size='small'
+                icon={<CloudUploadOutlined />}
+                onClick={() => pushImageToAWS(record.name + ':' + record.tag)}
+              >
+                PUSH AWS
+              </Button>
+            </>
+          );
+        }
+      },
     },
   ];
 
