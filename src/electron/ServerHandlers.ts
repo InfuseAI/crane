@@ -202,33 +202,50 @@ const handlers = {
     return await docker.listImages();
   },
   'push-image-aws': async ({ image_name }) => {
-    // Extract true name
-    let repoName = image_name.match(/amazonaws\.com\/([a-z0-9-_/]*)/);
-    if (repoName) {
-      repoName = repoName[1];
-    } else {
-      repoName = image_name;
+    function extractTrueName(rawName: string): {
+      repoName: string;
+      tag: string;
+    } {
+      const group = rawName.match(/amazonaws\.com\/([a-z0-9-_/]*)/);
+      const trueName = group ? group[1] : rawName;
+      const [repoName, tag] = trueName.split(':');
+      return { repoName, tag: tag || 'latest' };
     }
-    const aws = AwsAdapter.getInstance();
-    await aws.createRepository(repoName);
-    const token = await aws.getAuthorizationToken();
-    console.log(token);
-    const authToken = token.authorizationData[0].authorizationToken;
-    const endpoint = token.authorizationData[0].proxyEndpoint;
-    const buff = Buffer.from(authToken, 'base64');
-    const str = buff.toString('utf-8');
-    const keypair = str.split(':');
+    function extractAuthPassword(token: string): {
+      username: string;
+      password: string;
+    } {
+      const buff = Buffer.from(token, 'base64');
+      const plaintext = buff.toString('utf8');
+      const [username, password] = plaintext.split(':');
+      return { username, password };
+    }
+    const { repoName, tag } = extractTrueName(image_name);
+    const ecrRegistry = await AwsAdapter.getInstance().createEcrRepository(
+      repoName
+    );
+    const ecrToken = await AwsAdapter.getInstance().getAuthorizationToken();
+    const authToken = ecrToken.authorizationData[0].authorizationToken;
+    const endpoint = ecrToken.authorizationData[0].proxyEndpoint;
+    const { username, password } = extractAuthPassword(authToken);
     const auth = {
-      username: keypair[0],
-      password: keypair[1],
+      username: username,
+      password: password,
       serveraddress: endpoint,
     };
 
-    const log_ipc_name = `push-log-${image_name}`;
-
-    const push_stream = await docker
+    // Generate Image Tag for ECR
+    const ecrImageName = `${ecrRegistry.repositoryUri}:${tag}`;
+    await docker
       .getImage(image_name)
-      .push({ authconfig: auth });
+      .tag({ repo: ecrRegistry.repositoryUri, tag: tag });
+
+    console.log(`[Push Image] ${ecrImageName}`, ecrRegistry);
+    const push_stream = await docker.getImage(ecrImageName).push({
+      authconfig: auth,
+    });
+
+    const log_ipc_name = `push-log-${ecrImageName}`;
     docker.modem.followProgress(
       push_stream,
       (err, output) => {

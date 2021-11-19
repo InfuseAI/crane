@@ -6,13 +6,6 @@ import { format } from 'timeago.js';
 import { useHistory } from 'react-router-dom';
 import filesize from 'filesize';
 import { ECR } from 'aws-sdk';
-
-interface AwsCredential {
-  accessKey: string;
-  secretKey: string;
-  region: string;
-}
-
 interface Repository {
   key: any;
   id: string;

@@ -45,8 +45,10 @@ export default class AwsAdapter {
     return await this.sts.getCallerIdentity().promise();
   }
 
-  public async listEcrRepositories(): Promise<AWS.ECR.RepositoryList> {
-    const result = await this.ecr.describeRepositories().promise();
+  public async listEcrRepositories(
+    params?: AWS.ECR.DescribeRepositoriesRequest
+  ): Promise<AWS.ECR.RepositoryList> {
+    const result = await this.ecr.describeRepositories(params).promise();
     return result.repositories;
   }
 
@@ -58,16 +60,25 @@ export default class AwsAdapter {
       .promise();
     return result.imageDetails;
   }
-  public async createRepository(repoName: string) {
-    const repos = await this.listEcrRepositories();
-    const repo = find(repos, (dict) => {
-      return dict.repositoryName === repoName;
-    });
-    if (!repo) {
-      return await this.ecr.createRepository({repositoryName: repoName}).promise();
-    };
-    return repo;
+
+  public async createEcrRepository(
+    repoName: string
+  ): Promise<AWS.ECR.Repository> {
+    try {
+      const [repo] = await this.listEcrRepositories({
+        repositoryNames: [repoName],
+      });
+      console.log(`[Found Repository] ${repoName}`);
+      return repo;
+    } catch (error) {
+      console.log(`[Create Repository] ${repoName}`);
+      const result = await this.ecr
+        .createRepository({ repositoryName: repoName })
+        .promise();
+      return result.repository;
+    }
   }
+
   public async getAuthorizationToken() {
     return await this.ecr.getAuthorizationToken().promise();
   }

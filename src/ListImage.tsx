@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { ImageInfo } from 'dockerode';
 import {
   Layout,
   Breadcrumb,
@@ -26,10 +27,23 @@ const Status = {
 const { Content } = Layout;
 const { TabPane } = Tabs;
 
+interface ImageDataSource {
+  name: string;
+  tag: string;
+  imageId: string;
+  key: string;
+  created: string;
+  size: string;
+  alias: {
+    name: string;
+    tag: string;
+  }[];
+}
+
 export default function ListImage() {
-  const [imageList, updateImageList] = useState([]);
+  const [imageList, updateImageList] = useState([] as ImageDataSource[]);
   const [logDrawerVisible, setLogDrawerVisible] = useState(false);
-  const [logText, setLogText] = useLocalStorage('push_log');
+  const [logText, setLogText] = useLocalStorage('push_log', '');
   const buildNotification = (name, isSuccess, payload) => {
     if (isSuccess) {
       notification['success']({
@@ -66,17 +80,32 @@ export default function ListImage() {
       } else if (payload.stage === Status.PROGRESSING) {
         if (payload.output.stream) {
           setLogText((prevData) => prevData + payload.output.stream);
+        } else if (payload.output.status) {
+          // Handle the pulling image output
+          if (payload.output.id) {
+            const output = `${payload.output.id}: ${payload.output.status} ${
+              payload.output.progress || ''
+            }`;
+            setLogText((prevData) => {
+              if (prevData.search(payload.output.id) === -1) {
+                prevData = prevData + output + '\n';
+              } else {
+                prevData = prevData.replace(
+                  new RegExp(`${payload.output.id}:.*\n`),
+                  output + '\n'
+                );
+              }
+              return prevData;
+            });
+          } else {
+            setLogText((prevData) => prevData + payload.output.status + '\n');
+          }
         } else if (payload.output.progress) {
           // If has progress replace last line make progress bar like animation
           setLogText(
             (prevData) =>
               prevData.replace(/\n.*$/, '\n') + payload.output.progress
           );
-        } else if (payload.output.status) {
-          const output = `\n${
-            payload.output.id ? `${payload.output.id}: ` : ''
-          }${payload.output.status}`;
-          setLogText((prevData) => prevData + output);
         }
       }
     });
@@ -105,19 +134,27 @@ export default function ListImage() {
 
   useEffect(() => {
     async function fetchImageList() {
-      const results = await send('list-image');
-      console.log(results);
+      const results = (await send('list-image')) as ImageInfo[];
       const images = results
         .filter((x) => x.RepoTags)
         .map((x) => {
-          let i = {};
-          i.name = x.RepoTags[0].split(':')[0];
-          i.tag = x.RepoTags[0].split(':')[1];
-          i.imageId = x.Id.split(':')[1].substring(0, 12);
-          i.key = i.imageId;
-          i.created = format(x.Created * 1000);
-          i.size = filesize(x.Size, { round: 1 });
-          return i;
+          const repoTags = x.RepoTags.sort(
+            (a, b) => a.length - b.length || a.localeCompare(b)
+          );
+          const [name, tag] = (repoTags.shift() || 'none').split(':');
+          const alias = repoTags.map((x) => {
+            const [name, tag] = x.split(':');
+            return { name, tag };
+          });
+          return {
+            name: name,
+            tag: tag,
+            imageId: x.Id.split(':')[1].substring(0, 12),
+            key: x.Id.split(':')[1].substring(0, 12),
+            created: format(x.Created * 1000),
+            size: filesize(x.Size, { round: 1 }),
+            alias: alias,
+          } as ImageDataSource;
         });
       console.log(images);
       updateImageList(images);
@@ -125,11 +162,46 @@ export default function ListImage() {
     fetchImageList();
   }, []);
 
+  const expandedRowRender = (record: ImageDataSource) => {
+    const columns: any[] = [
+      {
+        title: 'ALIAS NAME',
+        dataIndex: 'name',
+        key: 'alias_name',
+        width: '80%',
+      },
+      {
+        title: 'TAG',
+        dataIndex: 'tag',
+        key: 'alias_tag',
+        width: '20%',
+      },
+    ];
+    const data = record.alias.map((x) => {
+      return {
+        key: `${x.name}:${x.tag}`,
+        name: x.name,
+        tag: x.tag,
+      };
+    });
+    return (
+      <Table
+        size='small'
+        showHeader={true}
+        columns={columns}
+        dataSource={data}
+        pagination={false}
+        className='alias-table'
+        rowClassName='alias-row'
+      />
+    );
+  };
   const columns = [
     {
       title: 'NAME',
       dataIndex: 'name',
       key: 'name',
+      width: '40%',
       sortDirections: ['ascend', 'descend'],
       sorter: (a, b) => a.name.localeCompare(b.name),
     },
@@ -137,25 +209,30 @@ export default function ListImage() {
       title: 'TAG',
       dataIndex: 'tag',
       key: 'tag',
+      width: '15%',
     },
     {
       title: 'IMAGE ID',
       dataIndex: 'imageId',
       key: 'imageId',
+      width: '10%',
     },
     {
       title: 'CREATED',
       key: 'created',
       dataIndex: 'created',
+      width: '15%',
     },
     {
       title: 'SIZE',
       key: 'size',
       dataIndex: 'size',
+      width: '10%',
     },
     {
       key: 'action',
       align: 'center',
+      width: '10%',
       render: (text, record) => (
         <>
           <Button
@@ -167,10 +244,10 @@ export default function ListImage() {
             PUSH
           </Button>
           <Button
-          className='actionBtn'
-          size='small'
-          icon={<CloudUploadOutlined />}
-          onClick={() => pushImageToAWS(record.name + ':' + record.tag)}
+            className='actionBtn'
+            size='small'
+            icon={<CloudUploadOutlined />}
+            onClick={() => pushImageToAWS(record.name + ':' + record.tag)}
           >
             PUSH AWS
           </Button>
@@ -198,6 +275,10 @@ export default function ListImage() {
               columns={columns}
               dataSource={imageList}
               pagination={false}
+              expandable={{
+                expandedRowRender,
+                rowExpandable: (record) => record.alias.length > 0,
+              }}
             />
           </TabPane>
           <TabPane tab='REMOTE REPOSITORIES' key='2'>
