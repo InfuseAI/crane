@@ -26,9 +26,19 @@ getAwsCredential()
 
 export function generateDockerfile(options) {
   let base_image_url = options['base_image_url'];
+  let description = '';
+  let tags = '';
   let apt = '';
   let conda = '';
   let pip = '';
+
+  if (options['image_description']) {
+    description = `LABEL crane.description=\"${options['image_description']}\"`;
+  }
+
+  if (options['tags']) {
+    tags = `LABEL crane.tags=\"${options['tags'].join()}\"`;
+  }
 
   if (options['apt']) {
     apt = `RUN apt-get update && apt-get install -y --no-install-recommends ${options[
@@ -51,10 +61,13 @@ export function generateDockerfile(options) {
   }
 
   let dockerfileContent = `FROM ${base_image_url}
+${description}
+${tags}
 USER root
 ${apt}
 ${conda}
 ${pip}`;
+  console.log(dockerfileContent)
 
   return dockerfileContent;
 }
@@ -138,13 +151,13 @@ const handlers = {
   'build-status': async () => {
     return handlers.build_status;
   },
-  'build-image': async ({ base_image_url, image_name, apt, conda, pip }) => {
+  'build-image': async ({ base_image_url, image_name, image_description, tags, apt, conda, pip }) => {
     handlers.build_events = [];
     handlers.build_status = 'preparing';
 
-    console.log('build-image', base_image_url, apt, conda, pip);
+    console.log('build-image', base_image_url, image_description, tags, apt, conda, pip);
 
-    writeDockerfile(generateDockerfile({ base_image_url, apt, conda, pip }));
+    writeDockerfile(generateDockerfile({ base_image_url, image_description, tags, apt, conda, pip }));
     const pull_stream = await docker.pull(base_image_url, {
       platform: 'linux/amd64',
     });

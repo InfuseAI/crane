@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef} from 'react';
 import {
   Layout,
   Breadcrumb,
   Form,
+  Tag,
   Input,
   Button,
   Row,
@@ -16,6 +17,7 @@ import { SiPython } from 'react-icons/si';
 import { send, listen, unlisten } from './utils/ipcClient';
 import { LazyLog, ScrollFollow } from 'react-lazylog';
 import { useHistory } from 'react-router-dom';
+import { PlusOutlined } from '@ant-design/icons';
 
 const { Content } = Layout;
 const { TextArea } = Input;
@@ -27,6 +29,67 @@ const Status = {
   FINISHED: 'finished',
   BUILDING: 'building',
   PROGRESSING: 'progressing',
+};
+
+const TagGroup: React.FC<TagGroupProps> = ({ value = {}, onChange }) => {
+  const [tags, setTags] = useState([]);
+
+  const inputRef = useRef(null);
+  const [inputVisible, setInputVisible] = useState(false);
+ 
+  const onTagsChange = (newTags) => {
+    setTags(newTags);
+    onChange?.(newTags);
+  };
+
+  const onTagClose = (closedTag) => {
+    onTagsChange(tags.filter((tag) => tag != closedTag));
+  };
+
+  const onInputEnter = (e) => {
+    setInputVisible(false);
+    onTagsChange([...tags, e.target.value]);
+  };
+
+  const showInput = () => {
+    setInputVisible(true);
+  };
+
+  useEffect(() => {
+    if (inputVisible) {
+      inputRef.current.focus();
+    }
+  }, [inputVisible]);
+
+  return (
+    <>
+      {tags.map((tag) => {
+        return (
+          <Tag
+            key={tag}
+            closable
+            onClose={()=>onTagClose(tag)}
+          >
+            {tag}
+          </Tag>
+        );
+      })}
+      {inputVisible && (
+        <Input
+          ref={inputRef}
+          type="text"
+          size="small"
+          className="tag-input"
+          onPressEnter={onInputEnter}
+        />
+      )}
+      {!inputVisible && (
+        <Tag className="add-tag" onClick={showInput}>
+          <PlusOutlined /> New Tag
+        </Tag>
+      )}
+    </>
+  );
 };
 
 export default function BuildImage() {
@@ -230,6 +293,12 @@ export default function BuildImage() {
                 disabled={blockBuildButton}
               />
             </AutoComplete>
+          </Form.Item>
+          <Form.Item label='Description' name='image_description'>
+            <Input disabled={blockBuildButton} />
+          </Form.Item>
+          <Form.Item label='Tags' name='tags'>
+            <TagGroup />
           </Form.Item>
           <Row gutter={8}>
             <Col span={8}>
