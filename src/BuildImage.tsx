@@ -43,7 +43,7 @@ const TagGroup: React.FC<TagGroupProps> = ({ value = {}, onChange }) => {
   };
 
   const onTagClose = (closedTag) => {
-    onTagsChange(tags.filter((tag) => tag != closedTag));
+    onTagsChange(tags.filter((tag) => tag !== closedTag));
   };
 
   const onInputEnter = (e) => {
