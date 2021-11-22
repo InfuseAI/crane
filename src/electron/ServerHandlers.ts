@@ -27,7 +27,7 @@ getAwsCredential()
 export function generateDockerfile(options) {
   let base_image_url = options['base_image_url'];
   let description = '';
-  let tags = '';
+  let labels = '';
   let apt = '';
   let conda = '';
   let pip = '';
@@ -36,8 +36,8 @@ export function generateDockerfile(options) {
     description = `LABEL crane.description=\"${options['image_description']}\"`;
   }
 
-  if (options['tags']) {
-    tags = `LABEL crane.tags=\"${options['tags'].join()}\"`;
+  if (options['image_labels']) {
+    labels = `LABEL crane.labels=\"${options['image_labels'].join()}\"`;
   }
 
   if (options['apt']) {
@@ -62,7 +62,7 @@ export function generateDockerfile(options) {
 
   let dockerfileContent = `FROM ${base_image_url}
 ${description}
-${tags}
+${labels}
 USER root
 ${apt}
 ${conda}
@@ -151,13 +151,13 @@ const handlers = {
   'build-status': async () => {
     return handlers.build_status;
   },
-  'build-image': async ({ base_image_url, image_name, image_description, tags, apt, conda, pip }) => {
+  'build-image': async ({ base_image_url, image_name, image_description, image_labels, apt, conda, pip }) => {
     handlers.build_events = [];
     handlers.build_status = 'preparing';
 
-    console.log('build-image', base_image_url, image_description, tags, apt, conda, pip);
+    console.log('build-image', base_image_url, image_description, image_labels, apt, conda, pip);
 
-    writeDockerfile(generateDockerfile({ base_image_url, image_description, tags, apt, conda, pip }));
+    writeDockerfile(generateDockerfile({ base_image_url, image_description, image_labels, apt, conda, pip }));
     const pull_stream = await docker.pull(base_image_url, {
       platform: 'linux/amd64',
     });

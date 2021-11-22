@@ -31,24 +31,25 @@ const Status = {
   PROGRESSING: 'progressing',
 };
 
-const TagGroup: React.FC<TagGroupProps> = ({ value = {}, onChange }) => {
-  const [tags, setTags] = useState([]);
+const LabelGroup: React.FC<LabelGroupProps> = ({ value = {}, onChange }) => {
+  const [labels, setLabels] = useState([]);
 
   const inputRef = useRef(null);
   const [inputVisible, setInputVisible] = useState(false);
  
-  const onTagsChange = (newTags) => {
-    setTags(newTags);
-    onChange?.(newTags);
+  const onLabelsChange = (newLabels) => {
+    setLabels(newLabels);
+    onChange?.(newLabels);
+    console.log(labels);
   };
 
-  const onTagClose = (closedTag) => {
-    onTagsChange(tags.filter((tag) => tag !== closedTag));
+  const onLabelClose = (closedLabel) => {
+    onLabelsChange(labels.filter((label) => label !== closedLabel));
   };
 
   const onInputEnter = (e) => {
     setInputVisible(false);
-    onTagsChange([...tags, e.target.value]);
+    onLabelsChange([...labels, e.target.value]);
   };
 
   const showInput = () => {
@@ -63,14 +64,14 @@ const TagGroup: React.FC<TagGroupProps> = ({ value = {}, onChange }) => {
 
   return (
     <>
-      {tags.map((tag) => {
+      {labels.map((label) => {
         return (
           <Tag
-            key={tag}
+            key={label}
             closable
-            onClose={()=>onTagClose(tag)}
+            onClose={()=>onLabelClose(label)}
           >
-            {tag}
+            {label}
           </Tag>
         );
       })}
@@ -79,13 +80,13 @@ const TagGroup: React.FC<TagGroupProps> = ({ value = {}, onChange }) => {
           ref={inputRef}
           type="text"
           size="small"
-          className="tag-input"
+          className="label-input"
           onPressEnter={onInputEnter}
         />
       )}
       {!inputVisible && (
-        <Tag className="add-tag" onClick={showInput}>
-          <PlusOutlined /> New Tag
+        <Tag className="add-label" onClick={showInput}>
+          <PlusOutlined /> New Label
         </Tag>
       )}
     </>
@@ -297,8 +298,8 @@ export default function BuildImage() {
           <Form.Item label='Description' name='image_description'>
             <Input disabled={blockBuildButton} />
           </Form.Item>
-          <Form.Item label='Tags' name='tags'>
-            <TagGroup />
+          <Form.Item label='Label' name='image_labels'>
+            <LabelGroup />
           </Form.Item>
           <Row gutter={8}>
             <Col span={8}>
