@@ -81,21 +81,22 @@ export default function ListAwsImages() {
         key: 'action',
         align: 'center',
         width: '15%',
-        render: (name, tag) => (
-          <Tooltip placement='top' title='Add to PrimeHub'>
-            <Button
-              className='actionBtn'
-              size='small'
-              icon={<ExportOutlined />}
-              onClick={() => {
-                const uri = `${record.uri}/${record.name}:${name}`;
-                history.push(`/createPrimeHubImage?tag=${uri}`);
-              }}
-            >
-              ADD
-            </Button>
-          </Tooltip>
-        ),
+        render: (name, tag) =>
+          // TODO: Support auto add ECR push/pull secret into PrimeHub
+          '',
+          // <Tooltip placement='top' title='Add to PrimeHub'>
+          //   <Button
+          //     className='actionBtn'
+          //     size='small'
+          //     icon={<ExportOutlined />}
+          //     onClick={() => {
+          //       const uri = `${record.uri}/${record.name}:${name}`;
+          //       history.push(`/createPrimeHubImage?tag=${uri}`);
+          //     }}
+          //   >
+          //     ADD
+          //   </Button>
+          // </Tooltip>
       },
     ];
     const data: ImageTag[] = nestedData[record.name];

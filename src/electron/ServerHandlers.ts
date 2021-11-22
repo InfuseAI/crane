@@ -270,6 +270,17 @@ const handlers = {
     return log_ipc_name;
   },
   'push-image-dockerhub': async ({ image_name }) => {
+    function extractTrueName(
+      rawName: string,
+      project: string
+    ): {
+      repoName: string;
+      tag: string;
+    } {
+      const trueName = rawName.split('/').pop();
+      const [repoName, tag] = trueName.split(':');
+      return { repoName, tag: tag || 'latest' };
+    }
     const credential = await getCredential(dockerHubCredentialKeyName);
     if (!credential) {
       return null;
@@ -279,11 +290,18 @@ const handlers = {
       password: credential.password,
       serveraddress: 'https://index.docker.io/v1',
     };
+    const project = credential.account;
+    const { repoName, tag } = extractTrueName(image_name, project);
+    const dockerRepository = `${project}/${repoName}`;
 
+    // Generate Image Tag for DockerHub
+    await docker.getImage(image_name).tag({ repo: dockerRepository, tag: tag });
+    const dockerHubImageName = `${dockerRepository}:${tag}`;
+
+    console.log(`[Push Image] ${dockerHubImageName}`);
     const log_ipc_name = `push-log-${image_name}`;
-
     const push_stream = await docker
-      .getImage(image_name)
+      .getImage(dockerHubImageName)
       .push({ authconfig: auth });
     docker.modem.followProgress(
       push_stream,
