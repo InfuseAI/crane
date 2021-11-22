@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Tooltip, Button, Table, Tag } from 'antd';
-import { ExportOutlined } from '@ant-design/icons';
+import { /*Tooltip, Button,*/ Table, Tag } from 'antd';
+// import { ExportOutlined } from '@ant-design/icons';
 import { send } from './utils/ipcClient';
 import { format } from 'timeago.js';
-import { useHistory } from 'react-router-dom';
+// import { useHistory } from 'react-router-dom';
 import filesize from 'filesize';
 import { ECR } from 'aws-sdk';
 interface Repository {
@@ -33,7 +33,7 @@ interface ImageTag {
 }
 
 export default function ListAwsImages() {
-  const history = useHistory();
+  // const history = useHistory();
   const [nestedData, setNestedData] = useState({});
   const [tagsLoading, setTagsLoading] = useState({});
   const [repos, setRepos] = useState<Repository[]>([]);
@@ -84,19 +84,19 @@ export default function ListAwsImages() {
         render: (name, tag) =>
           // TODO: Support auto add ECR push/pull secret into PrimeHub
           '',
-          // <Tooltip placement='top' title='Add to PrimeHub'>
-          //   <Button
-          //     className='actionBtn'
-          //     size='small'
-          //     icon={<ExportOutlined />}
-          //     onClick={() => {
-          //       const uri = `${record.uri}/${record.name}:${name}`;
-          //       history.push(`/createPrimeHubImage?tag=${uri}`);
-          //     }}
-          //   >
-          //     ADD
-          //   </Button>
-          // </Tooltip>
+        // <Tooltip placement='top' title='Add to PrimeHub'>
+        //   <Button
+        //     className='actionBtn'
+        //     size='small'
+        //     icon={<ExportOutlined />}
+        //     onClick={() => {
+        //       const uri = `${record.uri}/${record.name}:${name}`;
+        //       history.push(`/createPrimeHubImage?tag=${uri}`);
+        //     }}
+        //   >
+        //     ADD
+        //   </Button>
+        // </Tooltip>
       },
     ];
     const data: ImageTag[] = nestedData[record.name];
