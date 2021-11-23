@@ -46,6 +46,7 @@ interface ImageDataSource {
   alias: {
     name: string;
     tag: string;
+    imageId: string;
   }[];
 }
 
@@ -164,10 +165,13 @@ export default function ListImage() {
             (a, b) => a.length - b.length || a.localeCompare(b)
           );
           const [name, tag] = (repoTags.shift() || 'none').split(':');
-          const alias = repoTags.map((x) => {
-            const [name, tag] = x.split(':');
-            return { name, tag };
+          const alias = repoTags.map((r) => {
+            const [name, tag] = r.split(':');
+            const imageId = x.Id.split(':')[1].substring(0, 12);
+            return { name, tag, imageId };
           });
+
+          console.log(alias);
           return {
             name: name,
             tag: tag,
@@ -185,31 +189,92 @@ export default function ListImage() {
   }, []);
 
   const expandedRowRender = (record: ImageDataSource) => {
+    console.log(record, 1111);
     const columns: any[] = [
       {
-        title: 'ALIAS NAME',
         dataIndex: 'name',
         key: 'alias_name',
-        width: '80%',
+        width: '34.6%',
+        render: (val) => <Text disabled>{val}</Text>
       },
       {
         title: 'TAG',
         dataIndex: 'tag',
         key: 'alias_tag',
-        width: '20%',
+        width: '10%',
+        render: (val) => <Text disabled>{val}</Text>
+      },
+      {
+        title: 'IMAGE ID',
+        dataIndex: 'imageId',
+        key: 'alias_imageId',
+        width: '15.4%',
+        render: (val) => <Text disabled>{val}</Text>
+      },
+      {
+        title: 'CREATED',
+        key: 'alias_created',
+        dataIndex: 'created',
+        width: '15%',
+        render: (val) => <Text type='secondary'> - </Text>
+      },
+      {
+        title: 'SIZE',
+        key: 'alias_size',
+        dataIndex: 'size',
+        width: '15%',
+        render: (val) => <Text type='secondary'> - </Text>
+      },
+      {
+        key: 'action',
+        align: 'center',
+        width: '10%',
+        render: (text, record) => {
+          if (record.name !== '<none>') {
+            return (
+              <Tooltip title={`Push Image to ${remote}`}>
+                <Button
+                  className='actionBtn'
+                  size='small'
+                  icon={<CloudUploadOutlined />}
+                  onClick={() => {
+                    const imageName = `${record.name}:${record.tag}`;
+                    switch (remote) {
+                      case DOCKERHUB:
+                      pushImage(imageName);
+                        break;
+                      case AWS:
+                      pushImageToAWS(imageName);
+                        break;
+                      default:
+                      notification.error({
+                        message: 'Push Failed',
+                        description: 'Unknown Remote'
+                      });
+                    }
+                  }}
+                >
+                  PUSH
+                </Button>
+              </Tooltip>
+            );
+          }
+        },
       },
     ];
     const data = record.alias.map((x) => {
+      const {name, tag, imageId} = x;
       return {
-        key: `${x.name}:${x.tag}`,
-        name: x.name,
-        tag: x.tag,
+        key: `${name}:${tag}`,
+        name,
+        tag,
+        imageId,
       };
     });
     return (
       <Table
         size='small'
-        showHeader={true}
+        showHeader={false}
         columns={columns}
         dataSource={data}
         pagination={false}
@@ -223,7 +288,7 @@ export default function ListImage() {
       title: 'NAME',
       dataIndex: 'name',
       key: 'name',
-      width: '40%',
+      width: '35%',
       sortDirections: ['ascend', 'descend'],
       sorter: (a, b) => a.name.localeCompare(b.name),
     },
@@ -231,13 +296,13 @@ export default function ListImage() {
       title: 'TAG',
       dataIndex: 'tag',
       key: 'tag',
-      width: '15%',
+      width: '10%',
     },
     {
       title: 'IMAGE ID',
       dataIndex: 'imageId',
       key: 'imageId',
-      width: '10%',
+      width: '15%',
     },
     {
       title: 'CREATED',
@@ -249,7 +314,7 @@ export default function ListImage() {
       title: 'SIZE',
       key: 'size',
       dataIndex: 'size',
-      width: '10%',
+      width: '15%',
     },
     {
       key: 'action',
@@ -331,6 +396,7 @@ export default function ListImage() {
               pagination={false}
               expandable={{
                 expandedRowRender,
+                expandRowByClick: true,
                 rowExpandable: (record) => record.alias.length > 0,
               }}
             />
