@@ -56,9 +56,12 @@ export default function ListImage() {
   const history = useHistory();
   const [imageList, updateImageList] = useState([] as ImageDataSource[]);
   const [logDrawerVisible, setLogDrawerVisible] = useState(false);
-  const [remote, setRemote] = useState(DOCKERHUB);
+  const [remote, setRemote] = useLocalStorage('remote', DOCKERHUB);
   const [logText, setLogText] = useLocalStorage('push_log', '');
-  const [hasCredentials, setHasCredentials] = useState({dockerhub: false, aws: false});
+  const [hasCredentials, setHasCredentials] = useState({
+    dockerhub: false,
+    aws: false,
+  });
   const buildNotification = (name, isSuccess, payload) => {
     if (isSuccess) {
       notification.success({
@@ -128,7 +131,6 @@ export default function ListImage() {
   const pushImage = async (image_name) => {
     console.log('Push Image: ', image_name);
     const ipc_name = await send('push-image-dockerhub', { image_name });
-    console.log(ipc_name);
     if (ipc_name) {
       setLogDrawerVisible(true);
       setLogText(`Start receive push log stream: ${image_name}`);
@@ -139,7 +141,6 @@ export default function ListImage() {
   const pushImageToAWS = async (image_name) => {
     console.log('Push Image to AWS: ', image_name);
     const ipc_name = await send('push-image-aws', { image_name });
-    console.log(ipc_name);
     if (ipc_name) {
       setLogDrawerVisible(true);
       setLogText(`Start receive push log stream: ${image_name}`);
@@ -151,11 +152,12 @@ export default function ListImage() {
     async function fetchCredentials() {
       const dockerHubCredential: any = await send('get-dockerhub-credential');
       const awsCredential: any = await send('get-aws-credential');
-      console.log('Credentials', dockerHubCredential, awsCredential);
       const credentialsExist = {
-        dockerhub: !!(dockerHubCredential.account && dockerHubCredential.password),
-        aws: !!(awsCredential.accessKey && awsCredential.secretKey)
-      }
+        dockerhub: !!(
+          dockerHubCredential.account && dockerHubCredential.password
+        ),
+        aws: !!(awsCredential.accessKey && awsCredential.secretKey),
+      };
       setHasCredentials(credentialsExist);
     }
 
@@ -174,7 +176,6 @@ export default function ListImage() {
             return { name, tag, imageId };
           });
 
-          console.log(alias);
           return {
             name: name,
             tag: tag,
@@ -198,35 +199,35 @@ export default function ListImage() {
         dataIndex: 'name',
         key: 'alias_name',
         width: '35%',
-        render: (val) => <Text disabled>{val}</Text>
+        render: (val) => <Text disabled>{val}</Text>,
       },
       {
         title: 'TAG',
         dataIndex: 'tag',
         key: 'alias_tag',
         width: '10%',
-        render: (val) => <Text disabled>{val}</Text>
+        render: (val) => <Text disabled>{val}</Text>,
       },
       {
         title: 'IMAGE ID',
         dataIndex: 'imageId',
         key: 'alias_imageId',
         width: '15%',
-        render: (val) => <Text disabled>{val}</Text>
+        render: (val) => <Text disabled>{val}</Text>,
       },
       {
         title: 'CREATED',
         key: 'alias_created',
         dataIndex: 'created',
         width: '15%',
-        render: (val) => <Text type='secondary'> - </Text>
+        render: (val) => <Text type='secondary'> - </Text>,
       },
       {
         title: 'SIZE',
         key: 'alias_size',
         dataIndex: 'size',
         width: '15%',
-        render: (val) => <Text type='secondary'> - </Text>
+        render: (val) => <Text type='secondary'> - </Text>,
       },
       {
         key: 'action',
@@ -250,10 +251,10 @@ export default function ListImage() {
                         pushImageToAWS(imageName);
                         break;
                       default:
-                      notification.error({
-                        message: 'Push Failed',
-                        description: 'Unknown Remote'
-                      });
+                        notification.error({
+                          message: 'Push Failed',
+                          description: 'Unknown Remote',
+                        });
                     }
                   }}
                 >
@@ -266,7 +267,7 @@ export default function ListImage() {
       },
     ];
     const data = record.alias.map((x) => {
-      const {name, tag, imageId} = x;
+      const { name, tag, imageId } = x;
       return {
         key: `${name}:${tag}`,
         name,
@@ -315,7 +316,7 @@ export default function ListImage() {
       defaultSortOrder: 'descend',
       sorter: (a, b) => {
         return a.createdTime - b.createdTime;
-      }
+      },
     },
     {
       title: 'SIZE',
@@ -347,7 +348,7 @@ export default function ListImage() {
                     default:
                       notification.error({
                         message: 'Push Failed',
-                        description: 'Unknown Remote'
+                        description: 'Unknown Remote',
                       });
                   }
                 }}
@@ -364,7 +365,7 @@ export default function ListImage() {
   const onWarehouseChange = (value) => {
     console.log(`Switch warehouse to ${value}`);
     setRemote(value);
-  }
+  };
 
   const tabBarExtraContent = {
     right: (
@@ -373,23 +374,35 @@ export default function ListImage() {
         <Select
           defaultValue={remote}
           onChange={onWarehouseChange}
-          style={{width: 130}}
+          style={{ width: 130 }}
         >
-          <Option disabled={!hasCredentials.dockerhub} value={DOCKERHUB}>DockerHub</Option>
-          <Option disabled={!hasCredentials.aws} value={AWS}>{(!hasCredentials.aws) ? (
-            <Tooltip
-              placement='left'
-              title={
-                <div>
-                  {/* eslint-disable-next-line */}
-                  Please <a onClick={() => history.push('/settings/aws')}>Setup AWS Credential</a> first.
-                </div>
-              }>
+          <Option disabled={!hasCredentials.dockerhub} value={DOCKERHUB}>
+            DockerHub
+          </Option>
+          <Option disabled={!hasCredentials.aws} value={AWS}>
+            {!hasCredentials.aws ? (
+              <Tooltip
+                placement='left'
+                title={
+                  <div>
+                    Please{' '}
+                    {/* eslint-disable-next-line */}
+                    <a onClick={() => history.push('/settings/aws')}>
+                      Setup AWS Credential
+                    </a>{' '}
+                    first.
+                  </div>
+                }
+              >
                 <div>AWS</div>
-            </Tooltip>) : 'AWS'}</Option>
+              </Tooltip>
+            ) : (
+              'AWS'
+            )}
+          </Option>
         </Select>
       </React.Fragment>
-    )
+    ),
   };
 
   return (
@@ -402,7 +415,12 @@ export default function ListImage() {
         className='site-layout-background'
         style={{ padding: 24, minHeight: 360 }}
       >
-        <Tabs defaultActiveKey='1' size='large' style={{ marginBottom: 32 }} tabBarExtraContent={tabBarExtraContent}>
+        <Tabs
+          defaultActiveKey='1'
+          size='large'
+          style={{ marginBottom: 32 }}
+          tabBarExtraContent={tabBarExtraContent}
+        >
           <TabPane tab='LOCAL' key='1'>
             <Table
               className='images-table'
@@ -420,16 +438,8 @@ export default function ListImage() {
             />
           </TabPane>
           <TabPane tab='REMOTE' key='2'>
-            {
-              (remote === DOCKERHUB) ? (
-                <ListRemoteImages />
-              ):<></>
-            }
-            {
-              (remote === AWS) ? (
-                <ListAwsImages />
-              ):<></>
-            }
+            {remote === DOCKERHUB ? <ListRemoteImages /> : <></>}
+            {remote === AWS ? <ListAwsImages /> : <></>}
           </TabPane>
         </Tabs>
       </div>

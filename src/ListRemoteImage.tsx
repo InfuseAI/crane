@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Tooltip, Button, Table, Tag, notification } from 'antd';
-import { ExportOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
+import {
+  ExportOutlined,
+  LoadingOutlined,
+  ReloadOutlined,
+} from '@ant-design/icons';
 import { get } from 'lodash';
 import { send } from './utils/ipcClient';
 import { format } from 'timeago.js';
@@ -206,8 +210,8 @@ export default function ListRemoteImages() {
           console.log(error);
         }
       }
-    }
-  }
+    };
+  };
 
   useEffect(() => {
     genFetchRepo(client)();
@@ -252,8 +256,11 @@ export default function ListRemoteImages() {
       render: (value) => format(value),
       defaultSortOrder: 'descend',
       sorter: (a, b) => {
-        return (new Date(a.last_updated)).getTime() - (new Date(b.last_updated)).getTime();
-      }
+        return (
+          new Date(a.last_updated).getTime() -
+          new Date(b.last_updated).getTime()
+        );
+      },
     },
     {
       key: 'action',
@@ -264,8 +271,12 @@ export default function ListRemoteImages() {
   return (
     <React.Fragment>
       <div style={{ marginBottom: 16, textAlign: 'right' }}>
-        <Button type='primary' onClick={genFetchRepo(client)} disabled={loading}>
-          {(loading) ? <LoadingOutlined/> : <ReloadOutlined/>}
+        <Button
+          type='primary'
+          onClick={genFetchRepo(client)}
+          disabled={loading}
+        >
+          {loading ? <LoadingOutlined /> : <ReloadOutlined />}
           REFRESH
         </Button>
       </div>
