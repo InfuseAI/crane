@@ -4,6 +4,7 @@ import {
   Layout,
   Breadcrumb,
   Button,
+  Select,
   Tabs,
   Table,
   Drawer,
@@ -17,6 +18,8 @@ import ListRemoteImages from './ListRemoteImage';
 import ListAwsImages from './ListAwsImages';
 import { format } from 'timeago.js';
 import filesize from 'filesize';
+
+const { Option } = Select;
 const Status = {
   PREPARING: 'preparing',
   FINISHED: 'finished',
