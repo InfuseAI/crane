@@ -189,7 +189,7 @@ export default function ListRemoteImages() {
         try {
           setLoading(true);
           const result = get(
-            await api.get(`/repositories/${dockerhub.account}`),
+            await api.get(`/repositories/${dockerhub.account}?page_size=100`),
             'data.results',
             []
           ).map((repository: Repository, index: number) => {
