@@ -163,7 +163,7 @@ export default function Settings() {
           size='large'
           style={{ marginBottom: 32 }}
         >
-          <TabPane tab='DOCKER HUB' key='dockerhub'>
+          <TabPane tab='DOCKERHUB' key='dockerhub'>
             <Form
               layout='vertical'
               form={dockerHubForm}

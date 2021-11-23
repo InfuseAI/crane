@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import { ImageInfo } from 'dockerode';
 import {
   Layout,
   Breadcrumb,
   Button,
+  Select,
   Tabs,
+  Typography,
   Table,
+  Tooltip,
   Drawer,
   notification,
 } from 'antd';
@@ -17,6 +21,12 @@ import ListRemoteImages from './ListRemoteImage';
 import ListAwsImages from './ListAwsImages';
 import { format } from 'timeago.js';
 import filesize from 'filesize';
+
+const DOCKERHUB = 'DockerHub';
+const AWS = 'AWS';
+
+const { Option } = Select;
+const { Text } = Typography;
 const Status = {
   PREPARING: 'preparing',
   FINISHED: 'finished',
@@ -33,26 +43,31 @@ interface ImageDataSource {
   imageId: string;
   key: string;
   created: string;
+  createdTime: any;
   size: string;
   alias: {
     name: string;
     tag: string;
+    imageId: string;
   }[];
 }
 
 export default function ListImage() {
+  const history = useHistory();
   const [imageList, updateImageList] = useState([] as ImageDataSource[]);
   const [logDrawerVisible, setLogDrawerVisible] = useState(false);
+  const [remote, setRemote] = useState(DOCKERHUB);
   const [logText, setLogText] = useLocalStorage('push_log', '');
+  const [hasCredentials, setHasCredentials] = useState({dockerhub: false, aws: false});
   const buildNotification = (name, isSuccess, payload) => {
     if (isSuccess) {
-      notification['success']({
+      notification.success({
         message: 'Push Success',
         description: `Image ${name || ''} pushed`,
       });
     } else {
       const err = payload.output.find((x) => x.error);
-      notification['error']({
+      notification.error({
         message: 'Push Failed',
         description: (
           <div>
@@ -122,7 +137,7 @@ export default function ListImage() {
   };
 
   const pushImageToAWS = async (image_name) => {
-    console.log('Push Image: ', image_name);
+    console.log('Push Image to AWS: ', image_name);
     const ipc_name = await send('push-image-aws', { image_name });
     console.log(ipc_name);
     if (ipc_name) {
@@ -133,6 +148,17 @@ export default function ListImage() {
   };
 
   useEffect(() => {
+    async function fetchCredentials() {
+      const dockerHubCredential: any = await send('get-dockerhub-credential');
+      const awsCredential: any = await send('get-aws-credential');
+      console.log('Credentials', dockerHubCredential, awsCredential);
+      const credentialsExist = {
+        dockerhub: !!(dockerHubCredential.account && dockerHubCredential.password),
+        aws: !!(awsCredential.accessKey && awsCredential.secretKey)
+      }
+      setHasCredentials(credentialsExist);
+    }
+
     async function fetchImageList() {
       const results = (await send('list-image')) as ImageInfo[];
       const images = results
@@ -142,52 +168,116 @@ export default function ListImage() {
             (a, b) => a.length - b.length || a.localeCompare(b)
           );
           const [name, tag] = (repoTags.shift() || 'none').split(':');
-          const alias = repoTags.map((x) => {
-            const [name, tag] = x.split(':');
-            return { name, tag };
+          const alias = repoTags.map((r) => {
+            const [name, tag] = r.split(':');
+            const imageId = x.Id.split(':')[1].substring(0, 12);
+            return { name, tag, imageId };
           });
+
+          console.log(alias);
           return {
             name: name,
             tag: tag,
             imageId: x.Id.split(':')[1].substring(0, 12),
             key: x.Id.split(':')[1].substring(0, 12),
             created: format(x.Created * 1000),
+            createdTime: x.Created,
             size: filesize(x.Size, { round: 1 }),
             alias: alias,
           } as ImageDataSource;
         });
-      console.log(images);
       updateImageList(images);
     }
+    fetchCredentials();
     fetchImageList();
   }, []);
 
   const expandedRowRender = (record: ImageDataSource) => {
     const columns: any[] = [
       {
-        title: 'ALIAS NAME',
         dataIndex: 'name',
         key: 'alias_name',
-        width: '80%',
+        width: '35%',
+        render: (val) => <Text disabled>{val}</Text>
       },
       {
         title: 'TAG',
         dataIndex: 'tag',
         key: 'alias_tag',
-        width: '20%',
+        width: '10%',
+        render: (val) => <Text disabled>{val}</Text>
+      },
+      {
+        title: 'IMAGE ID',
+        dataIndex: 'imageId',
+        key: 'alias_imageId',
+        width: '15%',
+        render: (val) => <Text disabled>{val}</Text>
+      },
+      {
+        title: 'CREATED',
+        key: 'alias_created',
+        dataIndex: 'created',
+        width: '15%',
+        render: (val) => <Text type='secondary'> - </Text>
+      },
+      {
+        title: 'SIZE',
+        key: 'alias_size',
+        dataIndex: 'size',
+        width: '15%',
+        render: (val) => <Text type='secondary'> - </Text>
+      },
+      {
+        key: 'action',
+        align: 'center',
+        width: '10%',
+        render: (text, record) => {
+          if (record.name !== '<none>') {
+            return (
+              <Tooltip title={`Push Image to ${remote}`}>
+                <Button
+                  className='actionBtn'
+                  size='small'
+                  icon={<CloudUploadOutlined />}
+                  onClick={() => {
+                    const imageName = `${record.name}:${record.tag}`;
+                    switch (remote) {
+                      case DOCKERHUB:
+                        pushImage(imageName);
+                        break;
+                      case AWS:
+                        pushImageToAWS(imageName);
+                        break;
+                      default:
+                      notification.error({
+                        message: 'Push Failed',
+                        description: 'Unknown Remote'
+                      });
+                    }
+                  }}
+                >
+                  PUSH
+                </Button>
+              </Tooltip>
+            );
+          }
+        },
       },
     ];
     const data = record.alias.map((x) => {
+      const {name, tag, imageId} = x;
       return {
-        key: `${x.name}:${x.tag}`,
-        name: x.name,
-        tag: x.tag,
+        key: `${name}:${tag}`,
+        name,
+        tag,
+        imageId,
       };
     });
     return (
       <Table
         size='small'
-        showHeader={true}
+        showHeader={false}
         columns={columns}
         dataSource={data}
         pagination={false}
@@ -201,7 +291,7 @@ export default function ListImage() {
       title: 'NAME',
       dataIndex: 'name',
       key: 'name',
-      width: '40%',
+      width: '35%',
       sortDirections: ['ascend', 'descend'],
       sorter: (a, b) => a.name.localeCompare(b.name),
     },
@@ -209,25 +299,29 @@ export default function ListImage() {
       title: 'TAG',
       dataIndex: 'tag',
       key: 'tag',
-      width: '15%',
+      width: '10%',
     },
     {
       title: 'IMAGE ID',
       dataIndex: 'imageId',
       key: 'imageId',
-      width: '10%',
+      width: '15%',
     },
     {
       title: 'CREATED',
       key: 'created',
       dataIndex: 'created',
       width: '15%',
+      defaultSortOrder: 'descend',
+      sorter: (a, b) => {
+        return a.createdTime - b.createdTime;
+      }
     },
     {
       title: 'SIZE',
       key: 'size',
       dataIndex: 'size',
-      width: '10%',
+      width: '15%',
     },
     {
       key: 'action',
@@ -236,29 +330,67 @@ export default function ListImage() {
       render: (text, record) => {
         if (record.name !== '<none>') {
           return (
-            <>
+            <Tooltip title={`Push Image to ${remote}`}>
               <Button
                 className='actionBtn'
                 size='small'
                 icon={<CloudUploadOutlined />}
-                onClick={() => pushImage(record.name + ':' + record.tag)}
+                onClick={() => {
+                  const imageName = `${record.name}:${record.tag}`;
+                  switch (remote) {
+                    case DOCKERHUB:
+                      pushImage(imageName);
+                      break;
+                    case AWS:
+                      pushImageToAWS(imageName);
+                      break;
+                    default:
+                      notification.error({
+                        message: 'Push Failed',
+                        description: 'Unknown Remote'
+                      });
+                  }
+                }}
               >
                 PUSH
               </Button>
-              <Button
-                className='actionBtn'
-                size='small'
-                icon={<CloudUploadOutlined />}
-                onClick={() => pushImageToAWS(record.name + ':' + record.tag)}
-              >
-                PUSH AWS
-              </Button>
-            </>
+            </Tooltip>
           );
         }
       },
     },
   ];
+
+  const onWarehouseChange = (value) => {
+    console.log(`Switch warehouse to ${value}`);
+    setRemote(value);
+  }
+
+  const tabBarExtraContent = {
+    right: (
+      <React.Fragment>
+        <Text type='secondary'>Choose a remote warehouse: </Text>
+        <Select
+          defaultValue={remote}
+          onChange={onWarehouseChange}
+          style={{width: 130}}
+        >
+          <Option disabled={!hasCredentials.dockerhub} value={DOCKERHUB}>DockerHub</Option>
+          <Option disabled={!hasCredentials.aws} value={AWS}>{(!hasCredentials.aws) ? (
+            <Tooltip
+              placement='left'
+              title={
+                <div>
+                  {/* eslint-disable-next-line */}
+                  Please <a onClick={() => history.push('/settings/aws')}>Setup AWS Credential</a> first.
+                </div>
+              }>
+                <div>AWS</div>
+            </Tooltip>) : 'AWS'}</Option>
+        </Select>
+      </React.Fragment>
+    )
+  };
 
   return (
     <Content style={{ margin: '0 16px' }}>
@@ -270,26 +402,34 @@ export default function ListImage() {
         className='site-layout-background'
         style={{ padding: 24, minHeight: 360 }}
       >
-        <Tabs defaultActiveKey='1' size='large' style={{ marginBottom: 32 }}>
+        <Tabs defaultActiveKey='1' size='large' style={{ marginBottom: 32 }} tabBarExtraContent={tabBarExtraContent}>
           <TabPane tab='LOCAL' key='1'>
             <Table
               className='images-table'
               rowClassName='images-row'
               size='small'
+              sticky={true}
               columns={columns}
               dataSource={imageList}
               pagination={false}
               expandable={{
                 expandedRowRender,
+                expandRowByClick: true,
                 rowExpandable: (record) => record.alias.length > 0,
               }}
             />
           </TabPane>
-          <TabPane tab='REMOTE REPOSITORIES' key='2'>
-            <ListRemoteImages />
-          </TabPane>
-          <TabPane tab='AWS REPOSITORIES' key='3'>
-            <ListAwsImages />
+          <TabPane tab='REMOTE' key='2'>
+            {
+              (remote === DOCKERHUB) ? (
+                <ListRemoteImages />
+              ):<></>
+            }
+            {
+              (remote === AWS) ? (
+                <ListAwsImages />
+              ):<></>
+            }
           </TabPane>
         </Tabs>
       </div>
