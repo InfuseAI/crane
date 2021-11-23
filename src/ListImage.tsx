@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import { ImageInfo } from 'dockerode';
 import {
   Layout,
@@ -51,6 +52,7 @@ interface ImageDataSource {
 }
 
 export default function ListImage() {
+  const history = useHistory();
   const [imageList, updateImageList] = useState([] as ImageDataSource[]);
   const [logDrawerVisible, setLogDrawerVisible] = useState(false);
   const [remote, setRemote] = useState(DOCKERHUB);
@@ -194,7 +196,7 @@ export default function ListImage() {
       {
         dataIndex: 'name',
         key: 'alias_name',
-        width: '34.6%',
+        width: '35%',
         render: (val) => <Text disabled>{val}</Text>
       },
       {
@@ -208,7 +210,7 @@ export default function ListImage() {
         title: 'IMAGE ID',
         dataIndex: 'imageId',
         key: 'alias_imageId',
-        width: '15.4%',
+        width: '15%',
         render: (val) => <Text disabled>{val}</Text>
       },
       {
@@ -241,10 +243,10 @@ export default function ListImage() {
                     const imageName = `${record.name}:${record.tag}`;
                     switch (remote) {
                       case DOCKERHUB:
-                      pushImage(imageName);
+                        pushImage(imageName);
                         break;
                       case AWS:
-                      pushImageToAWS(imageName);
+                        pushImageToAWS(imageName);
                         break;
                       default:
                       notification.error({
@@ -369,7 +371,17 @@ export default function ListImage() {
           style={{width: 130}}
         >
           <Option disabled={!hasCredentials.dockerhub} value={DOCKERHUB}>DockerHub</Option>
-          <Option disabled={!hasCredentials.aws} value={AWS}>AWS</Option>
+          <Option disabled={!hasCredentials.aws} value={AWS}>{(!hasCredentials.aws) ? (
+            <Tooltip
+              placement='left'
+              title={
+                <div>
+                  {/* eslint-disable-next-line */}
+                  Please <a onClick={() => history.push('/settings/aws')}>Setup AWS Credential</a> first.
+                </div>
+              }>
+                <div>AWS</div>
+            </Tooltip>) : 'AWS'}</Option>
         </Select>
       </React.Fragment>
     )
@@ -391,6 +403,7 @@ export default function ListImage() {
               className='images-table'
               rowClassName='images-row'
               size='small'
+              sticky={true}
               columns={columns}
               dataSource={imageList}
               pagination={false}
