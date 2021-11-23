@@ -30,7 +30,7 @@ Install packages with apt, conda and pip, which should work in most notebook ima
 
 ### Manage Credentials
 
-Manage your remote registry credentials and PrimeHub API token securely. Now only docker hub is supported. More on the way.
+Manage your remote registry credentials and PrimeHub API token securely. Now **DockerHub** and **AWS ECR** are supported. More on the way.
 
 Credentials are stored safely in the Keychain(MacOS), libsecret(Linux) or Credential Vault(Windows).
 
