@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { /*Tooltip, Button,*/ Table, Tag } from 'antd';
-// import { ExportOutlined } from '@ant-design/icons';
+import { /*Tooltip,*/ Button, Table, Tag } from 'antd';
+import { ReloadOutlined, LoadingOutlined} from '@ant-design/icons';
 import { send } from './utils/ipcClient';
 import { format } from 'timeago.js';
 // import { useHistory } from 'react-router-dom';
@@ -33,7 +33,6 @@ interface ImageTag {
 }
 
 export default function ListAwsImages() {
-  // const history = useHistory();
   const [nestedData, setNestedData] = useState({});
   const [tagsLoading, setTagsLoading] = useState({});
   const [repos, setRepos] = useState<Repository[]>([]);
@@ -123,7 +122,6 @@ export default function ListAwsImages() {
         'list-aws-ecr-images',
         record.name
       )) as ECR.ImageDetailList;
-      console.log(imageDetailList);
 
       const images = imageDetailList.map((image, idx) => {
         const tag = image.imageTags ? image.imageTags[0] : '';
@@ -147,28 +145,29 @@ export default function ListAwsImages() {
     })();
   };
 
+  async function fetchRepositories() {
+    setLoading(true);
+    const repositories = (await send(
+      'list-aws-ecr-repositories'
+    )) as ECR.RepositoryList;
+    setRepos(
+      repositories.map((repo, idx) => {
+        return {
+          key: idx,
+          id: repo.registryId,
+          name: repo.repositoryName,
+          arn: repo.repositoryArn,
+          uri: repo.repositoryUri,
+          is_private: true,
+          created_at: repo.createdAt,
+        } as Repository;
+      })
+    );
+    setLoading(false);
+  }
+
   useEffect(() => {
     console.log('Fetching AWS ECR repositories...');
-    async function fetchRepositories() {
-      const repositories = (await send(
-        'list-aws-ecr-repositories'
-      )) as ECR.RepositoryList;
-      setRepos(
-        repositories.map((repo, idx) => {
-          return {
-            key: idx,
-            id: repo.registryId,
-            name: repo.repositoryName,
-            arn: repo.repositoryArn,
-            uri: repo.repositoryUri,
-            is_private: true,
-            created_at: repo.createdAt,
-          } as Repository;
-        })
-      );
-      setLoading(false);
-      console.log(repositories);
-    }
     fetchRepositories();
   }, []);
 
@@ -179,6 +178,7 @@ export default function ListAwsImages() {
       key: 'name',
       width: '40%',
       render: (value, record) => `${value}`,
+      sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: 'STATUS',
@@ -208,6 +208,10 @@ export default function ListAwsImages() {
       align: 'right',
       width: '20%',
       render: (value) => format(value),
+      defaultSortOrder: 'descend',
+      sorter: (a, b) => {
+        return (new Date(a.created_at)).getTime() - (new Date(b.created_at)).getTime();
+      }
     },
     {
       key: 'action',
@@ -218,6 +222,12 @@ export default function ListAwsImages() {
 
   return (
     <React.Fragment>
+      <div style={{ marginBottom: 16, textAlign: 'right' }}>
+        <Button type='primary' onClick={fetchRepositories} disabled={loading}>
+          {(loading) ? <LoadingOutlined/> : <ReloadOutlined/>}
+          REFRESH
+        </Button>
+      </div>
       <Table
         size='small'
         className='repo-table'

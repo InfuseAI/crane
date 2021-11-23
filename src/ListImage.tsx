@@ -43,6 +43,7 @@ interface ImageDataSource {
   imageId: string;
   key: string;
   created: string;
+  createdTime: any;
   size: string;
   alias: {
     name: string;
@@ -180,6 +181,7 @@ export default function ListImage() {
             imageId: x.Id.split(':')[1].substring(0, 12),
             key: x.Id.split(':')[1].substring(0, 12),
             created: format(x.Created * 1000),
+            createdTime: x.Created,
             size: filesize(x.Size, { round: 1 }),
             alias: alias,
           } as ImageDataSource;
@@ -191,7 +193,6 @@ export default function ListImage() {
   }, []);
 
   const expandedRowRender = (record: ImageDataSource) => {
-    console.log(record, 1111);
     const columns: any[] = [
       {
         dataIndex: 'name',
@@ -311,6 +312,10 @@ export default function ListImage() {
       key: 'created',
       dataIndex: 'created',
       width: '15%',
+      defaultSortOrder: 'descend',
+      sorter: (a, b) => {
+        return a.createdTime - b.createdTime;
+      }
     },
     {
       title: 'SIZE',
