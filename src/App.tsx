@@ -21,7 +21,7 @@ const Crane = () => {
   const [missingDocker, setMissingDocker] = useState(false);
   const siderWidth = {
     collapsed: 80,
-    unCollapsed: 190,
+    unCollapsed: 160,
   };
 
   useEffect(() => {
@@ -47,7 +47,7 @@ const Crane = () => {
           {missingDocker ? (
             <Alert
               message='Error: Missing Docker runtime.'
-              description='Can not detect system docker, please check your docker enviroment.'
+              description='Cannot detect system docker, please check your docker environment.'
               type='error'
               showIcon
               action={

@@ -38,7 +38,8 @@ export default function Sidebar(prop) {
         defaultSelectedKeys={[location.pathname.replaceAll('/', '')]}
         selectedKeys={[location.pathname.replaceAll('/', '')]}
         mode='inline'
-        style={{ position: 'relative' }}
+        style={{ position: 'relative', fontSize: '16px' }}
+        inlineIndent={34}
       >
         <Menu.Item key='' icon={<PlusOutlined />}>
           <Link to='/' style={{ color: 'white' }}>
