@@ -8,6 +8,7 @@ import {
   Select,
   Tabs,
   Typography,
+  Tag,
   Table,
   Tooltip,
   Drawer,
@@ -40,6 +41,7 @@ const { TabPane } = Tabs;
 interface ImageDataSource {
   name: string;
   tag: string;
+  label: string[];
   imageId: string;
   key: string;
   created: string;
@@ -170,6 +172,7 @@ export default function ListImage() {
             (a, b) => a.length - b.length || a.localeCompare(b)
           );
           const [name, tag] = (repoTags.shift() || 'none').split(':');
+          const label = x.Labels? (x.Labels['crane.labels']? x.Labels['crane.labels'].split(',') :[]): [];
           const alias = repoTags.map((r) => {
             const [name, tag] = r.split(':');
             const imageId = x.Id.split(':')[1].substring(0, 12);
@@ -179,6 +182,7 @@ export default function ListImage() {
           return {
             name: name,
             tag: tag,
+            imageLabel: label,
             imageId: x.Id.split(':')[1].substring(0, 12),
             key: x.Id.split(':')[1].substring(0, 12),
             created: format(x.Created * 1000),
@@ -301,6 +305,16 @@ export default function ListImage() {
       dataIndex: 'tag',
       key: 'tag',
       width: '10%',
+    },
+    {
+      title: 'LABEL',
+      dataIndex: 'imageLabel',
+      key: 'imageLabel',
+      render: (imageLabel) => (
+        imageLabel.map((label) => {
+          return (<Tag> {label} </Tag>);
+        })
+      ),
     },
     {
       title: 'IMAGE ID',
