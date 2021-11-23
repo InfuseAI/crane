@@ -56,7 +56,7 @@ export default function ListImage() {
   const history = useHistory();
   const [imageList, updateImageList] = useState([] as ImageDataSource[]);
   const [logDrawerVisible, setLogDrawerVisible] = useState(false);
-  const [remote, setRemote] = useState(DOCKERHUB);
+  const [remote, setRemote] = useLocalStorage('remote', DOCKERHUB);
   const [logText, setLogText] = useLocalStorage('push_log', '');
   const [hasCredentials, setHasCredentials] = useState({
     dockerhub: false,
