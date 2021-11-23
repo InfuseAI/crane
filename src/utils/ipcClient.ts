@@ -57,7 +57,7 @@ export function init() {
   });
 }
 
-export function send(name, args) {
+export function send(name, args?) {
   return new Promise((resolve, reject) => {
     let id = window.myapp.uuid.v4();
     replyHandlers.set(id, { resolve, reject });

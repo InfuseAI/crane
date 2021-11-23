@@ -6,10 +6,23 @@ import * as keytar from 'keytar';
 import { send } from './ServerIpc';
 import axios from 'axios';
 import { createMarkdownArrayTableSync } from 'parse-markdown-table';
+import * as ElectronStore from 'electron-store';
+import AwsAdapter from './AwsAdapter';
 
 const docker = new Docker();
+const localStore = new ElectronStore();
 const dockerHubCredentialKeyName = 'Crane-DockerHub';
 const primeHubCredentialKeyName = 'Crane-PrimeHub';
+const awsCredentialKeyName = 'Crane-AWS';
+
+// Init the AWS credential config
+getAwsCredential()
+  .then((credential) => AwsAdapter.setup(credential))
+  .then(() => {
+    const aws = AwsAdapter.getInstance();
+    return aws.verifyAccessPermission();
+  })
+  .then((data) => console.log(data));
 
 export function generateDockerfile(options) {
   let base_image_url = options['base_image_url'];
@@ -72,6 +85,22 @@ export function writeDockerfile(dockerfileContent) {
   );
 }
 
+export async function getAwsCredential() {
+  const awsCredential = {
+    accessKey: '',
+    secretKey: '',
+    region: '',
+  };
+  const credential = await getCredential(awsCredentialKeyName);
+  if (credential) {
+    awsCredential.accessKey = credential.account;
+    awsCredential.secretKey = credential.password;
+  }
+  awsCredential.region = (localStore.get('AWSRegion') as string) || '';
+  console.log('[Get Crane-AWS Region]', awsCredential.region);
+  return awsCredential;
+}
+
 const handlers = {
   build_events: [],
   build_status: '',
@@ -89,6 +118,7 @@ const handlers = {
   'get-primehub-credential': async () => {
     return await getCredential(primeHubCredentialKeyName);
   },
+  'get-aws-credential': async () => await getAwsCredential(),
   'save-dockerhub-credential': async (args) =>
     await saveCredential(
       dockerHubCredentialKeyName,
@@ -97,6 +127,14 @@ const handlers = {
     ),
   'save-primehub-credential': async (args) =>
     await saveCredential(primeHubCredentialKeyName, args.endpoint, args.token),
+  'save-aws-credential': async (args) => {
+    const { accessKey, secretKey, region } = args;
+    if (accessKey && secretKey) {
+      await saveCredential(awsCredentialKeyName, accessKey, secretKey);
+      AwsAdapter.setup({ accessKey, secretKey, region });
+    }
+    localStore.set('AWSRegion', region);
+  },
   'build-status': async () => {
     return handlers.build_status;
   },
@@ -163,7 +201,86 @@ const handlers = {
     console.log('[List Image] start');
     return await docker.listImages();
   },
+  'push-image-aws': async ({ image_name }) => {
+    function extractTrueName(rawName: string): {
+      repoName: string;
+      tag: string;
+    } {
+      const group = rawName.match(/amazonaws\.com\/([a-z0-9-_/]*)/);
+      const trueName = group ? group[1] : rawName;
+      const [repoName, tag] = trueName.split(':');
+      return { repoName, tag: tag || 'latest' };
+    }
+    function extractAuthPassword(token: string): {
+      username: string;
+      password: string;
+    } {
+      const buff = Buffer.from(token, 'base64');
+      const plaintext = buff.toString('utf8');
+      const [username, password] = plaintext.split(':');
+      return { username, password };
+    }
+    const { repoName, tag } = extractTrueName(image_name);
+    const ecrRegistry = await AwsAdapter.getInstance().createEcrRepository(
+      repoName
+    );
+    const ecrToken = await AwsAdapter.getInstance().getAuthorizationToken();
+    const authToken = ecrToken.authorizationData[0].authorizationToken;
+    const endpoint = ecrToken.authorizationData[0].proxyEndpoint;
+    const { username, password } = extractAuthPassword(authToken);
+    const auth = {
+      username: username,
+      password: password,
+      serveraddress: endpoint,
+    };
+
+    // Generate Image Tag for ECR
+    const ecrImageName = `${ecrRegistry.repositoryUri}:${tag}`;
+    await docker
+      .getImage(image_name)
+      .tag({ repo: ecrRegistry.repositoryUri, tag: tag });
+
+    console.log(`[Push Image] ${ecrImageName}`, ecrRegistry);
+    const push_stream = await docker.getImage(ecrImageName).push({
+      authconfig: auth,
+    });
+
+    const log_ipc_name = `push-log-${ecrImageName}`;
+    docker.modem.followProgress(
+      push_stream,
+      (err, output) => {
+        handlers.build_status = 'finished';
+        console.log('push finished', err, output);
+        send(log_ipc_name, {
+          stage: 'finished',
+          error: err,
+          output: output,
+        });
+      },
+      (event) => {
+        console.log(event);
+        send(log_ipc_name, {
+          stage: 'progressing',
+          output: event,
+        });
+        handlers.build_events.push(event);
+      }
+    );
+
+    return log_ipc_name;
+  },
   'push-image-dockerhub': async ({ image_name }) => {
+    function extractTrueName(
+      rawName: string,
+      project: string
+    ): {
+      repoName: string;
+      tag: string;
+    } {
+      const trueName = rawName.split('/').pop();
+      const [repoName, tag] = trueName.split(':');
+      return { repoName, tag: tag || 'latest' };
+    }
     const credential = await getCredential(dockerHubCredentialKeyName);
     if (!credential) {
       return null;
@@ -173,11 +290,18 @@ const handlers = {
       password: credential.password,
       serveraddress: 'https://index.docker.io/v1',
     };
+    const project = credential.account;
+    const { repoName, tag } = extractTrueName(image_name, project);
+    const dockerRepository = `${project}/${repoName}`;
 
+    // Generate Image Tag for DockerHub
+    await docker.getImage(image_name).tag({ repo: dockerRepository, tag: tag });
+    const dockerHubImageName = `${dockerRepository}:${tag}`;
+
+    console.log(`[Push Image] ${dockerHubImageName}`);
     const log_ipc_name = `push-log-${image_name}`;
-
     const push_stream = await docker
-      .getImage(image_name)
+      .getImage(dockerHubImageName)
       .push({ authconfig: auth });
     docker.modem.followProgress(
       push_stream,
@@ -223,6 +347,10 @@ const handlers = {
 
     return results;
   },
+  'list-aws-ecr-repositories': async () =>
+    AwsAdapter.getInstance().listEcrRepositories(),
+  'list-aws-ecr-images': async (repositoryName: string) =>
+    AwsAdapter.getInstance().listEcrImages(repositoryName),
 };
 
 export default handlers;
