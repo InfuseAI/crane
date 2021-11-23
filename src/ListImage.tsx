@@ -6,7 +6,9 @@ import {
   Button,
   Select,
   Tabs,
+  Typography,
   Table,
+  Tooltip,
   Drawer,
   notification,
 } from 'antd';
@@ -19,7 +21,11 @@ import ListAwsImages from './ListAwsImages';
 import { format } from 'timeago.js';
 import filesize from 'filesize';
 
+const DOCKERHUB = 'DockerHub';
+const AWS = 'AWS';
+
 const { Option } = Select;
+const { Text } = Typography;
 const Status = {
   PREPARING: 'preparing',
   FINISHED: 'finished',
@@ -46,6 +52,7 @@ interface ImageDataSource {
 export default function ListImage() {
   const [imageList, updateImageList] = useState([] as ImageDataSource[]);
   const [logDrawerVisible, setLogDrawerVisible] = useState(false);
+  const [remote, setRemote] = useState(DOCKERHUB);
   const [logText, setLogText] = useLocalStorage('push_log', '');
   const buildNotification = (name, isSuccess, payload) => {
     if (isSuccess) {
@@ -125,7 +132,7 @@ export default function ListImage() {
   };
 
   const pushImageToAWS = async (image_name) => {
-    console.log('Push Image: ', image_name);
+    console.log('Push Image to AWS: ', image_name);
     const ipc_name = await send('push-image-aws', { image_name });
     console.log(ipc_name);
     if (ipc_name) {
@@ -159,7 +166,6 @@ export default function ListImage() {
             alias: alias,
           } as ImageDataSource;
         });
-      console.log(images);
       updateImageList(images);
     }
     fetchImageList();
@@ -239,29 +245,54 @@ export default function ListImage() {
       render: (text, record) => {
         if (record.name !== '<none>') {
           return (
-            <>
+            <Tooltip title={`Push Image to ${remote}`}>
               <Button
                 className='actionBtn'
                 size='small'
                 icon={<CloudUploadOutlined />}
-                onClick={() => pushImage(record.name + ':' + record.tag)}
+                onClick={() => {
+                  const imageName = `${record.name}:${record.tag}`;
+                  switch (remote) {
+                    case DOCKERHUB:
+                      pushImage(imageName);
+                      break;
+                    case AWS:
+                      pushImageToAWS(imageName);
+                      break;
+                    default:
+                      throw new Error('Unknown remote');
+                  }
+                }}
               >
                 PUSH
               </Button>
-              <Button
-                className='actionBtn'
-                size='small'
-                icon={<CloudUploadOutlined />}
-                onClick={() => pushImageToAWS(record.name + ':' + record.tag)}
-              >
-                PUSH AWS
-              </Button>
-            </>
+            </Tooltip>
           );
         }
       },
     },
   ];
+
+  const onWarehouseChange = (value) => {
+    console.log(`Switch warehouse to ${value}`);
+    setRemote(value);
+  }
+
+  const tabBarExtraContent = {
+    right: (
+      <React.Fragment>
+        <Text type='secondary'>Choose a remote warehouse: </Text>
+        <Select
+          defaultValue={remote}
+          onChange={onWarehouseChange}
+          style={{width: 130}}
+        >
+          <Option value={DOCKERHUB}>DockerHub</Option>
+          <Option value={AWS}>AWS</Option>
+        </Select>
+      </React.Fragment>
+    )
+  };
 
   return (
     <Content style={{ margin: '0 16px' }}>
@@ -273,7 +304,7 @@ export default function ListImage() {
         className='site-layout-background'
         style={{ padding: 24, minHeight: 360 }}
       >
-        <Tabs defaultActiveKey='1' size='large' style={{ marginBottom: 32 }}>
+        <Tabs defaultActiveKey='1' size='large' style={{ marginBottom: 32 }} tabBarExtraContent={tabBarExtraContent}>
           <TabPane tab='LOCAL' key='1'>
             <Table
               className='images-table'
@@ -289,10 +320,16 @@ export default function ListImage() {
             />
           </TabPane>
           <TabPane tab='REMOTE REPOSITORIES' key='2'>
-            <ListRemoteImages />
-          </TabPane>
-          <TabPane tab='AWS REPOSITORIES' key='3'>
-            <ListAwsImages />
+            {
+              (remote === DOCKERHUB) ? (
+                <ListRemoteImages />
+              ):<></>
+            }
+            {
+              (remote === AWS) ? (
+                <ListAwsImages />
+              ):<></>
+            }
           </TabPane>
         </Tabs>
       </div>
