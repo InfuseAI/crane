@@ -104,6 +104,6 @@ const App = () => (
   <div id='crane' className='App'>
     <Crane />
   </div>
-);
+ );
 
 export default App;

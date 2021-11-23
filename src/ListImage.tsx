@@ -54,15 +54,16 @@ export default function ListImage() {
   const [logDrawerVisible, setLogDrawerVisible] = useState(false);
   const [remote, setRemote] = useState(DOCKERHUB);
   const [logText, setLogText] = useLocalStorage('push_log', '');
+  const [hasCredentials, setHasCredentials] = useState({dockerhub: false, aws: false});
   const buildNotification = (name, isSuccess, payload) => {
     if (isSuccess) {
-      notification['success']({
+      notification.success({
         message: 'Push Success',
         description: `Image ${name || ''} pushed`,
       });
     } else {
       const err = payload.output.find((x) => x.error);
-      notification['error']({
+      notification.error({
         message: 'Push Failed',
         description: (
           <div>
@@ -143,6 +144,17 @@ export default function ListImage() {
   };
 
   useEffect(() => {
+    async function fetchCredentials() {
+      const dockerHubCredential: any = await send('get-dockerhub-credential');
+      const awsCredential: any = await send('get-aws-credential');
+      console.log('Credentials', dockerHubCredential, awsCredential);
+      const credentialsExist = {
+        dockerhub: !!(dockerHubCredential.account && dockerHubCredential.password),
+        aws: !!(awsCredential.accessKey && awsCredential.secretKey)
+      }
+      setHasCredentials(credentialsExist);
+    }
+
     async function fetchImageList() {
       const results = (await send('list-image')) as ImageInfo[];
       const images = results
@@ -168,6 +180,7 @@ export default function ListImage() {
         });
       updateImageList(images);
     }
+    fetchCredentials();
     fetchImageList();
   }, []);
 
@@ -260,7 +273,10 @@ export default function ListImage() {
                       pushImageToAWS(imageName);
                       break;
                     default:
-                      throw new Error('Unknown remote');
+                      notification.error({
+                        message: 'Push Failed',
+                        description: 'Unknown Remote'
+                      });
                   }
                 }}
               >
@@ -287,8 +303,8 @@ export default function ListImage() {
           onChange={onWarehouseChange}
           style={{width: 130}}
         >
-          <Option value={DOCKERHUB}>DockerHub</Option>
-          <Option value={AWS}>AWS</Option>
+          <Option disabled={!hasCredentials.dockerhub} value={DOCKERHUB}>DockerHub</Option>
+          <Option disabled={!hasCredentials.aws} value={AWS}>AWS</Option>
         </Select>
       </React.Fragment>
     )
@@ -319,7 +335,7 @@ export default function ListImage() {
               }}
             />
           </TabPane>
-          <TabPane tab='REMOTE REPOSITORIES' key='2'>
+          <TabPane tab='REMOTE' key='2'>
             {
               (remote === DOCKERHUB) ? (
                 <ListRemoteImages />
