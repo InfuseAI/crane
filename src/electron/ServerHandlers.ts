@@ -347,8 +347,15 @@ const handlers = {
 
     return results;
   },
-  'list-aws-ecr-repositories': async () =>
-    AwsAdapter.getInstance().listEcrRepositories(),
+  'list-aws-ecr-repositories': async () => {
+    try {
+      return {
+        repositories: await AwsAdapter.getInstance().listEcrRepositories(),
+      };
+    } catch (err) {
+      return { error: err };
+    }
+  },
   'list-aws-ecr-images': async (repositoryName: string) =>
     AwsAdapter.getInstance().listEcrImages(repositoryName),
 };

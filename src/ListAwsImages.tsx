@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { /*Tooltip,*/ Button, Table, Tag } from 'antd';
-import { ReloadOutlined, LoadingOutlined} from '@ant-design/icons';
+import { /*Tooltip,*/ Button, Table, Tag, notification } from 'antd';
+import { ReloadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { send } from './utils/ipcClient';
 import { format } from 'timeago.js';
 // import { useHistory } from 'react-router-dom';
@@ -147,22 +147,30 @@ export default function ListAwsImages() {
 
   async function fetchRepositories() {
     setLoading(true);
-    const repositories = (await send(
+    const { repositories, error } = (await send(
       'list-aws-ecr-repositories'
-    )) as ECR.RepositoryList;
-    setRepos(
-      repositories.map((repo, idx) => {
-        return {
-          key: idx,
-          id: repo.registryId,
-          name: repo.repositoryName,
-          arn: repo.repositoryArn,
-          uri: repo.repositoryUri,
-          is_private: true,
-          created_at: repo.createdAt,
-        } as Repository;
-      })
-    );
+    )) as { repositories: ECR.RepositoryList; error: any };
+
+    if (error) {
+      notification.error({
+        message: 'Something wrong when fetch AWS repositories :(..',
+        description: `${error.message}`,
+      });
+    } else {
+      setRepos(
+        repositories.map((repo, idx) => {
+          return {
+            key: idx,
+            id: repo.registryId,
+            name: repo.repositoryName,
+            arn: repo.repositoryArn,
+            uri: repo.repositoryUri,
+            is_private: true,
+            created_at: repo.createdAt,
+          } as Repository;
+        })
+      );
+    }
     setLoading(false);
   }
 
@@ -210,8 +218,10 @@ export default function ListAwsImages() {
       render: (value) => format(value),
       defaultSortOrder: 'descend',
       sorter: (a, b) => {
-        return (new Date(a.created_at)).getTime() - (new Date(b.created_at)).getTime();
-      }
+        return (
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+      },
     },
     {
       key: 'action',
@@ -224,7 +234,7 @@ export default function ListAwsImages() {
     <React.Fragment>
       <div style={{ marginBottom: 16, textAlign: 'right' }}>
         <Button type='primary' onClick={fetchRepositories} disabled={loading}>
-          {(loading) ? <LoadingOutlined/> : <ReloadOutlined/>}
+          {loading ? <LoadingOutlined /> : <ReloadOutlined />}
           REFRESH
         </Button>
       </div>
