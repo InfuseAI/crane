@@ -34,13 +34,19 @@ Manage your remote registry credentials and PrimeHub API token securely. Now **D
 
 Credentials are stored safely in the Keychain(MacOS), libsecret(Linux) or Credential Vault(Windows).
 
-<img width="1136" alt="Manage Credentials" src="./public/screenshots/manage-credentials.png">
+<img width="1136" alt="Manage Credentials" src="./public/screenshots/manage-credentials-dockerhub.png">
+
+<img width="1136" alt="Manage Credentials" src="./public/screenshots/manage-credentials-aws.png">
+
+<img width="1136" alt="Manage Credentials" src="./public/screenshots/manage-credentials-ph.png">
 
 ### Manage Local And Remote Images
 
 Simple yet informative GUI. For now to manipulate local and remote images.
 
-<img width="1136" alt="Manage Local And Remote Images" src="./public/screenshots/manage-remote-images.png">
+<img width="1136" alt="Manage Local And Remote Images" src="./public/screenshots/manage-remote-images-dockerhub.png">
+
+<img width="1136" alt="Manage Local And Remote Images" src="./public/screenshots/manage-remote-images-aws.png">
 
 ### Import Remote Image Into PrimeHub
 
