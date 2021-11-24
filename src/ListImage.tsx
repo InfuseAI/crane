@@ -172,7 +172,7 @@ export default function ListImage() {
             (a, b) => a.length - b.length || a.localeCompare(b)
           );
           const [name, tag] = (repoTags.shift() || 'none').split(':');
-          const label = x.Labels? (x.Labels['crane.labels']? x.Labels['crane.labels'].split(',') :[]): [];
+          const label = ((x.Labels || {})['crane.labels'] || '').split(',');
           const alias = repoTags.map((r) => {
             const [name, tag] = r.split(':');
             const imageId = x.Id.split(':')[1].substring(0, 12);

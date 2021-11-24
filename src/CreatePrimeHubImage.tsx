@@ -29,6 +29,7 @@ export default function CreatePrimeHubImage() {
   const [groupList, setGroupList] = useState([]);
   const [client, setClient] = useState(null);
   const tag = new URLSearchParams(search).get('tag');
+  const description = new URLSearchParams(search).get('description');
   useEffect(() => {
     const createClient = async () => {
       const credential = await send('get-primehub-credential');
@@ -141,6 +142,7 @@ export default function CreatePrimeHubImage() {
   };
   const initialValues = {
     url: tag,
+    description: description,
   };
   return (
     <Content style={{ margin: '0 16px' }}>
