@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Layout,
   Breadcrumb,
@@ -17,53 +17,59 @@ import filesize from 'filesize';
 import { send } from './utils/ipcClient';
 import { Sunburst } from '@ant-design/charts';
 import { useLocation, Link } from 'react-router-dom';
-import { groupBy, map } from 'lodash';
+import { groupBy, map, get, filter } from 'lodash';
 
 const { Title } = Typography;
 const { Content } = Layout;
 
 const mapLayers = (layers) => {
-  const rawData = groupBy(layers.map((layer) => {
-    const CreatedBy = layer.CreatedBy.split('#(nop) ').pop().trim();
-    layer.CreatedBy = CreatedBy.replace('/bin/sh -c', 'RUN');
-    const cmd = layer.CreatedBy.split(' ')[0];
-    return {
-      cmd,
-      ...layer
-    };
-  }), 'cmd');
+  const rawData = groupBy(
+    layers.map((layer) => {
+      const CreatedBy = layer.CreatedBy.split('#(nop) ').pop().trim();
+      layer.CreatedBy = CreatedBy.replace('/bin/sh -c', 'RUN').replace(
+        '/bin/bash -o pipefail -c',
+        'RUN'
+      );
+      const cmd = layer.CreatedBy.split(' ')[0];
+      return {
+        cmd,
+        ...layer,
+      };
+    }),
+    'cmd'
+  );
   const mappedData = map(rawData, (data, key) => {
     const name = key;
     return {
       name,
       label: name,
+      filterKey: key,
       children: data.map((child) => {
         return {
           label: child.CreatedBy.slice(0, 80) + '...',
-          size: child.Size
+          ...child,
         };
-      })
-    }
+      }),
+    };
   });
   return mappedData;
-}
+};
 
 const LayerSunburst = (props) => {
-  const { layers, name } = props
+  const { layers, name, onClick, onMouseOver, onMouseLeave } = props;
   const children = mapLayers(layers);
   const data = {
     name,
     label: name,
     children,
-  }
-  console.log(data, 111);
+  };
   const config = {
     data,
     meta: {
-      size: {
+      Size: {
         formatter: (value) => {
-          return filesize(value, {round: 3});
-        }
+          return filesize(value, { round: 3 });
+        },
       },
     },
     innerRadius: 0.2,
@@ -76,51 +82,140 @@ const LayerSunburst = (props) => {
       },
     ],
     hierarchyConfig: {
-      field: 'size',
+      field: 'Size',
     },
-    color: ['#C56895', '#E59D23', '#008ED0', '#DCF3EF'],
+    color: [
+      '#DC477D',
+      '#9C0049',
+      '#56568C',
+      '#378BA7',
+      '#5AAAC7',
+      '#7BC9E7',
+      '#9CE9FF',
+    ],
     label: {
-      // label layout: limit label in shape, which means the labels out of shape will be hide
       layout: [
         {
           type: 'limit-in-shape',
-        }
+        },
       ],
       formatter: (value) => {
         const result = value.data.label?.slice(0, 20) || '';
-        return (result.length >= 20) ? `${result}...` : result;
+        return result.length >= 20 ? `${result}...` : result;
       },
+    },
+    onReady: (plot) => {
+      plot.off('plot:mouseleave').on('plot:mouseleave', (evt) => {
+        onMouseLeave();
+      });
+      plot.off('click').on('click', (evt) => {
+        const { data } = get(evt, 'data.data', {});
+        if (data?.filterKey) {
+          onClick(data.filterKey);
+        } else {
+          onClick();
+        }
+      });
+      plot.on('element:mouseover', (evt) => {
+        const { data } = get(evt, 'data.data', {});
+        if (data.Created) {
+          onMouseOver(data.CreatedBy);
+        } else {
+          onMouseOver();
+        }
+      });
     },
   };
 
   return <Sunburst {...config} />;
 };
 
+const MemorizeLayerSunburst = React.memo(LayerSunburst);
+
 function useQuery() {
   const { search } = useLocation();
   return React.useMemo(() => new URLSearchParams(search), [search]);
 }
 
+function LayerTable(props) {
+  const { columns, layers, activeRow } = props;
+  return (
+    <Table
+      title={(currentPageData) => {
+        return <Title level={4}>IMAGE LAYERS</Title>;
+      }}
+      rowClassName={(record, index) => {
+        if (record.CreatedBy === activeRow) {
+          return 'active';
+        }
+        return '';
+      }}
+      columns={columns}
+      className='layer-table'
+      dataSource={layers}
+      showHeader={false}
+      size='middle'
+      pagination={false}
+    />
+  );
+}
 
 export default function ImageDetail() {
+  const [source, setSource] = useState<any>([]);
   const [layers, setLayers] = useState<any>([]);
+  const [activeRow, setActiveRow] = useState<string>();
+  const [command, setCommand] = useState();
   const query = useQuery();
   const name = query.get('name');
   const fetchImage = async (image_name) => {
-    const detail = await send('get-image-detail', {image_name});
-    setLayers(detail);
+    const detail: any = await send('get-image-detail', { image_name });
+    const layers: any = detail.map((d) => {
+      const CreatedBy = d.CreatedBy.split('#(nop) ').pop().trim();
+      d.CreatedBy = CreatedBy.replace('/bin/sh -c', 'RUN').replace(
+        '/bin/bash -o pipefail -c',
+        'RUN'
+      );
+      const filterKey = d.CreatedBy.split(' ')[0];
+      return {
+        filterKey: filterKey,
+        ...d,
+      };
+    });
+    setLayers(layers);
+    setSource(layers);
   };
+
   useEffect(() => {
     fetchImage(name);
+  }, []);
+
+  useEffect(() => {
+    if (command) {
+      const newSource = filter(layers, (l) => l.filterKey === command);
+      setSource(newSource);
+    } else {
+      setSource(layers);
+    }
+  }, [command]);
+
+  const onMouseLeave = useCallback(() => {
+    setActiveRow('');
+  }, []);
+
+  const onMouseOver = useCallback((row) => {
+    setActiveRow(row);
+  }, []);
+
+  const onClick = useCallback((cmd) => {
+    setCommand(cmd);
   }, []);
 
   const columns = [
     {
       title: 'NO',
       key: 'id',
-      dataIndex: 'no',
       width: '5%',
-      render: (value, record, index) => index + 1
+      render: (value, record, index) => index + 1,
     },
     {
       title: 'LAYER',
@@ -135,8 +230,8 @@ export default function ImageDetail() {
       key: 'Size',
       width: '20%',
       dataIndex: 'Size',
-      render: (val) => filesize(val, {round: 3})
-    }
+      render: (val) => filesize(val, { round: 3 }),
+    },
   ];
 
   return (
@@ -144,9 +239,7 @@ export default function ImageDetail() {
       <Breadcrumb style={{ margin: '16px 0' }}>
         <Breadcrumb.Item>Crane</Breadcrumb.Item>
         <Breadcrumb.Item>
-          <Link to='/images'>
-            List image
-          </Link>
+          <Link to='/images'>List image</Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item>Image: {name}</Breadcrumb.Item>
       </Breadcrumb>
@@ -156,17 +249,19 @@ export default function ImageDetail() {
       >
         <Row>
           <Col span={12}>
-            <LayerSunburst name={name} layers={layers}/>
+            <MemorizeLayerSunburst
+              name={name}
+              layers={layers}
+              onClick={onClick}
+              onMouseLeave={onMouseLeave}
+              onMouseOver={onMouseOver}
+            />
           </Col>
           <Col span={12} className='layers-col'>
-            <Table
-              title={(currentPageData) => {return <Title level={4}>IMAGE LAYERS</Title>}}
+            <LayerTable
+              layers={source}
+              activeRow={activeRow}
               columns={columns}
-              className='layer-table'
-              dataSource={layers}
-              showHeader={false}
-              size='middle'
-              pagination={false}
             />
           </Col>
         </Row>

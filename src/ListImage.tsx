@@ -15,7 +15,11 @@ import {
 } from 'antd';
 import useLocalStorage from './hooks/useLocalStorage';
 import { LazyLog, ScrollFollow } from 'react-lazylog';
-import { CloudUploadOutlined, ReloadOutlined, PieChartOutlined } from '@ant-design/icons';
+import {
+  CloudUploadOutlined,
+  ReloadOutlined,
+  PieChartOutlined,
+} from '@ant-design/icons';
 import { send, listen, unlisten } from './utils/ipcClient';
 import ListRemoteImages from './ListRemoteImage';
 import ListAwsImages from './ListAwsImages';
@@ -206,16 +210,16 @@ export default function ListImage() {
             onClick={() => {
               switch (remote) {
                 case DOCKERHUB:
-                pushImage(imageName);
+                  pushImage(imageName);
                   break;
                 case AWS:
-                pushImageToAWS(imageName);
+                  pushImageToAWS(imageName);
                   break;
                 default:
-                notification.error({
-                  message: 'Push Failed',
-                  description: 'Unknown Remote',
-                });
+                  notification.error({
+                    message: 'Push Failed',
+                    description: 'Unknown Remote',
+                  });
               }
             }}
           >
@@ -227,11 +231,10 @@ export default function ListImage() {
             type='primary'
             className='actionBtn'
             size='small'
-            style={{marginLeft: 5, color: 'white'}}
+            style={{ marginLeft: 5, color: 'white' }}
             icon={<PieChartOutlined />}
             onClick={() => {
               const target = `/image/${record.imageId}?name=${imageName}`;
-              console.log(target,234);
               history.push(target);
             }}
           >
@@ -240,7 +243,7 @@ export default function ListImage() {
         </Tooltip>
       </React.Fragment>
     );
-  }
+  };
 
   const expandedRowRender = (record: ImageDataSource) => {
     const columns: any[] = [
@@ -284,7 +287,7 @@ export default function ListImage() {
         width: '20%',
         render: (text, record) => {
           if (record.name !== '<none>') {
-            return <ActionButtons record={record}/>;
+            return <ActionButtons record={record} />;
           }
         },
       },
@@ -322,8 +325,12 @@ export default function ListImage() {
       render: (val, record) => {
         const imageName = `${record.name}:${record.tag}`;
         const target = `/image/${record.imageId}?name=${imageName}`;
-        return <Link className='image-link' to={target}>{record.name}</Link>;
-      }
+        return (
+          <Link className='image-link' to={target}>
+            {record.name}
+          </Link>
+        );
+      },
     },
     {
       title: 'TAG',
@@ -360,7 +367,7 @@ export default function ListImage() {
       width: '20%',
       render: (text, record) => {
         if (record.name !== '<none>') {
-          return <ActionButtons record={record}/>;
+          return <ActionButtons record={record} />;
         }
       },
     },
