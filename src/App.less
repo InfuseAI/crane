@@ -67,6 +67,7 @@ body {
 .layers-col {
   max-height: calc(100vh - 200px);
   overflow-y: scroll;
+  padding: 0 0 0 80px;
 }
 
 .layer-table {
@@ -74,17 +75,19 @@ body {
   td {
     user-select: text;
   }
-  tr.active {
+  tr.active, tr.ant-table-row-level-0:hover {
     color: #36899d;
     font-weight: 400;
-    td {
-      background: #ffffcc;
+    td.ant-table-cell {
+      background: #ffffcc !important;
     }
   }
   tr.ant-table-expanded-row {
     td {
-      background: black;
-      padding: 0 8px !important;
+      padding: 0 !important;
+      > pre {
+        padding: 15px 25px !important;
+      }
     }
   }
   p.createdBy {

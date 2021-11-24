@@ -13,6 +13,8 @@ import {
   //Drawer,
   //notification,
 } from 'antd';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { solarizedDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import filesize from 'filesize';
 import { send } from './utils/ipcClient';
 import { Sunburst } from '@ant-design/charts';
@@ -47,7 +49,14 @@ const mapLayers = (layers) => {
       children: data.map((child) => {
         return {
           label: child.CreatedBy.slice(0, 80) + '...',
-          ...pick(child, ['cmd', 'name', 'key', 'Size', 'CreatedBy', 'Created']),
+          ...pick(child, [
+            'cmd',
+            'name',
+            'key',
+            'Size',
+            'CreatedBy',
+            'Created',
+          ]),
         };
       }),
     };
@@ -83,16 +92,21 @@ const LayerSunburst = (props) => {
     hierarchyConfig: {
       field: 'Size',
     },
-    color: [
-      '#DC477D',
-      '#9C0049',
-      '#56568C',
-      '#378BA7',
-      '#5AAAC7',
-      '#7BC9E7',
-      '#9CE9FF',
-    ],
-    annotations: [
+    drilldown: {
+      enabled: true,
+      breadCrumb: {
+        position: 'bottom-left',
+        dividerText: '>',
+      },
+    },
+    annotations: [],
+    interactiions: [
+      {
+        type: 'element-selected',
+      },
+      {
+        type: 'element-active',
+      },
     ],
     label: {
       layout: [
@@ -130,7 +144,8 @@ const LayerSunburst = (props) => {
     },
   };
 
-  return <Sunburst style={{height: '100%', width: '100%'}} {...config} />;
+  // @ts-ignore
+  return <Sunburst style={{ height: '100%', width: '100%' }} {...config} />;
 };
 
 const MemorizeLayerSunburst = React.memo(LayerSunburst);
@@ -141,9 +156,13 @@ function useQuery() {
 }
 
 function LayerTable(props) {
-  const { columns, layers, expandedRowKeys, activeRow } = props;
+  const { columns, layers, expandedRowKeys, onExpand, activeRow } = props;
   const expandedRowRender = (record) => {
-    return <p className='createdBy'>{record.CreatedBy}</p>;
+    return (
+      <SyntaxHighlighter wrapLongLines={true} language='dockerfile' style={solarizedDark}>
+        {record.CreatedBy}
+      </SyntaxHighlighter>
+    );
   };
   return (
     <Table
@@ -167,6 +186,7 @@ function LayerTable(props) {
         expandedRowRender,
         expandRowByClick: true,
       }}
+      onExpand={onExpand}
     />
   );
 }
@@ -230,6 +250,13 @@ export default function ImageDetail() {
     }
   }, []);
 
+  const onExpand = useCallback((expanded, record) => {
+    setExpandRowKeys([]);
+    if (expanded) {
+      setExpandRowKeys([record.key]);
+    }
+  }, []);
+
   const columns = [
     {
       title: 'NO',
@@ -267,8 +294,14 @@ export default function ImageDetail() {
         className='site-layout-background'
         style={{ padding: 24, minHeight: 360 }}
       >
-        <Row gutter={16}>
-          <Col span={12} style={{maxHeight: 'calc(100vh - 200px)'}}>
+        <Row>
+          <Col
+            span={12}
+            style={{
+              maxHeight: 'calc(100vh - 200px)',
+              minHeight: 'calc(100vh - 200px)',
+            }}
+          >
             <MemorizeLayerSunburst
               name={name}
               layers={layers}
@@ -280,6 +313,7 @@ export default function ImageDetail() {
           <Col span={12} className='layers-col'>
             <LayerTable
               layers={source}
+              onExpand={onExpand}
               expandedRowKeys={expandRowKeys}
               activeRow={activeRow}
               columns={columns}
