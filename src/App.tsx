@@ -10,6 +10,7 @@ import { Alert, Button, Space, Layout, Skeleton } from 'antd';
 import Sidebar from './Sidebar';
 import BuildImage from './BuildImage';
 import ListImage from './ListImage';
+import ImageDetail from './ImageDetail';
 import Settings from './Settings';
 import { send } from './utils/ipcClient';
 import CreatePrimeHubImage from './CreatePrimeHubImage';
@@ -77,6 +78,7 @@ const Crane = () => {
               <Route exact path='/' component={BuildImage} />
               <Route path='/settings/:tabName' component={Settings} />
               <Route path='/images' component={ListImage} />
+              <Route path='/image/:id' component={ImageDetail} />
               <Route
                 path='/createPrimeHubImage'
                 component={CreatePrimeHubImage}

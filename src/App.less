@@ -3,6 +3,9 @@
 
 body {
   background: url('images/logo_pink.png') #244764;
+  span {
+    cursor: default;
+  }
 }
 
 .App-link {
@@ -31,6 +34,15 @@ body {
 .alias-table,
 .images-table {
   padding-left: 0px;
+  td {
+    cursor: default;
+    .image-link {
+      color: black;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
   .tags-row,
   .alias-row,
   .images-row {
@@ -39,7 +51,7 @@ body {
       color: @primary-color;
       border-color: @primary-color;
     }
-    background: #fbfbfb;
+    background: #fcfcfc;
     &:hover {
       .actionBtn {
         opacity: 1;
@@ -48,7 +60,7 @@ body {
   }
 }
 
-.alias-table {
+.alias-table, .tags-table {
   padding-left: 14px;
 }
 

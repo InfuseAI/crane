@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, Link } from 'react-router-dom';
 import { ImageInfo } from 'dockerode';
 import {
   Layout,
@@ -15,7 +15,7 @@ import {
 } from 'antd';
 import useLocalStorage from './hooks/useLocalStorage';
 import { LazyLog, ScrollFollow } from 'react-lazylog';
-import { CloudUploadOutlined, ReloadOutlined } from '@ant-design/icons';
+import { CloudUploadOutlined, ReloadOutlined, PieChartOutlined } from '@ant-design/icons';
 import { send, listen, unlisten } from './utils/ipcClient';
 import ListRemoteImages from './ListRemoteImage';
 import ListAwsImages from './ListAwsImages';
@@ -193,20 +193,69 @@ export default function ListImage() {
     fetchImageList();
   }, []);
 
+  const ActionButtons = (props) => {
+    const { record } = props;
+    return (
+      <React.Fragment>
+        <Tooltip title={`Push Image to ${remote}`}>
+          <Button
+            className='actionBtn'
+            size='small'
+            icon={<CloudUploadOutlined />}
+            onClick={() => {
+              const imageName = `${record.name}:${record.tag}`;
+              switch (remote) {
+                case DOCKERHUB:
+                pushImage(imageName);
+                  break;
+                case AWS:
+                pushImageToAWS(imageName);
+                  break;
+                default:
+                notification.error({
+                  message: 'Push Failed',
+                  description: 'Unknown Remote',
+                });
+              }
+            }}
+          >
+            PUSH
+          </Button>
+        </Tooltip>
+        <Tooltip title={`Inspect this image`}>
+          <Button
+            type='primary'
+            className='actionBtn'
+            size='small'
+            style={{marginLeft: 5, color: 'white'}}
+            icon={<PieChartOutlined />}
+            onClick={() => {
+              const target = `/image/${record.imageId}`;
+              console.log(target,234);
+              history.push(target);
+            }}
+          >
+            DETAIL
+          </Button>
+        </Tooltip>
+      </React.Fragment>
+    );
+  }
+
   const expandedRowRender = (record: ImageDataSource) => {
     const columns: any[] = [
       {
         dataIndex: 'name',
         key: 'alias_name',
         width: '35%',
-        render: (val) => <Text disabled>{val}</Text>,
+        render: (val) => <Text type='secondary'>{val}</Text>,
       },
       {
         title: 'TAG',
         dataIndex: 'tag',
         key: 'alias_tag',
         width: '10%',
-        render: (val) => <Text disabled>{val}</Text>,
+        render: (val) => <Text type='secondary'>{val}</Text>,
       },
       {
         title: 'IMAGE ID',
@@ -219,49 +268,23 @@ export default function ListImage() {
         title: 'CREATED',
         key: 'alias_created',
         dataIndex: 'created',
-        width: '15%',
+        width: '10%',
         render: (val) => <Text type='secondary'> - </Text>,
       },
       {
         title: 'SIZE',
         key: 'alias_size',
         dataIndex: 'size',
-        width: '15%',
+        width: '10%',
         render: (val) => <Text type='secondary'> - </Text>,
       },
       {
         key: 'action',
-        align: 'center',
-        width: '10%',
+        align: 'left',
+        width: '20%',
         render: (text, record) => {
           if (record.name !== '<none>') {
-            return (
-              <Tooltip title={`Push Image to ${remote}`}>
-                <Button
-                  className='actionBtn'
-                  size='small'
-                  icon={<CloudUploadOutlined />}
-                  onClick={() => {
-                    const imageName = `${record.name}:${record.tag}`;
-                    switch (remote) {
-                      case DOCKERHUB:
-                        pushImage(imageName);
-                        break;
-                      case AWS:
-                        pushImageToAWS(imageName);
-                        break;
-                      default:
-                        notification.error({
-                          message: 'Push Failed',
-                          description: 'Unknown Remote',
-                        });
-                    }
-                  }}
-                >
-                  PUSH
-                </Button>
-              </Tooltip>
-            );
+            return <ActionButtons record={record}/>;
           }
         },
       },
@@ -287,6 +310,7 @@ export default function ListImage() {
       />
     );
   };
+
   const columns = [
     {
       title: 'NAME',
@@ -295,6 +319,10 @@ export default function ListImage() {
       width: '35%',
       sortDirections: ['ascend', 'descend'],
       sorter: (a, b) => a.name.localeCompare(b.name),
+      render: (val, record) => {
+        const target = `/image/${record.imageId}`;
+        return <Link className='image-link' to={target}>{record.name}</Link>;
+      }
     },
     {
       title: 'TAG',
@@ -312,7 +340,7 @@ export default function ListImage() {
       title: 'CREATED',
       key: 'created',
       dataIndex: 'created',
-      width: '15%',
+      width: '10%',
       defaultSortOrder: 'descend',
       sorter: (a, b) => {
         return a.createdTime - b.createdTime;
@@ -322,41 +350,16 @@ export default function ListImage() {
       title: 'SIZE',
       key: 'size',
       dataIndex: 'size',
-      width: '15%',
+      width: '10%',
     },
     {
+      title: 'ACTIONS',
       key: 'action',
-      align: 'center',
-      width: '10%',
+      align: 'left',
+      width: '20%',
       render: (text, record) => {
         if (record.name !== '<none>') {
-          return (
-            <Tooltip title={`Push Image to ${remote}`}>
-              <Button
-                className='actionBtn'
-                size='small'
-                icon={<CloudUploadOutlined />}
-                onClick={() => {
-                  const imageName = `${record.name}:${record.tag}`;
-                  switch (remote) {
-                    case DOCKERHUB:
-                      pushImage(imageName);
-                      break;
-                    case AWS:
-                      pushImageToAWS(imageName);
-                      break;
-                    default:
-                      notification.error({
-                        message: 'Push Failed',
-                        description: 'Unknown Remote',
-                      });
-                  }
-                }}
-              >
-                PUSH
-              </Button>
-            </Tooltip>
-          );
+          return <ActionButtons record={record}/>;
         }
       },
     },
