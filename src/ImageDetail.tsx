@@ -47,7 +47,7 @@ const mapLayers = (layers) => {
       children: data.map((child) => {
         return {
           label: child.CreatedBy.slice(0, 80) + '...',
-          ...pick(child, ['cmd', 'name', 'key', 'Size']),
+          ...pick(child, ['cmd', 'name', 'key', 'Size', 'CreatedBy', 'Created']),
         };
       }),
     };
@@ -216,6 +216,7 @@ export default function ImageDetail() {
   }, []);
 
   const onMouseOver = useCallback((row) => {
+    console.log(row, 111);
     setActiveRow(row);
   }, []);
 
