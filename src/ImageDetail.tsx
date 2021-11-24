@@ -93,6 +93,14 @@ const LayerSunburst = (props) => {
         dividerText: '>',
       },
     },
+    color: [
+      '#007991',
+      '#0093a0',
+      '#0daca8',
+      '#45c6ab',
+      '#76dea8',
+      '#a9f5a4',
+    ],
     annotations: [],
     interactiions: [
       {
