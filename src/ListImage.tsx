@@ -15,7 +15,7 @@ import {
 } from 'antd';
 import useLocalStorage from './hooks/useLocalStorage';
 import { LazyLog, ScrollFollow } from 'react-lazylog';
-import { CloudUploadOutlined } from '@ant-design/icons';
+import { CloudUploadOutlined, ReloadOutlined } from '@ant-design/icons';
 import { send, listen, unlisten } from './utils/ipcClient';
 import ListRemoteImages from './ListRemoteImage';
 import ListAwsImages from './ListAwsImages';
@@ -374,7 +374,10 @@ export default function ListImage() {
         <Select
           defaultValue={remote}
           onChange={onWarehouseChange}
-          style={{ width: 130 }}
+          style={{
+            width: 130,
+            marginRight: 122,
+          }}
         >
           <Option disabled={!hasCredentials.dockerhub} value={DOCKERHUB}>
             DockerHub
@@ -385,8 +388,7 @@ export default function ListImage() {
                 placement='left'
                 title={
                   <div>
-                    Please{' '}
-                    {/* eslint-disable-next-line */}
+                    Please {/* eslint-disable-next-line */}
                     <a onClick={() => history.push('/settings/aws')}>
                       Setup AWS Credential
                     </a>{' '}
@@ -422,6 +424,22 @@ export default function ListImage() {
           tabBarExtraContent={tabBarExtraContent}
         >
           <TabPane tab='LOCAL' key='1'>
+            <div
+              style={{
+                marginBottom: 0,
+                textAlign: 'right',
+                position: 'relative',
+              }}
+            >
+              <Button
+                style={{ position: 'absolute', top: -60, right: 0 }}
+                type='primary'
+                disabled={true}
+              >
+                <ReloadOutlined />
+                REFRESH
+              </Button>
+            </div>
             <Table
               className='images-table'
               rowClassName='images-row'

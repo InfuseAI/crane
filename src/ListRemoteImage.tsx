@@ -270,8 +270,19 @@ export default function ListRemoteImages() {
   ];
   return (
     <React.Fragment>
-      <div style={{ marginBottom: 16, textAlign: 'right' }}>
+      <div
+        style={{
+          marginBottom: 0,
+          position: 'relative',
+          textAlign: 'right',
+        }}
+      >
         <Button
+          style={{
+            position: 'absolute',
+            top: -60,
+            right: 0,
+          }}
           type='primary'
           onClick={genFetchRepo(client)}
           disabled={loading}

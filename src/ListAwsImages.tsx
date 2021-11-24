@@ -232,8 +232,15 @@ export default function ListAwsImages() {
 
   return (
     <React.Fragment>
-      <div style={{ marginBottom: 16, textAlign: 'right' }}>
-        <Button type='primary' onClick={fetchRepositories} disabled={loading}>
+      <div
+        style={{ marginBottom: 0, textAlign: 'right', position: 'relative' }}
+      >
+        <Button
+          style={{ position: 'absolute', top: -60, right: 0 }}
+          type='primary'
+          onClick={fetchRepositories}
+          disabled={loading}
+        >
           {loading ? <LoadingOutlined /> : <ReloadOutlined />}
           REFRESH
         </Button>
