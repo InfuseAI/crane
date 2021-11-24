@@ -74,8 +74,7 @@ const LayerSunburst = (props) => {
     },
     innerRadius: 0.2,
     radius: 1,
-    width: 700,
-    height: 700,
+    autoFit: true,
     interactions: [
       {
         type: 'element-active',
@@ -92,6 +91,8 @@ const LayerSunburst = (props) => {
       '#5AAAC7',
       '#7BC9E7',
       '#9CE9FF',
+    ],
+    annotations: [
     ],
     label: {
       layout: [
@@ -129,7 +130,7 @@ const LayerSunburst = (props) => {
     },
   };
 
-  return <Sunburst {...config} />;
+  return <Sunburst style={{height: '100%', width: '100%'}} {...config} />;
 };
 
 const MemorizeLayerSunburst = React.memo(LayerSunburst);
