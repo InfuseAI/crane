@@ -5,16 +5,10 @@ import {
   Col,
   Row,
   Table,
-  //Button,
-  //Select,
-  //Tabs,
   Typography,
-  //Tooltip,
-  //Drawer,
-  //notification,
 } from 'antd';
 import SyntaxHighlighter from 'react-syntax-highlighter';
-import { solarizedDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { atomOneLight } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import filesize from 'filesize';
 import { send } from './utils/ipcClient';
 import { Sunburst } from '@ant-design/charts';
@@ -163,7 +157,7 @@ function LayerTable(props) {
         wrapLines={true}
         wrapLongLines={true}
         language='dockerfile'
-        style={solarizedDark}
+        style={atomOneLight}
       >
         {record.CreatedBy}
       </SyntaxHighlighter>
