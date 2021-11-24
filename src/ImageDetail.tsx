@@ -17,7 +17,7 @@ import filesize from 'filesize';
 import { send } from './utils/ipcClient';
 import { Sunburst } from '@ant-design/charts';
 import { useLocation, Link } from 'react-router-dom';
-import { groupBy, map, get, filter } from 'lodash';
+import { groupBy, map, get, filter, pick } from 'lodash';
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -47,7 +47,7 @@ const mapLayers = (layers) => {
       children: data.map((child) => {
         return {
           label: child.CreatedBy.slice(0, 80) + '...',
-          ...child,
+          ...pick(child, ['cmd', 'name', 'key', 'Size']),
         };
       }),
     };
@@ -111,9 +111,11 @@ const LayerSunburst = (props) => {
       plot.off('click').on('click', (evt) => {
         const { data } = get(evt, 'data.data', {});
         if (data?.filterKey) {
-          onClick(data.filterKey);
+          onClick({ cmd: data.filterKey });
+        } else if (data?.key.includes('layer-')) {
+          onClick({ key: data.key });
         } else {
-          onClick();
+          onClick({});
         }
       });
       plot.on('element:mouseover', (evt) => {
@@ -138,7 +140,10 @@ function useQuery() {
 }
 
 function LayerTable(props) {
-  const { columns, layers, activeRow } = props;
+  const { columns, layers, expandedRowKeys, activeRow } = props;
+  const expandedRowRender = (record) => {
+    return <p className='createdBy'>{record.CreatedBy}</p>;
+  };
   return (
     <Table
       title={(currentPageData) => {
@@ -154,8 +159,14 @@ function LayerTable(props) {
       className='layer-table'
       dataSource={layers}
       showHeader={false}
+      expandedRowKeys={expandedRowKeys}
       size='middle'
       pagination={false}
+      expandable={{
+        expandedRowRender,
+        expandRowByClick: true,
+        rowExpandable: (record) => record.CreatedBy.length > 60,
+      }}
     />
   );
 }
@@ -163,13 +174,14 @@ function LayerTable(props) {
 export default function ImageDetail() {
   const [source, setSource] = useState<any>([]);
   const [layers, setLayers] = useState<any>([]);
+  const [expandRowKeys, setExpandRowKeys] = useState<any>([]);
   const [activeRow, setActiveRow] = useState<string>();
-  const [command, setCommand] = useState();
+  const [command, setCommand] = useState<string | boolean>();
   const query = useQuery();
   const name = query.get('name');
   const fetchImage = async (image_name) => {
     const detail: any = await send('get-image-detail', { image_name });
-    const layers: any = detail.map((d) => {
+    const layers: any = detail.map((d, index) => {
       const CreatedBy = d.CreatedBy.split('#(nop) ').pop().trim();
       d.CreatedBy = CreatedBy.replace('/bin/sh -c', 'RUN').replace(
         '/bin/bash -o pipefail -c',
@@ -177,6 +189,7 @@ export default function ImageDetail() {
       );
       const filterKey = d.CreatedBy.split(' ')[0];
       return {
+        key: `layer-${index}`,
         filterKey: filterKey,
         ...d,
       };
@@ -206,8 +219,15 @@ export default function ImageDetail() {
     setActiveRow(row);
   }, []);
 
-  const onClick = useCallback((cmd) => {
-    setCommand(cmd);
+  const onClick = useCallback(({ cmd, key }) => {
+    if (cmd) {
+      setCommand(cmd);
+    } else if (key) {
+      setExpandRowKeys([key]);
+    } else {
+      setCommand(false);
+      setExpandRowKeys([]);
+    }
   }, []);
 
   const columns = [
@@ -260,6 +280,7 @@ export default function ImageDetail() {
           <Col span={12} className='layers-col'>
             <LayerTable
               layers={source}
+              expandedRowKeys={expandRowKeys}
               activeRow={activeRow}
               columns={columns}
             />
