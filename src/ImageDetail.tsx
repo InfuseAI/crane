@@ -159,7 +159,12 @@ function LayerTable(props) {
   const { columns, layers, expandedRowKeys, onExpand, activeRow } = props;
   const expandedRowRender = (record) => {
     return (
-      <SyntaxHighlighter wrapLongLines={true} language='dockerfile' style={solarizedDark}>
+      <SyntaxHighlighter
+        wrapLines={true}
+        wrapLongLines={true}
+        language='dockerfile'
+        style={solarizedDark}
+      >
         {record.CreatedBy}
       </SyntaxHighlighter>
     );
