@@ -195,6 +195,7 @@ export default function ListImage() {
 
   const ActionButtons = (props) => {
     const { record } = props;
+    const imageName = `${record.name}:${record.tag}`;
     return (
       <React.Fragment>
         <Tooltip title={`Push Image to ${remote}`}>
@@ -203,7 +204,6 @@ export default function ListImage() {
             size='small'
             icon={<CloudUploadOutlined />}
             onClick={() => {
-              const imageName = `${record.name}:${record.tag}`;
               switch (remote) {
                 case DOCKERHUB:
                 pushImage(imageName);
@@ -230,7 +230,7 @@ export default function ListImage() {
             style={{marginLeft: 5, color: 'white'}}
             icon={<PieChartOutlined />}
             onClick={() => {
-              const target = `/image/${record.imageId}`;
+              const target = `/image/${record.imageId}?name=${imageName}`;
               console.log(target,234);
               history.push(target);
             }}
@@ -320,7 +320,8 @@ export default function ListImage() {
       sortDirections: ['ascend', 'descend'],
       sorter: (a, b) => a.name.localeCompare(b.name),
       render: (val, record) => {
-        const target = `/image/${record.imageId}`;
+        const imageName = `${record.name}:${record.tag}`;
+        const target = `/image/${record.imageId}?name=${imageName}`;
         return <Link className='image-link' to={target}>{record.name}</Link>;
       }
     },
