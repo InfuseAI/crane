@@ -55,6 +55,10 @@ body {
     &:hover {
       .actionBtn {
         opacity: 1;
+        cursor: pointer;
+        > * {
+          cursor: pointer;
+        }
       }
     }
   }
@@ -72,7 +76,10 @@ body {
   }
   tr.active {
     color: #36899d;
-    font-weight: bold;
+    font-weight: 400;
+    td {
+      background: #ffffcc;
+    }
   }
   tr.ant-table-expanded-row {
     td {
@@ -84,9 +91,7 @@ body {
     margin: 0;
     background: black;
     color: white;
-    padding: 10px;
-    padding-left: 84px;
-    padding-right: 20px;
+    padding: 10px 20px;
   }
 }
 

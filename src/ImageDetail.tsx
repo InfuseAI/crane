@@ -166,7 +166,6 @@ function LayerTable(props) {
       expandable={{
         expandedRowRender,
         expandRowByClick: true,
-        rowExpandable: (record) => record.CreatedBy.length > 60,
       }}
     />
   );
@@ -217,7 +216,6 @@ export default function ImageDetail() {
   }, []);
 
   const onMouseOver = useCallback((row) => {
-    console.log(row, 111);
     setActiveRow(row);
   }, []);
 
@@ -236,14 +234,14 @@ export default function ImageDetail() {
     {
       title: 'NO',
       key: 'id',
-      width: '5%',
+      width: '10%',
       render: (value, record, index) => index + 1,
     },
     {
       title: 'LAYER',
       key: 'CreatedBy',
       ellipsis: true,
-      width: '75%',
+      width: '70%',
       align: 'left',
       dataIndex: 'CreatedBy',
     },
@@ -269,8 +267,8 @@ export default function ImageDetail() {
         className='site-layout-background'
         style={{ padding: 24, minHeight: 360 }}
       >
-        <Row>
-          <Col span={12}>
+        <Row gutter={16}>
+          <Col span={12} style={{maxHeight: 'calc(100vh - 200px)'}}>
             <MemorizeLayerSunburst
               name={name}
               layers={layers}
