@@ -21,7 +21,8 @@ getAwsCredential()
     const aws = AwsAdapter.getInstance();
     return aws.verifyAccessPermission();
   })
-  .then((data) => console.log(data));
+  .then(data => console.log(data))
+  .catch(err => console.log(err));
 
 export function generateDockerfile(options) {
   let base_image_url = options['base_image_url'];
