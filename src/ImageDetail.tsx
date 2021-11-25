@@ -85,6 +85,7 @@ const LayerSunburst = (props) => {
           fill: '#DC477D',
           stroke: '#EFEFEF',
           lineWidth: 3,
+          cursor: 'pointer',
         },
       },
     },
@@ -106,6 +107,9 @@ const LayerSunburst = (props) => {
     interactiions: [
       {
         type: 'element-selected',
+      },
+      {
+        type: 'element-single-selected',
       },
       {
         type: 'element-active',
