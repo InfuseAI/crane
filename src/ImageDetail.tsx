@@ -1,12 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import {
-  Layout,
-  Breadcrumb,
-  Col,
-  Row,
-  Table,
-  Typography,
-} from 'antd';
+import { Layout, Breadcrumb, Col, Row, Table, Typography } from 'antd';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atomOneLight } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import filesize from 'filesize';
@@ -86,6 +79,15 @@ const LayerSunburst = (props) => {
     hierarchyConfig: {
       field: 'Size',
     },
+    state: {
+      active: {
+        style: {
+          fill: '#DC477D',
+          stroke: '#EFEFEF',
+          lineWidth: 3,
+        },
+      },
+    },
     drilldown: {
       enabled: true,
       breadCrumb: {
@@ -99,7 +101,6 @@ const LayerSunburst = (props) => {
       '#0daca8',
       '#45c6ab',
       '#76dea8',
-      '#a9f5a4',
     ],
     annotations: [],
     interactiions: [
