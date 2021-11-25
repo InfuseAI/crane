@@ -6,14 +6,13 @@ import * as keytar from 'keytar';
 import { send } from './ServerIpc';
 import axios from 'axios';
 import { createMarkdownArrayTableSync } from 'parse-markdown-table';
-import * as ElectronStore from 'electron-store';
 import AwsAdapter from './AwsAdapter';
 
 const docker = new Docker();
-const localStore = new ElectronStore();
 const dockerHubCredentialKeyName = 'Crane-DockerHub';
 const primeHubCredentialKeyName = 'Crane-PrimeHub';
 const awsCredentialKeyName = 'Crane-AWS';
+const awsRegionKeyName = 'Crane-AWS-Region';
 
 // Init the AWS credential config
 getAwsCredential()
@@ -96,7 +95,8 @@ export async function getAwsCredential() {
     awsCredential.accessKey = credential.account;
     awsCredential.secretKey = credential.password;
   }
-  awsCredential.region = (localStore.get('AWSRegion') as string) || '';
+  const region = await getCredential(awsRegionKeyName);
+  awsCredential.region = region ? region.account : '';
   console.log('[Get Crane-AWS Region]', awsCredential.region);
   return awsCredential;
 }
@@ -133,7 +133,7 @@ const handlers = {
       await saveCredential(awsCredentialKeyName, accessKey, secretKey);
       AwsAdapter.setup({ accessKey, secretKey, region });
     }
-    localStore.set('AWSRegion', region);
+    await saveCredential(awsRegionKeyName, region, '');
   },
   'build-status': async () => {
     return handlers.build_status;
