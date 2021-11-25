@@ -96,7 +96,7 @@ export async function getAwsCredential() {
     awsCredential.secretKey = credential.password;
   }
   const region = await getCredential(awsRegionKeyName);
-  awsCredential.region = region ? region.account : '';
+  awsCredential.region = region ? region.password : '';
   console.log('[Get Crane-AWS Region]', awsCredential.region);
   return awsCredential;
 }
@@ -133,7 +133,7 @@ const handlers = {
       await saveCredential(awsCredentialKeyName, accessKey, secretKey);
       AwsAdapter.setup({ accessKey, secretKey, region });
     }
-    await saveCredential(awsRegionKeyName, region, '');
+    await saveCredential(awsRegionKeyName, 'region', region);
   },
   'build-status': async () => {
     return handlers.build_status;
