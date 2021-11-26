@@ -296,7 +296,7 @@ export default function ListImage() {
       title: 'NAME',
       dataIndex: 'name',
       key: 'name',
-      width: '35%',
+      width: '25%',
       sortDirections: ['ascend', 'descend'],
       sorter: (a, b) => a.name.localeCompare(b.name),
     },
@@ -310,6 +310,7 @@ export default function ListImage() {
       title: 'LABEL',
       dataIndex: 'imageLabel',
       key: 'imageLabel',
+      width: '10%',
       render: (imageLabel) => (
         imageLabel.map((label) => {
           return (<Tag> {label} </Tag>);
