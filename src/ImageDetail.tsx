@@ -245,7 +245,7 @@ function LayerTable(props) {
               chart?.setState('active', (item) => item.data.CreatedBy === CreatedBy, true)
             },
             onMouseLeave: (event) => {
-              chart?.setState('active', (item) => item.data.CreatedBy === CreatedBy, false);
+              chart?.setState('active', () => true, false);
             }
           }
         }
@@ -331,6 +331,7 @@ export default function ImageDetail() {
     },
     {
       title: 'LAYER',
+      className: 'layer-col',
       key: 'CreatedBy',
       ellipsis: true,
       width: '70%',
