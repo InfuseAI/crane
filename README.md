@@ -28,6 +28,12 @@ Install packages with apt, conda and pip, which should work in most notebook ima
 
 <img width="1136" alt="Build a Container image" src="./public/screenshots/build-container-image.png">
 
+### Inspect your own image
+
+Is the large container image slowing you down? Crane's image inspector give you a great overview of the image space usage that visualizes image layer usage to help you reduce the image size.
+
+<img width="1136" alt="Build a Container image" src="./public/screenshots/image-analytics.png">
+
 ### Manage Credentials
 
 Manage your remote registry credentials and PrimeHub API token securely. Now **DockerHub** and **AWS ECR** are supported. More on the way.
