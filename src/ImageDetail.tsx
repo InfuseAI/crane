@@ -1,12 +1,12 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { Layout, Breadcrumb, Col, Row, Table, Typography } from 'antd';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { Layout, Breadcrumb, Col, Row, Table, Typography, Card } from 'antd';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atomOneLight } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import filesize from 'filesize';
 import { send } from './utils/ipcClient';
 import { Sunburst } from '@ant-design/charts';
 import { useLocation, Link } from 'react-router-dom';
-import { groupBy, map, get, filter, pick } from 'lodash';
+import { groupBy, map, get, filter, pick, throttle } from 'lodash';
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -35,7 +35,7 @@ const mapLayers = (layers) => {
       filterKey: key,
       children: data.map((child) => {
         return {
-          label: child.CreatedBy.slice(0, 80) + '...',
+          label: child.CreatedBy.slice(0, 100) + '...',
           ...pick(child, [
             'cmd',
             'name',
@@ -52,7 +52,7 @@ const mapLayers = (layers) => {
 };
 
 const LayerSunburst = (props) => {
-  const { layers, name, onClick, onMouseOver, onMouseLeave } = props;
+  const { layers, name, onClick, onMouseEnter, onMouseLeave, chartRef } = props;
   const children = mapLayers(layers);
   const data = {
     name,
@@ -71,23 +71,68 @@ const LayerSunburst = (props) => {
     innerRadius: 0.2,
     radius: 1,
     autoFit: true,
-    interactions: [
-      {
-        type: 'element-active',
-      },
-    ],
-    hierarchyConfig: {
-      field: 'Size',
-    },
     state: {
       active: {
         style: {
           fill: '#DC477D',
           stroke: '#EFEFEF',
-          lineWidth: 3,
+          lineWidth: 1,
           cursor: 'pointer',
         },
       },
+      selected: {
+        style: {
+          fill: '#DC477D',
+          stroke: '#EFEFEF',
+          lineWidth: 5,
+        },
+      },
+    },
+    interactions: [
+      {
+        type: 'element-active',
+      },
+      {
+        type: 'tooltip',
+        enable: true
+      },
+
+    ],
+    hierarchyConfig: {
+      field: 'Size',
+    },
+    tooltip: {
+      domStyles: {
+        'g2-tooltip': {
+          margin: 0,
+          padding: 0,
+          opacity: 1,
+        }
+      },
+      customContent: (item, data) => {
+        const {name, value} = get(data, '0', {})
+        if (value) {
+          return (
+            <Card
+              style={{width: 300, margin: 0, backgroundColor: '#fafafa'}}
+              actions={[
+                <></>,
+                <span style={{fontWeight: 300, fontSize: '24px'}}>{value}</span>
+              ]}
+            >
+              <SyntaxHighlighter
+                wrapLines={true}
+                wrapLongLines={true}
+                customStyle={{overflow: 'hidden'}}
+                language='dockerfile'
+                style={atomOneLight}
+              >
+                {name}
+              </SyntaxHighlighter>
+            </Card>
+          );
+        }
+      }
     },
     drilldown: {
       enabled: true,
@@ -102,18 +147,6 @@ const LayerSunburst = (props) => {
       '#0daca8',
       '#45c6ab',
       '#76dea8',
-    ],
-    annotations: [],
-    interactiions: [
-      {
-        type: 'element-selected',
-      },
-      {
-        type: 'element-single-selected',
-      },
-      {
-        type: 'element-active',
-      },
     ],
     label: {
       layout: [
@@ -140,19 +173,23 @@ const LayerSunburst = (props) => {
           onClick({});
         }
       });
-      plot.on('element:mouseover', (evt) => {
-        const { data } = get(evt, 'data.data', {});
-        if (data.Created) {
-          onMouseOver(data.CreatedBy);
-        } else {
-          onMouseOver();
+      plot.off('plot:mouseenter').on('element:mouseenter', (evt) => {
+        try {
+          const { data } = get(evt, 'data.data', {});
+          if (data.Created) {
+            onMouseEnter(data.CreatedBy);
+          } else {
+            onMouseEnter();
+          }
+        } catch(e) {
+          console.log('Unexpected error: ', e);
         }
       });
     },
   };
 
   // @ts-ignore
-  return <Sunburst style={{ height: '100%', width: '100%' }} {...config} />;
+  return <Sunburst style={{ height: '100%', width: '100%' }} {...config} ref={chartRef} />;
 };
 
 const MemorizeLayerSunburst = React.memo(LayerSunburst);
@@ -163,7 +200,7 @@ function useQuery() {
 }
 
 function LayerTable(props) {
-  const { columns, layers, expandedRowKeys, onExpand, activeRow } = props;
+  const { columns, layers, expandedRowKeys, onExpand, activeRow, chartRef } = props;
   const expandedRowRender = (record) => {
     return (
       <SyntaxHighlighter
@@ -199,6 +236,20 @@ function LayerTable(props) {
         expandRowByClick: true,
       }}
       onExpand={onExpand}
+      onRow={
+        (record, rowIndex) => {
+          const { CreatedBy } = record;
+          const chart = chartRef.current.getChart();
+          return {
+            onMouseEnter: (event) => {
+              chart?.setState('active', (item) => item.data.CreatedBy === CreatedBy, true)
+            },
+            onMouseLeave: (event) => {
+              chart?.setState('active', () => true, false);
+            }
+          }
+        }
+      }
     />
   );
 }
@@ -209,6 +260,7 @@ export default function ImageDetail() {
   const [expandRowKeys, setExpandRowKeys] = useState<any>([]);
   const [activeRow, setActiveRow] = useState<string>();
   const [command, setCommand] = useState<string | boolean>();
+  const chartRef = useRef();
   const query = useQuery();
   const name = query.get('name');
   const fetchImage = async (image_name) => {
@@ -243,13 +295,14 @@ export default function ImageDetail() {
     }
   }, [command]);
 
-  const onMouseLeave = useCallback(() => {
+  const onMouseLeave = useCallback(throttle(() => {
     setActiveRow('');
-  }, []);
+  }, 16), []);
 
-  const onMouseOver = useCallback((row) => {
+  const onMouseEnter = useCallback(throttle((row) => {
+    setActiveRow('');
     setActiveRow(row);
-  }, []);
+  }, 16), []);
 
   const onClick = useCallback(({ cmd, key }) => {
     if (cmd) {
@@ -278,6 +331,7 @@ export default function ImageDetail() {
     },
     {
       title: 'LAYER',
+      className: 'layer-col',
       key: 'CreatedBy',
       ellipsis: true,
       width: '70%',
@@ -319,7 +373,8 @@ export default function ImageDetail() {
               layers={layers}
               onClick={onClick}
               onMouseLeave={onMouseLeave}
-              onMouseOver={onMouseOver}
+              onMouseEnter={onMouseEnter}
+              chartRef={chartRef}
             />
           </Col>
           <Col span={12} className='layers-col'>
@@ -328,6 +383,7 @@ export default function ImageDetail() {
               onExpand={onExpand}
               expandedRowKeys={expandRowKeys}
               activeRow={activeRow}
+              chartRef={chartRef}
               columns={columns}
             />
           </Col>
