@@ -45,7 +45,7 @@ const { TabPane } = Tabs;
 interface ImageDataSource {
   name: string;
   tag: string;
-  label: string[];
+  imageLabel: string[];
   imageId: string;
   key: string;
   created: string;
@@ -176,7 +176,7 @@ export default function ListImage() {
             (a, b) => a.length - b.length || a.localeCompare(b)
           );
           const [name, tag] = (repoTags.shift() || 'none').split(':');
-          const label = ((x.Labels || {})['crane.labels'] || '').split(',');
+          const label = ((x.Labels || {})['crane.labels'] || '').split(',').filter((v) => v !== '');
           const alias = repoTags.map((r) => {
             const [name, tag] = r.split(':');
             const imageId = x.Id.split(':')[1].substring(0, 12);
@@ -184,15 +184,15 @@ export default function ListImage() {
           });
 
           return {
-            name: name,
-            tag: tag,
+            name,
+            tag,
             imageLabel: label,
             imageId: x.Id.split(':')[1].substring(0, 12),
             key: x.Id.split(':')[1].substring(0, 12),
             created: format(x.Created * 1000),
             createdTime: x.Created,
             size: filesize(x.Size, { round: 1 }),
-            alias: alias,
+            alias,
           } as ImageDataSource;
         });
       updateImageList(images);
@@ -254,7 +254,7 @@ export default function ListImage() {
       {
         dataIndex: 'name',
         key: 'alias_name',
-        width: '35%',
+        width: '25%',
         render: (val) => <Text type='secondary'>{val}</Text>,
       },
       {
@@ -263,6 +263,12 @@ export default function ListImage() {
         key: 'alias_tag',
         width: '10%',
         render: (val) => <Text type='secondary'>{val}</Text>,
+      },
+      {
+        title: 'LABEL',
+        dataIndex: 'imageLabel',
+        key: 'imageLabel',
+        width: '10%',
       },
       {
         title: 'IMAGE ID',
@@ -347,11 +353,17 @@ export default function ListImage() {
       dataIndex: 'imageLabel',
       key: 'imageLabel',
       width: '10%',
-      render: (imageLabel) => (
-        imageLabel.map((label) => {
-          return (<Tag> {label} </Tag>);
-        })
-      ),
+      render: (imageLabel) => {
+        console.log(imageLabel, 111);
+        if (imageLabel.length <= 0) { return <></> };
+        return (
+          <>
+            {imageLabel.map((label) => {
+              return (<Tag className='list-image-label'>{label}</Tag>);
+            })}
+          </>
+        )
+      },
     },
     {
       title: 'IMAGE ID',

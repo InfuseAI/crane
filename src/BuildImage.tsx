@@ -31,12 +31,12 @@ const Status = {
   PROGRESSING: 'progressing',
 };
 
-const LabelGroup: React.FC<LabelGroupProps> = ({ value = {}, onChange }) => {
+const LabelGroup = ({ value = {}, onChange }) => {
   const [labels, setLabels] = useState([]);
 
   const inputRef = useRef(null);
   const [inputVisible, setInputVisible] = useState(false);
- 
+
   const onLabelsChange = (newLabels) => {
     setLabels(newLabels);
     onChange?.(newLabels);
@@ -48,8 +48,11 @@ const LabelGroup: React.FC<LabelGroupProps> = ({ value = {}, onChange }) => {
   };
 
   const onInputEnter = (e) => {
+    const { value } = e.target;
     setInputVisible(false);
-    onLabelsChange([...labels, e.target.value]);
+    if (value) {
+      onLabelsChange([...labels, value]);
+    }
   };
 
   const showInput = () => {
@@ -67,6 +70,7 @@ const LabelGroup: React.FC<LabelGroupProps> = ({ value = {}, onChange }) => {
       {labels.map((label) => {
         return (
           <Tag
+            className='edit-label'
             key={label}
             closable
             onClose={()=>onLabelClose(label)}
@@ -78,14 +82,15 @@ const LabelGroup: React.FC<LabelGroupProps> = ({ value = {}, onChange }) => {
       {inputVisible && (
         <Input
           ref={inputRef}
-          type="text"
-          size="small"
-          className="label-input"
+          type='text'
+          size='small'
+          className='label-input'
           onPressEnter={onInputEnter}
+          onBlur={onInputEnter}
         />
       )}
       {!inputVisible && (
-        <Tag className="add-label" onClick={showInput}>
+        <Tag className='add-label' onClick={showInput}>
           <PlusOutlined /> New Label
         </Tag>
       )}
@@ -98,7 +103,7 @@ export default function BuildImage() {
   const [options, updateOptions] = useState([]);
   const [logDrawerVisible, setLogDrawerVisible] = useState(false);
   const [blockBuildButton, setBlockBuildButton] = useState(false);
-  const [logText, setLogText] = useLocalStorage('build_log');
+  const [logText, setLogText] = useLocalStorage('build_log', '');
   const [form] = Form.useForm();
   const placeholder = `one package per line. e.g., \npackage1\npackage2\n`;
   const buildNotification = (name, isSuccess) => {
