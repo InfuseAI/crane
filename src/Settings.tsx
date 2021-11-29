@@ -24,6 +24,7 @@ import { Select } from 'antd';
 const { Option } = Select;
 const { Content } = Layout;
 const { TabPane } = Tabs;
+const defaultAwsRegion = 'us-east-1';
 
 export default function Settings() {
   const { tabName } = useParams<{ tabName: string }>();
@@ -132,7 +133,7 @@ export default function Settings() {
   useEffect(() => {
     async function fetchCredential() {
       const credential: any = await send('get-aws-credential');
-      if (credential) {
+      if (credential.accessKey && credential.secretKey && credential.region) {
         awsForm.setFieldsValue({
           'aws-id': credential.accessKey,
         });
@@ -190,7 +191,7 @@ export default function Settings() {
               layout='vertical'
               form={awsForm}
               name='settings'
-              initialValues={{ 'aws-region': 'us-east-1' }}
+              initialValues={{ 'aws-region': defaultAwsRegion }}
               onFinish={onAwsFinish}
             >
               <Form.Item label='Region' name='aws-region'>

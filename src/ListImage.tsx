@@ -139,6 +139,11 @@ export default function ListImage() {
       setLogDrawerVisible(true);
       setLogText(`Start receive push log stream: ${image_name}`);
       pushLogReceiver(ipc_name);
+    } else {
+      notification.error({
+        message: 'Push Failed',
+        description: `[DockerHub] No credentials have been configured`,
+      });
     }
   };
 
