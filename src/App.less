@@ -3,6 +3,9 @@
 
 body {
   background: url('images/logo_pink.png') #244764;
+  span {
+    cursor: default;
+  }
 }
 
 .App-link {
@@ -30,7 +33,16 @@ body {
 .tags-table,
 .alias-table,
 .images-table {
-  padding-left: 16px;
+  padding-left: 0px;
+  td {
+    cursor: default;
+    .image-link {
+      color: black;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
   .tags-row,
   .alias-row,
   .images-row {
@@ -39,13 +51,61 @@ body {
       color: @primary-color;
       border-color: @primary-color;
     }
-    background: #fbfbfb;
+    background: #fcfcfc;
     &:hover {
       .actionBtn {
         opacity: 1;
+        cursor: pointer;
+        > * {
+          cursor: pointer;
+        }
       }
     }
   }
+}
+
+.layers-col {
+  max-height: calc(100vh - 200px);
+  overflow-y: scroll;
+  padding: 0 0 0 80px;
+}
+
+.layer-table {
+  user-select: none;
+  td {
+    user-select: text;
+  }
+  td.layer-col {
+    cursor: pointer;
+  }
+  tr.active, tr.ant-table-row-level-0:hover {
+    color: #36899d;
+    font-weight: 400;
+    td.ant-table-cell {
+      background: #ffffcc !important;
+    }
+  }
+  tr.ant-table-expanded-row {
+    td {
+      padding: 0 !important;
+      > pre {
+        padding: 15px 25px !important;
+        margin-bottom: 0;
+        overflow-x: hidden !important;
+      }
+    }
+  }
+  p.createdBy {
+    margin: 0;
+    background: black;
+    color: white;
+    padding: 10px 20px;
+  }
+}
+
+.alias-table,
+.tags-table {
+  padding-left: 14px;
 }
 
 .repo-table {

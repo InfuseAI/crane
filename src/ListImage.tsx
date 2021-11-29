@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, Link } from 'react-router-dom';
 import { ImageInfo } from 'dockerode';
 import {
   Layout,
@@ -16,7 +16,11 @@ import {
 } from 'antd';
 import useLocalStorage from './hooks/useLocalStorage';
 import { LazyLog, ScrollFollow } from 'react-lazylog';
-import { CloudUploadOutlined } from '@ant-design/icons';
+import {
+  CloudUploadOutlined,
+  ReloadOutlined,
+  PieChartOutlined,
+} from '@ant-design/icons';
 import { send, listen, unlisten } from './utils/ipcClient';
 import ListRemoteImages from './ListRemoteImage';
 import ListAwsImages from './ListAwsImages';
@@ -197,20 +201,68 @@ export default function ListImage() {
     fetchImageList();
   }, []);
 
+  const ActionButtons = (props) => {
+    const { record } = props;
+    const imageName = `${record.name}:${record.tag}`;
+    return (
+      <React.Fragment>
+        <Tooltip title={`Push Image to ${remote}`}>
+          <Button
+            className='actionBtn'
+            size='small'
+            icon={<CloudUploadOutlined />}
+            onClick={() => {
+              switch (remote) {
+                case DOCKERHUB:
+                  pushImage(imageName);
+                  break;
+                case AWS:
+                  pushImageToAWS(imageName);
+                  break;
+                default:
+                  notification.error({
+                    message: 'Push Failed',
+                    description: 'Unknown Remote',
+                  });
+              }
+            }}
+          >
+            PUSH
+          </Button>
+        </Tooltip>
+        <Tooltip title={`Inspect this image`}>
+          <Button
+            type='primary'
+            className='actionBtn'
+            size='small'
+            style={{ marginLeft: 5, color: 'white' }}
+            icon={<PieChartOutlined />}
+            onClick={() => {
+              const target = `/image/${record.imageId}?name=${imageName}`;
+              history.push(target);
+            }}
+          >
+            DETAIL
+          </Button>
+        </Tooltip>
+      </React.Fragment>
+    );
+  };
+
   const expandedRowRender = (record: ImageDataSource) => {
     const columns: any[] = [
       {
         dataIndex: 'name',
         key: 'alias_name',
         width: '35%',
-        render: (val) => <Text disabled>{val}</Text>,
+        render: (val) => <Text type='secondary'>{val}</Text>,
       },
       {
         title: 'TAG',
         dataIndex: 'tag',
         key: 'alias_tag',
         width: '10%',
-        render: (val) => <Text disabled>{val}</Text>,
+        render: (val) => <Text type='secondary'>{val}</Text>,
       },
       {
         title: 'IMAGE ID',
@@ -223,49 +275,23 @@ export default function ListImage() {
         title: 'CREATED',
         key: 'alias_created',
         dataIndex: 'created',
-        width: '15%',
+        width: '10%',
         render: (val) => <Text type='secondary'> - </Text>,
       },
       {
         title: 'SIZE',
         key: 'alias_size',
         dataIndex: 'size',
-        width: '15%',
+        width: '10%',
         render: (val) => <Text type='secondary'> - </Text>,
       },
       {
         key: 'action',
-        align: 'center',
-        width: '10%',
+        align: 'left',
+        width: '20%',
         render: (text, record) => {
           if (record.name !== '<none>') {
-            return (
-              <Tooltip title={`Push Image to ${remote}`}>
-                <Button
-                  className='actionBtn'
-                  size='small'
-                  icon={<CloudUploadOutlined />}
-                  onClick={() => {
-                    const imageName = `${record.name}:${record.tag}`;
-                    switch (remote) {
-                      case DOCKERHUB:
-                        pushImage(imageName);
-                        break;
-                      case AWS:
-                        pushImageToAWS(imageName);
-                        break;
-                      default:
-                        notification.error({
-                          message: 'Push Failed',
-                          description: 'Unknown Remote',
-                        });
-                    }
-                  }}
-                >
-                  PUSH
-                </Button>
-              </Tooltip>
-            );
+            return <ActionButtons record={record} />;
           }
         },
       },
@@ -291,6 +317,7 @@ export default function ListImage() {
       />
     );
   };
+
   const columns = [
     {
       title: 'NAME',
@@ -299,6 +326,15 @@ export default function ListImage() {
       width: '25%',
       sortDirections: ['ascend', 'descend'],
       sorter: (a, b) => a.name.localeCompare(b.name),
+      render: (val, record) => {
+        const imageName = `${record.name}:${record.tag}`;
+        const target = `/image/${record.imageId}?name=${imageName}`;
+        return (
+          <Link className='image-link' to={target}>
+            {record.name}
+          </Link>
+        );
+      },
     },
     {
       title: 'TAG',
@@ -327,7 +363,7 @@ export default function ListImage() {
       title: 'CREATED',
       key: 'created',
       dataIndex: 'created',
-      width: '15%',
+      width: '10%',
       defaultSortOrder: 'descend',
       sorter: (a, b) => {
         return a.createdTime - b.createdTime;
@@ -337,41 +373,16 @@ export default function ListImage() {
       title: 'SIZE',
       key: 'size',
       dataIndex: 'size',
-      width: '15%',
+      width: '10%',
     },
     {
+      title: 'ACTIONS',
       key: 'action',
-      align: 'center',
-      width: '10%',
+      align: 'left',
+      width: '20%',
       render: (text, record) => {
         if (record.name !== '<none>') {
-          return (
-            <Tooltip title={`Push Image to ${remote}`}>
-              <Button
-                className='actionBtn'
-                size='small'
-                icon={<CloudUploadOutlined />}
-                onClick={() => {
-                  const imageName = `${record.name}:${record.tag}`;
-                  switch (remote) {
-                    case DOCKERHUB:
-                      pushImage(imageName);
-                      break;
-                    case AWS:
-                      pushImageToAWS(imageName);
-                      break;
-                    default:
-                      notification.error({
-                        message: 'Push Failed',
-                        description: 'Unknown Remote',
-                      });
-                  }
-                }}
-              >
-                PUSH
-              </Button>
-            </Tooltip>
-          );
+          return <ActionButtons record={record} />;
         }
       },
     },
@@ -389,7 +400,10 @@ export default function ListImage() {
         <Select
           defaultValue={remote}
           onChange={onWarehouseChange}
-          style={{ width: 130 }}
+          style={{
+            width: 130,
+            marginRight: 122,
+          }}
         >
           <Option disabled={!hasCredentials.dockerhub} value={DOCKERHUB}>
             DockerHub
@@ -400,8 +414,7 @@ export default function ListImage() {
                 placement='left'
                 title={
                   <div>
-                    Please{' '}
-                    {/* eslint-disable-next-line */}
+                    Please {/* eslint-disable-next-line */}
                     <a onClick={() => history.push('/settings/aws')}>
                       Setup AWS Credential
                     </a>{' '}
@@ -437,6 +450,22 @@ export default function ListImage() {
           tabBarExtraContent={tabBarExtraContent}
         >
           <TabPane tab='LOCAL' key='1'>
+            <div
+              style={{
+                marginBottom: 0,
+                textAlign: 'right',
+                position: 'relative',
+              }}
+            >
+              <Button
+                style={{ position: 'absolute', top: -60, right: 0 }}
+                type='primary'
+                disabled={true}
+              >
+                <ReloadOutlined />
+                REFRESH
+              </Button>
+            </div>
             <Table
               className='images-table'
               rowClassName='images-row'

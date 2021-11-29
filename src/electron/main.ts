@@ -13,10 +13,10 @@ let serverProcess;
 
 function createWindow(args) {
   const win = new BrowserWindow({
-    width: 1024,
-    height: 640,
-    minWidth: 1024,
-    minHeight: 640,
+    width: 1280,
+    height: 800,
+    minWidth: 1280,
+    minHeight: 800,
     backgroundColor: '#244764',
     show: false,
     webPreferences: {
