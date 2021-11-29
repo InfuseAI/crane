@@ -21,8 +21,8 @@ getAwsCredential()
     const aws = AwsAdapter.getInstance();
     return aws.verifyAccessPermission();
   })
-  .then(data => console.log(data))
-  .catch(err => console.log(err));
+  .then((data) => console.log(data))
+  .catch((err) => console.log(err));
 
 export function generateDockerfile(options) {
   let base_image_url = options['base_image_url'];
@@ -59,16 +59,22 @@ ${pip}`;
   return dockerfileContent;
 }
 
-export async function getCredential(keyName: string): Promise<{account: string, password: string}> {
+export async function getCredential(
+  keyName: string
+): Promise<{ account: string; password: string }> {
   const credentials = await keytar.findCredentials(keyName);
   if (!credentials || credentials.length === 0) {
-    return {account: '', password: ''};
+    return { account: '', password: '' };
   }
   console.log('[Get ' + keyName + ' Credential]', credentials[0]);
   return credentials[0];
 }
 
-export async function saveCredential(keyName: string, account: string, password: string): Promise<{account: string, password: string}> {
+export async function saveCredential(
+  keyName: string,
+  account: string,
+  password: string
+): Promise<{ account: string; password: string }> {
   const existCredential = await getCredential(keyName);
   if (existCredential.account) {
     await keytar.deletePassword(keyName, existCredential.account);
@@ -144,8 +150,10 @@ const handlers = {
     }
     await saveCredential(awsRegionKeyName, 'region', region);
   },
-  'delete-dockerhub-credential': async () => await deleteCredential(dockerHubCredentialKeyName),
-  'delete-primehub-credential': async () => await deleteCredential(primeHubCredentialKeyName),
+  'delete-dockerhub-credential': async () =>
+    await deleteCredential(dockerHubCredentialKeyName),
+  'delete-primehub-credential': async () =>
+    await deleteCredential(primeHubCredentialKeyName),
   'delete-aws-credential': async () => {
     await deleteCredential(awsCredentialKeyName);
     await deleteCredential(awsRegionKeyName);
@@ -285,17 +293,17 @@ const handlers = {
       );
       return log_ipc_name;
     } catch (error) {
-      async function sleep(time : number) : Promise<void>{
-        return new Promise<void>((res,rej)=>{
-            setTimeout(res,time);
+      async function sleep(time: number): Promise<void> {
+        return new Promise<void>((res, rej) => {
+          setTimeout(res, time);
         });
-    }
+      }
       async function throwErrorByIpc(ipc_name: string, error) {
         await sleep(1000);
         send(ipc_name, {
           stage: 'finished',
           error: error,
-          output: [{error: `[AWS] ${error.message}`}],
+          output: [{ error: `[AWS] ${error.message}` }],
         });
       }
       const error_ipc_name = `push-log-${image_name}`;

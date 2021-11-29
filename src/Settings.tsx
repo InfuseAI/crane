@@ -213,7 +213,9 @@ export default function Settings() {
                 <Button type='primary' htmlType='submit'>
                   Save
                 </Button>
-                <Button style={{ margin: '0 8px' }} onClick={onDockerHubReset}>Reset</Button>
+                <Button style={{ margin: '0 8px' }} onClick={onDockerHubReset}>
+                  Reset
+                </Button>
               </Form.Item>
             </Form>
           </TabPane>
@@ -275,7 +277,9 @@ export default function Settings() {
                 <Button type='primary' htmlType='submit'>
                   Save
                 </Button>
-                <Button style={{ margin: '0 8px' }} onClick={onAwsReset}>Reset</Button>
+                <Button style={{ margin: '0 8px' }} onClick={onAwsReset}>
+                  Reset
+                </Button>
               </Form.Item>
             </Form>
           </TabPane>
@@ -332,7 +336,9 @@ export default function Settings() {
                 <Button type='primary' htmlType='submit'>
                   Save
                 </Button>
-                <Button style={{ margin: '0 8px' }} onClick={onPrimeHubReset}>Reset</Button>
+                <Button style={{ margin: '0 8px' }} onClick={onPrimeHubReset}>
+                  Reset
+                </Button>
               </Form.Item>
             </Form>
           </TabPane>
