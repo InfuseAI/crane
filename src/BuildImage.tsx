@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef} from 'react';
 import {
   Layout,
   Breadcrumb,
   Form,
+  Tag,
   Input,
   Button,
   Row,
@@ -16,6 +17,7 @@ import { SiPython } from 'react-icons/si';
 import { send, listen, unlisten } from './utils/ipcClient';
 import { LazyLog, ScrollFollow } from 'react-lazylog';
 import { useHistory } from 'react-router-dom';
+import { PlusOutlined } from '@ant-design/icons';
 
 const { Content } = Layout;
 const { TextArea } = Input;
@@ -29,12 +31,79 @@ const Status = {
   PROGRESSING: 'progressing',
 };
 
+const LabelGroup = ({ value = {}, onChange }) => {
+  const [labels, setLabels] = useState([]);
+
+  const inputRef = useRef(null);
+  const [inputVisible, setInputVisible] = useState(false);
+
+  const onLabelsChange = (newLabels) => {
+    setLabels(newLabels);
+    onChange?.(newLabels);
+    console.log(labels);
+  };
+
+  const onLabelClose = (closedLabel) => {
+    onLabelsChange(labels.filter((label) => label !== closedLabel));
+  };
+
+  const onInputEnter = (e) => {
+    const { value } = e.target;
+    setInputVisible(false);
+    if (value) {
+      onLabelsChange([...labels, value]);
+    }
+  };
+
+  const showInput = () => {
+    setInputVisible(true);
+  };
+
+  useEffect(() => {
+    if (inputVisible) {
+      inputRef.current.focus();
+    }
+  }, [inputVisible]);
+
+  return (
+    <>
+      {labels.map((label) => {
+        return (
+          <Tag
+            className='edit-label'
+            key={label}
+            closable
+            onClose={()=>onLabelClose(label)}
+          >
+            {label}
+          </Tag>
+        );
+      })}
+      {inputVisible && (
+        <Input
+          ref={inputRef}
+          type='text'
+          size='small'
+          className='label-input'
+          onPressEnter={onInputEnter}
+          onBlur={onInputEnter}
+        />
+      )}
+      {!inputVisible && (
+        <Tag className='add-label' onClick={showInput}>
+          <PlusOutlined /> New Label
+        </Tag>
+      )}
+    </>
+  );
+};
+
 export default function BuildImage() {
   const history = useHistory();
   const [options, updateOptions] = useState([]);
   const [logDrawerVisible, setLogDrawerVisible] = useState(false);
   const [blockBuildButton, setBlockBuildButton] = useState(false);
-  const [logText, setLogText] = useLocalStorage('build_log');
+  const [logText, setLogText] = useLocalStorage('build_log', '');
   const [form] = Form.useForm();
   const placeholder = `one package per line. e.g., \npackage1\npackage2\n`;
   const buildNotification = (name, isSuccess) => {
@@ -230,6 +299,12 @@ export default function BuildImage() {
                 disabled={blockBuildButton}
               />
             </AutoComplete>
+          </Form.Item>
+          <Form.Item label='Description' name='image_description'>
+            <Input disabled={blockBuildButton} />
+          </Form.Item>
+          <Form.Item label='Label' name='image_labels'>
+            <LabelGroup />
           </Form.Item>
           <Row gutter={8}>
             <Col span={8}>

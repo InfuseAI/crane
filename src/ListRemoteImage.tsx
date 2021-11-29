@@ -11,6 +11,7 @@ import { send } from './utils/ipcClient';
 import { format } from 'timeago.js';
 import { useHistory } from 'react-router-dom';
 import filesize from 'filesize';
+import { ImageInfo } from 'dockerode';
 const API_BASE_URL = 'https://hub.docker.com';
 const API_VERSION = 'v2';
 const API_URL = `${API_BASE_URL}/${API_VERSION}`;
@@ -123,9 +124,13 @@ export default function ListRemoteImages() {
               className='actionBtn'
               size='small'
               icon={<ExportOutlined />}
-              onClick={() => {
+              onClick={async () => {
                 const tag = `${record.namespace}/${record.name}:${name}`;
-                history.push(`/createPrimeHubImage?tag=${tag}`);
+                const results = (await send('list-image')) as ImageInfo[];
+                const image = results.find((x) => x.RepoTags && x.RepoTags.includes(tag));
+                const description = ((image || {}).Labels|| {})['crane.description'] || '';
+                const uri = encodeURI(`/createPrimeHubImage?tag=${tag}&&description=${description}`);
+                history.push(uri);
               }}
             >
               ADD
