@@ -270,6 +270,12 @@ const handlers = {
 
     return log_ipc_name;
   },
+  'get-image-detail': async ({ image_name }) => {
+    const image = await docker.getImage(image_name);
+    const history = await image.history();
+    console.log(`Image ${image_name}'s History: `, history);
+    return history;
+  },
   'push-image-dockerhub': async ({ image_name }) => {
     function extractTrueName(
       rawName: string,

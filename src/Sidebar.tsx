@@ -49,8 +49,8 @@ export default function Sidebar(prop) {
         <Menu.Item
           key={(() => {
             const path = location.pathname.replaceAll('/', '');
-            if (path === 'createPrimeHubImage') {
-              return 'createPrimeHubImage';
+            if (path === 'createPrimeHubImage' || path.includes('image')) {
+              return path;
             }
             return 'images';
           })()}
