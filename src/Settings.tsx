@@ -100,6 +100,37 @@ export default function Settings() {
       });
     }
   };
+  const onDockerHubReset = async () => {
+    await send('delete-dockerhub-credential');
+    notification.info({
+      message: 'DockerHub setup reset.',
+    });
+    dockerHubForm.setFieldsValue({
+      'docker-account': '',
+      'docker-password': '',
+    });
+  };
+  const onAwsReset = async () => {
+    await send('delete-aws-credential');
+    notification.info({
+      message: 'AWS setup reset.',
+    });
+    awsForm.setFieldsValue({
+      'aws-id': '',
+      'aws-key': '',
+      'aws-region': defaultAwsRegion,
+    });
+  };
+  const onPrimeHubReset = async () => {
+    await send('delete-primehub-credential');
+    notification.info({
+      message: 'PrimeHub setup reset.',
+    });
+    primeHubForm.setFieldsValue({
+      'primehub-api-endpoint': '',
+      'primehub-api-token': '',
+    });
+  };
   useEffect(() => {
     async function fetchCredential() {
       const credential: any = await send('get-dockerhub-credential');
@@ -182,7 +213,7 @@ export default function Settings() {
                 <Button type='primary' htmlType='submit'>
                   Save
                 </Button>
-                <Button style={{ margin: '0 8px' }}>Reset</Button>
+                <Button style={{ margin: '0 8px' }} onClick={onDockerHubReset}>Reset</Button>
               </Form.Item>
             </Form>
           </TabPane>
@@ -244,7 +275,7 @@ export default function Settings() {
                 <Button type='primary' htmlType='submit'>
                   Save
                 </Button>
-                {/* <Button style={{ margin: '0 8px' }}>Reset</Button> */}
+                <Button style={{ margin: '0 8px' }} onClick={onAwsReset}>Reset</Button>
               </Form.Item>
             </Form>
           </TabPane>
@@ -301,7 +332,7 @@ export default function Settings() {
                 <Button type='primary' htmlType='submit'>
                   Save
                 </Button>
-                <Button style={{ margin: '0 8px' }}>Reset</Button>
+                <Button style={{ margin: '0 8px' }} onClick={onPrimeHubReset}>Reset</Button>
               </Form.Item>
             </Form>
           </TabPane>

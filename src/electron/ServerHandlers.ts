@@ -78,6 +78,14 @@ export async function saveCredential(keyName: string, account: string, password:
   return { account, password };
 }
 
+export async function deleteCredential(keyName: string) {
+  const existCredential = await getCredential(keyName);
+  if (existCredential.account) {
+    await keytar.deletePassword(keyName, existCredential.account);
+  }
+  console.log('[' + keyName + ' Credential Deleted]');
+}
+
 export function writeDockerfile(dockerfileContent) {
   fs.writeFileSync(
     path.join(config.workingDir, 'Dockerfile'),
@@ -135,6 +143,12 @@ const handlers = {
       AwsAdapter.setup({ accessKey, secretKey, region });
     }
     await saveCredential(awsRegionKeyName, 'region', region);
+  },
+  'delete-dockerhub-credential': async () => await deleteCredential(dockerHubCredentialKeyName),
+  'delete-primehub-credential': async () => await deleteCredential(primeHubCredentialKeyName),
+  'delete-aws-credential': async () => {
+    await deleteCredential(awsCredentialKeyName);
+    await deleteCredential(awsRegionKeyName);
   },
   'build-status': async () => {
     return handlers.build_status;

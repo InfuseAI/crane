@@ -59,7 +59,15 @@ export default function ListRemoteImages() {
   const fetchCredential = async () => {
     // @ts-ignore
     const credential: any = await send('get-dockerhub-credential');
-    setDockerhub(credential);
+    if (credential.account && credential.password) {
+      setDockerhub(credential);
+    } else {
+      notification.error({
+        message: 'Missing DockerHub Credential',
+        description: 'Please add your DockerHub credential',
+      });
+      setLoading(false);
+    }
   };
 
   const genClient = async (username, password) => {
@@ -209,6 +217,8 @@ export default function ListRemoteImages() {
           });
           console.log(error);
         }
+      } else {
+        console.log('No DockerHub Credential');
       }
     };
   };
