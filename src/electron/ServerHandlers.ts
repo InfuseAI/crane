@@ -21,8 +21,8 @@ getAwsCredential()
     const aws = AwsAdapter.getInstance();
     return aws.verifyAccessPermission();
   })
-  .then(data => console.log(data))
-  .catch(err => console.log(err));
+  .then((data) => console.log(data))
+  .catch((err) => console.log(err));
 
 export function generateDockerfile(options) {
   let base_image_url = options['base_image_url'];
@@ -72,23 +72,37 @@ ${pip}`;
   return dockerfileContent;
 }
 
-export async function getCredential(keyname) {
-  const credentials = await keytar.findCredentials(keyname);
+export async function getCredential(
+  keyName: string
+): Promise<{ account: string; password: string }> {
+  const credentials = await keytar.findCredentials(keyName);
   if (!credentials || credentials.length === 0) {
-    return null;
+    return { account: '', password: '' };
   }
-  console.log('[Get ' + keyname + ' Credential]', credentials[0]);
+  console.log('[Get ' + keyName + ' Credential]', credentials[0]);
   return credentials[0];
 }
 
-export async function saveCredential(keyname, account, password) {
-  const existCredential = await getCredential(keyname);
-  if (existCredential) {
-    await keytar.deletePassword(keyname, existCredential.account);
+export async function saveCredential(
+  keyName: string,
+  account: string,
+  password: string
+): Promise<{ account: string; password: string }> {
+  const existCredential = await getCredential(keyName);
+  if (existCredential.account) {
+    await keytar.deletePassword(keyName, existCredential.account);
   }
-  await keytar.setPassword(keyname, account, password);
-  console.log('[' + keyname + ' Credential Saved]');
+  await keytar.setPassword(keyName, account, password);
+  console.log('[' + keyName + ' Credential Saved]');
   return { account, password };
+}
+
+export async function deleteCredential(keyName: string) {
+  const existCredential = await getCredential(keyName);
+  if (existCredential.account) {
+    await keytar.deletePassword(keyName, existCredential.account);
+  }
+  console.log('[' + keyName + ' Credential Deleted]');
 }
 
 export function writeDockerfile(dockerfileContent) {
@@ -148,6 +162,14 @@ const handlers = {
       AwsAdapter.setup({ accessKey, secretKey, region });
     }
     await saveCredential(awsRegionKeyName, 'region', region);
+  },
+  'delete-dockerhub-credential': async () =>
+    await deleteCredential(dockerHubCredentialKeyName),
+  'delete-primehub-credential': async () =>
+    await deleteCredential(primeHubCredentialKeyName),
+  'delete-aws-credential': async () => {
+    await deleteCredential(awsCredentialKeyName);
+    await deleteCredential(awsRegionKeyName);
   },
   'build-status': async () => {
     return handlers.build_status;
@@ -234,54 +256,74 @@ const handlers = {
       const [username, password] = plaintext.split(':');
       return { username, password };
     }
-    const { repoName, tag } = extractTrueName(image_name);
-    const ecrRegistry = await AwsAdapter.getInstance().createEcrRepository(
-      repoName
-    );
-    const ecrToken = await AwsAdapter.getInstance().getAuthorizationToken();
-    const authToken = ecrToken.authorizationData[0].authorizationToken;
-    const endpoint = ecrToken.authorizationData[0].proxyEndpoint;
-    const { username, password } = extractAuthPassword(authToken);
-    const auth = {
-      username: username,
-      password: password,
-      serveraddress: endpoint,
-    };
 
-    // Generate Image Tag for ECR
-    const ecrImageName = `${ecrRegistry.repositoryUri}:${tag}`;
-    await docker
-      .getImage(image_name)
-      .tag({ repo: ecrRegistry.repositoryUri, tag: tag });
+    try {
+      const { repoName, tag } = extractTrueName(image_name);
+      const ecrRegistry = await AwsAdapter.getInstance().createEcrRepository(
+        repoName
+      );
+      const ecrToken = await AwsAdapter.getInstance().getAuthorizationToken();
+      const authToken = ecrToken.authorizationData[0].authorizationToken;
+      const endpoint = ecrToken.authorizationData[0].proxyEndpoint;
+      const { username, password } = extractAuthPassword(authToken);
+      const auth = {
+        username: username,
+        password: password,
+        serveraddress: endpoint,
+      };
 
-    console.log(`[Push Image] ${ecrImageName}`, ecrRegistry);
-    const push_stream = await docker.getImage(ecrImageName).push({
-      authconfig: auth,
-    });
+      // Generate Image Tag for ECR
+      const ecrImageName = `${ecrRegistry.repositoryUri}:${tag}`;
+      await docker
+        .getImage(image_name)
+        .tag({ repo: ecrRegistry.repositoryUri, tag: tag });
 
-    const log_ipc_name = `push-log-${ecrImageName}`;
-    docker.modem.followProgress(
-      push_stream,
-      (err, output) => {
-        handlers.build_status = 'finished';
-        console.log('push finished', err, output);
-        send(log_ipc_name, {
-          stage: 'finished',
-          error: err,
-          output: output,
+      console.log(`[Push Image] ${ecrImageName}`, ecrRegistry);
+      const push_stream = await docker.getImage(ecrImageName).push({
+        authconfig: auth,
+      });
+
+      const log_ipc_name = `push-log-${ecrImageName}`;
+      docker.modem.followProgress(
+        push_stream,
+        (err, output) => {
+          handlers.build_status = 'finished';
+          console.log('push finished', err, output);
+          send(log_ipc_name, {
+            stage: 'finished',
+            error: err,
+            output: output,
+          });
+        },
+        (event) => {
+          console.log(event);
+          send(log_ipc_name, {
+            stage: 'progressing',
+            output: event,
+          });
+          handlers.build_events.push(event);
+        }
+      );
+      return log_ipc_name;
+    } catch (error) {
+      async function sleep(time: number): Promise<void> {
+        return new Promise<void>((res, rej) => {
+          setTimeout(res, time);
         });
-      },
-      (event) => {
-        console.log(event);
-        send(log_ipc_name, {
-          stage: 'progressing',
-          output: event,
-        });
-        handlers.build_events.push(event);
       }
-    );
-
-    return log_ipc_name;
+      async function throwErrorByIpc(ipc_name: string, error) {
+        await sleep(1000);
+        send(ipc_name, {
+          stage: 'finished',
+          error: error,
+          output: [{ error: `[AWS] ${error.message}` }],
+        });
+      }
+      const error_ipc_name = `push-log-${image_name}`;
+      console.log('push error', error.message);
+      throwErrorByIpc(error_ipc_name, error);
+      return error_ipc_name;
+    }
   },
   'get-image-detail': async ({ image_name }) => {
     const image = await docker.getImage(image_name);
@@ -302,7 +344,7 @@ const handlers = {
       return { repoName, tag: tag || 'latest' };
     }
     const credential = await getCredential(dockerHubCredentialKeyName);
-    if (!credential) {
+    if (!credential.account || !credential.password) {
       return null;
     }
     const auth = {

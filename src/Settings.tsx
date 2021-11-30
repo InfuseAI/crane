@@ -24,6 +24,7 @@ import { Select } from 'antd';
 const { Option } = Select;
 const { Content } = Layout;
 const { TabPane } = Tabs;
+const defaultAwsRegion = 'us-east-1';
 
 export default function Settings() {
   const { tabName } = useParams<{ tabName: string }>();
@@ -99,6 +100,37 @@ export default function Settings() {
       });
     }
   };
+  const onDockerHubReset = async () => {
+    await send('delete-dockerhub-credential');
+    notification.info({
+      message: 'DockerHub setup reset.',
+    });
+    dockerHubForm.setFieldsValue({
+      'docker-account': '',
+      'docker-password': '',
+    });
+  };
+  const onAwsReset = async () => {
+    await send('delete-aws-credential');
+    notification.info({
+      message: 'AWS setup reset.',
+    });
+    awsForm.setFieldsValue({
+      'aws-id': '',
+      'aws-key': '',
+      'aws-region': defaultAwsRegion,
+    });
+  };
+  const onPrimeHubReset = async () => {
+    await send('delete-primehub-credential');
+    notification.info({
+      message: 'PrimeHub setup reset.',
+    });
+    primeHubForm.setFieldsValue({
+      'primehub-api-endpoint': '',
+      'primehub-api-token': '',
+    });
+  };
   useEffect(() => {
     async function fetchCredential() {
       const credential: any = await send('get-dockerhub-credential');
@@ -132,7 +164,7 @@ export default function Settings() {
   useEffect(() => {
     async function fetchCredential() {
       const credential: any = await send('get-aws-credential');
-      if (credential) {
+      if (credential.accessKey && credential.secretKey && credential.region) {
         awsForm.setFieldsValue({
           'aws-id': credential.accessKey,
         });
@@ -181,7 +213,9 @@ export default function Settings() {
                 <Button type='primary' htmlType='submit'>
                   Save
                 </Button>
-                <Button style={{ margin: '0 8px' }}>Reset</Button>
+                <Button style={{ margin: '0 8px' }} onClick={onDockerHubReset}>
+                  Reset
+                </Button>
               </Form.Item>
             </Form>
           </TabPane>
@@ -190,7 +224,7 @@ export default function Settings() {
               layout='vertical'
               form={awsForm}
               name='settings'
-              initialValues={{ 'aws-region': 'us-east-1' }}
+              initialValues={{ 'aws-region': defaultAwsRegion }}
               onFinish={onAwsFinish}
             >
               <Form.Item label='Region' name='aws-region'>
@@ -243,7 +277,9 @@ export default function Settings() {
                 <Button type='primary' htmlType='submit'>
                   Save
                 </Button>
-                {/* <Button style={{ margin: '0 8px' }}>Reset</Button> */}
+                <Button style={{ margin: '0 8px' }} onClick={onAwsReset}>
+                  Reset
+                </Button>
               </Form.Item>
             </Form>
           </TabPane>
@@ -300,7 +336,9 @@ export default function Settings() {
                 <Button type='primary' htmlType='submit'>
                   Save
                 </Button>
-                <Button style={{ margin: '0 8px' }}>Reset</Button>
+                <Button style={{ margin: '0 8px' }} onClick={onPrimeHubReset}>
+                  Reset
+                </Button>
               </Form.Item>
             </Form>
           </TabPane>
