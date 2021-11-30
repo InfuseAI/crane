@@ -3,7 +3,7 @@
   "productName": "Crane",
   "author": "InfuseAI",
   "description": "Crane is a easy-to-use and beautiful desktop application helps you build manage your docker images.",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
   "dependencies": {
     "@ant-design/charts": "^1.2.14",
