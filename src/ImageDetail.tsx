@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Layout, Breadcrumb, Col, Row, Table, Typography, Card } from 'antd';
+import { Layout, Spin, Breadcrumb, Col, Row, Table, Typography, Card } from 'antd';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atomOneLight } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import filesize from 'filesize';
@@ -8,7 +8,7 @@ import { Sunburst } from '@ant-design/charts';
 import { useLocation, Link } from 'react-router-dom';
 import { groupBy, map, get, filter, pick, throttle } from 'lodash';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Content } = Layout;
 
 const mapLayers = (layers) => {
@@ -200,7 +200,7 @@ function useQuery() {
 }
 
 function LayerTable(props) {
-  const { columns, layers, expandedRowKeys, onExpand, activeRow, chartRef } = props;
+  const { columns, layers, loading, expandedRowKeys, onExpand, activeRow, chartRef } = props;
   const expandedRowRender = (record) => {
     return (
       <SyntaxHighlighter
@@ -216,7 +216,7 @@ function LayerTable(props) {
   return (
     <Table
       title={(currentPageData) => {
-        return <Title level={4}>IMAGE LAYERS</Title>;
+        return <Title level={3}>IMAGE LAYERS</Title>;
       }}
       rowClassName={(record, index) => {
         if (record.CreatedBy === activeRow) {
@@ -224,6 +224,7 @@ function LayerTable(props) {
         }
         return '';
       }}
+      loading={loading}
       columns={columns}
       className='layer-table'
       dataSource={layers}
@@ -257,6 +258,7 @@ function LayerTable(props) {
 export default function ImageDetail() {
   const [source, setSource] = useState<any>([]);
   const [layers, setLayers] = useState<any>([]);
+  const [loading, setLoading] = useState<any>(true);
   const [expandRowKeys, setExpandRowKeys] = useState<any>([]);
   const [activeRow, setActiveRow] = useState<string>();
   const [command, setCommand] = useState<string | boolean>();
@@ -280,6 +282,7 @@ export default function ImageDetail() {
     });
     setLayers(layers);
     setSource(layers);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -326,7 +329,9 @@ export default function ImageDetail() {
     {
       title: 'NO',
       key: 'id',
+      className: 'line-number-col',
       width: '10%',
+      align: 'right',
       render: (value, record, index) => index + 1,
     },
     {
@@ -337,13 +342,25 @@ export default function ImageDetail() {
       width: '70%',
       align: 'left',
       dataIndex: 'CreatedBy',
+      render: (value) => (
+        <SyntaxHighlighter
+          wrapLines={true}
+          wrapLongLines={false}
+          customStyle={{overflow: 'hidden'}}
+          language='dockerfile'
+          style={atomOneLight}
+        >
+          {value}
+        </SyntaxHighlighter>
+      ),
     },
     {
       title: 'SIZE',
       key: 'Size',
       width: '20%',
+      className: 'size-col',
       dataIndex: 'Size',
-      render: (val) => filesize(val, { round: 3 }),
+      render: (val) => val > 0 ? filesize(val, { round: 1 }) : (<Text type='secondary'>{ val } B</Text>),
     },
   ];
 
@@ -356,39 +373,42 @@ export default function ImageDetail() {
         </Breadcrumb.Item>
         <Breadcrumb.Item>Image: {name}</Breadcrumb.Item>
       </Breadcrumb>
-      <div
-        className='site-layout-background'
-        style={{ padding: 24, minHeight: 360 }}
-      >
-        <Row>
-          <Col
-            span={12}
-            style={{
-              maxHeight: 'calc(100vh - 200px)',
-              minHeight: 'calc(100vh - 200px)',
-            }}
-          >
-            <MemorizeLayerSunburst
-              name={name}
-              layers={layers}
-              onClick={onClick}
-              onMouseLeave={onMouseLeave}
-              onMouseEnter={onMouseEnter}
-              chartRef={chartRef}
-            />
-          </Col>
-          <Col span={12} className='layers-col'>
-            <LayerTable
-              layers={source}
-              onExpand={onExpand}
-              expandedRowKeys={expandRowKeys}
-              activeRow={activeRow}
-              chartRef={chartRef}
-              columns={columns}
-            />
-          </Col>
-        </Row>
-      </div>
+      <Spin spinning={loading} size='large'>
+        <div
+          className='site-layout-background'
+          style={{ padding: 24, minHeight: 360 }}
+        >
+          <Row>
+            <Col
+              span={12}
+              style={{
+                maxHeight: 'calc(100vh - 200px)',
+                  minHeight: 'calc(100vh - 200px)',
+              }}
+            >
+              <MemorizeLayerSunburst
+                name={name}
+                layers={layers}
+                onClick={onClick}
+                onMouseLeave={onMouseLeave}
+                onMouseEnter={onMouseEnter}
+                chartRef={chartRef}
+              />
+            </Col>
+            <Col span={12} className='layers-col'>
+              <LayerTable
+                loading={loading}
+                layers={source}
+                onExpand={onExpand}
+                expandedRowKeys={expandRowKeys}
+                activeRow={activeRow}
+                chartRef={chartRef}
+                columns={columns}
+              />
+            </Col>
+          </Row>
+        </div>
+      </Spin>
     </Content>
   );
 }
