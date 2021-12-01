@@ -18,6 +18,7 @@ import { send, listen, unlisten } from './utils/ipcClient';
 import { LazyLog, ScrollFollow } from 'react-lazylog';
 import { useHistory } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
+import ImageSuggestions from './data/ImageSuggestions.json';
 
 const { Content } = Layout;
 const { TextArea } = Input;
@@ -100,7 +101,8 @@ const LabelGroup = ({ value = {}, onChange }) => {
 
 export default function BuildImage() {
   const history = useHistory();
-  const [options, updateOptions] = useState([]);
+  const [options, updateOptions] = useState<any[]>([]);
+  const [results, setResults] = useState<any[]>([]);
   const [logDrawerVisible, setLogDrawerVisible] = useState(false);
   const [blockBuildButton, setBlockBuildButton] = useState(false);
   const [logText, setLogText] = useLocalStorage('build_log', '');
@@ -121,9 +123,24 @@ export default function BuildImage() {
     }
   };
 
+  const renderOfficialTitle = (title) => (<span>{title}</span>);
+  const renderOfficialItem = (imageName) => ({
+    value: imageName,
+    label: (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+        }}
+      >
+        {imageName}
+      </div>
+    ),
+  });
+
   const renderTitle = (title) => (
     <span>
-      {title}
+      InfuseAI/{title}
       <a
         style={{ float: 'right' }}
         href='https://docs.primehub.io/docs/guide_manual/images-list'
@@ -151,6 +168,8 @@ export default function BuildImage() {
       </div>
     ),
   });
+
+
   const onFinish = async (values) => {
     setBlockBuildButton(true);
     setLogDrawerVisible(true);
@@ -229,15 +248,35 @@ export default function BuildImage() {
     async function fetchPrimeHubNotebooks() {
       const primehubNotebooks = await send('get-primehub-notebooks');
       if (primehubNotebooks) {
-        let primehubNotebookOptions = primehubNotebooks.map((x) => {
-          let row = {};
-          row.label = renderTitle(x.rows[0][0].replace(/ [0-9.]+$/, ''));
-          row.options = x.rows.map((y) => {
-            return renderItem(y[1], y[3]);
-          });
+        const primehubNotebookOptions = primehubNotebooks.map((x) => {
+          const row = {
+            label: renderTitle(x.rows[0][0].replace(/ [0-9.]+$/, '')),
+            options: x.rows.map((y) => {
+              return renderItem(y[1], y[3]);
+            }),
+          };
           return row;
         });
-        updateOptions(primehubNotebookOptions);
+
+        const officialOptions = ImageSuggestions.data.map((s) => {
+          const row = {
+            label: renderOfficialTitle(s.title),
+            options: s.images.map((imageName) => {
+              return renderOfficialItem(imageName);
+            }),
+          };
+          return row;
+        });
+
+        updateOptions([
+          ...officialOptions,
+          ...primehubNotebookOptions
+        ]);
+
+        setResults([
+          ...primehubNotebookOptions,
+          ...officialOptions
+        ]);
       } else {
         console.log('No primehub notebooks found');
       }
@@ -245,6 +284,19 @@ export default function BuildImage() {
     fetchPrimeHubNotebooks();
     fetchCurrntBuild();
   }, []);
+
+  const onSearch = (data: string) => {
+    const filteredOptions = options.map((row) => {
+      return {
+        label: row.label,
+        options: row.options.filter(opt => {
+          return opt.value.indexOf(data) > -1;
+        }),
+      }
+    }).filter((opt) => opt.options.length > 0);
+    setResults(filteredOptions);
+  };
+
   return (
     <Content style={{ margin: '0 16px' }}>
       <Breadcrumb style={{ margin: '16px 0' }}>
@@ -290,7 +342,8 @@ export default function BuildImage() {
               dropdownClassName='certain-category-search-dropdown'
               dropdownMatchSelectWidth={500}
               style={{ width: '100%' }}
-              options={options}
+              options={results}
+              onSearch={onSearch}
               disabled={blockBuildButton}
             >
               <Input.Search

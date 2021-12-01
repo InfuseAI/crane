@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "title": "Python",
+      "title": "Python Official",
       "images": ["python:3.7-slim", "python:3.8-slim"]
     },
     {
@@ -9,7 +9,7 @@
       "images": ["rstudio/r-base:4.1.1-focal", "rstudio/r-base:4.1.1-bionic"]
     },
     {
-      "title": "Tensorflow",
+      "title": "Tensorflow Official",
       "images": [
         "tensorflow/tensorflow:latest",
         "tensorflow/tensorflow:2.7.0",
@@ -17,7 +17,7 @@
       ]
     },
     {
-      "title": "PyTorch",
+      "title": "PyTorch Official",
       "images": [
         "pytorch/pytorch:latest",
         "pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime",
@@ -25,7 +25,7 @@
       ]
     },
     {
-      "title": "Jupyter Docker-stacks",
+      "title": "Jupyter DockerStacks",
       "images": [
         "jupyter/minimal-notebook:ubuntu-20.04",
         "jupyter/base-notebook:ubuntu-20.04",
