@@ -1,0 +1,39 @@
+{
+  "data": [
+    {
+      "title": "Python",
+      "images": ["python:3.7-slim", "python:3.8-slim"]
+    },
+    {
+      "title": "R",
+      "images": ["rstudio/r-base:4.1.1-focal", "rstudio/r-base:4.1.1-bionic"]
+    },
+    {
+      "title": "Tensorflow",
+      "images": [
+        "tensorflow/tensorflow:latest",
+        "tensorflow/tensorflow:2.7.0",
+        "tensorflow/tensorflow:2.7.0-gpu"
+      ]
+    },
+    {
+      "title": "PyTorch",
+      "images": [
+        "pytorch/pytorch:latest",
+        "pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime",
+        "pytorch/pytorch:1.8.1-cuda10.2-cudnn7-runtime"
+      ]
+    },
+    {
+      "title": "Jupyter Docker-stacks",
+      "images": [
+        "jupyter/minimal-notebook:ubuntu-20.04",
+        "jupyter/base-notebook:ubuntu-20.04",
+        "jupyter/r-notebook:ubuntu-20.04",
+        "jupyter/scipy-notebook:ubuntu-20.04",
+        "jupyter/datascience-notebook:ubuntu-20.04",
+        "jupyter/tensorflow-notebook:ubuntu-20.04"
+      ]
+    }
+  ]
+}
