@@ -7,6 +7,11 @@ import { send } from './ServerIpc';
 import axios from 'axios';
 import { createMarkdownArrayTableSync } from 'parse-markdown-table';
 import AwsAdapter from './AwsAdapter';
+import * as Sentry from '@sentry/electron';
+
+Sentry.init({
+  dsn: 'https://6ad1a0b7db2247719c690f7d373b4bfc@o1081482.ingest.sentry.io/6088888',
+});
 
 const docker = new Docker();
 const dockerHubCredentialKeyName = 'Crane-DockerHub';
@@ -67,7 +72,7 @@ USER root
 ${apt}
 ${conda}
 ${pip}`;
-  console.log(dockerfileContent)
+  console.log(dockerfileContent);
 
   return dockerfileContent;
 }
@@ -174,13 +179,38 @@ const handlers = {
   'build-status': async () => {
     return handlers.build_status;
   },
-  'build-image': async ({ base_image_url, image_name, image_description, image_labels, apt, conda, pip }) => {
+  'build-image': async ({
+    base_image_url,
+    image_name,
+    image_description,
+    image_labels,
+    apt,
+    conda,
+    pip,
+  }) => {
     handlers.build_events = [];
     handlers.build_status = 'preparing';
 
-    console.log('build-image', base_image_url, image_description, image_labels, apt, conda, pip);
+    console.log(
+      'build-image',
+      base_image_url,
+      image_description,
+      image_labels,
+      apt,
+      conda,
+      pip
+    );
 
-    writeDockerfile(generateDockerfile({ base_image_url, image_description, image_labels, apt, conda, pip }));
+    writeDockerfile(
+      generateDockerfile({
+        base_image_url,
+        image_description,
+        image_labels,
+        apt,
+        conda,
+        pip,
+      })
+    );
     const pull_stream = await docker.pull(base_image_url, {
       platform: 'linux/amd64',
     });

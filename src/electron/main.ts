@@ -4,8 +4,13 @@ import * as isDev from 'electron-is-dev';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as squirrelStartup from 'electron-squirrel-startup';
+import * as Sentry from '@sentry/electron';
 
 if (squirrelStartup) app.quit();
+
+Sentry.init({
+  dsn: 'https://6ad1a0b7db2247719c690f7d373b4bfc@o1081482.ingest.sentry.io/6088888',
+});
 
 const workingDir = path.resolve(app.getPath('userData'), 'workingDir');
 

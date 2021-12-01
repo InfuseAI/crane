@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef} from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Layout,
   Breadcrumb,
@@ -73,7 +73,7 @@ const LabelGroup = ({ value = {}, onChange }) => {
             className='edit-label'
             key={label}
             closable
-            onClose={()=>onLabelClose(label)}
+            onClose={() => onLabelClose(label)}
           >
             {label}
           </Tag>

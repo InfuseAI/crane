@@ -14,6 +14,15 @@ import ImageDetail from './ImageDetail';
 import Settings from './Settings';
 import { send } from './utils/ipcClient';
 import CreatePrimeHubImage from './CreatePrimeHubImage';
+import * as Sentry from '@sentry/browser';
+import { Integrations } from '@sentry/tracing';
+
+Sentry.init({
+  dsn: 'https://6ad1a0b7db2247719c690f7d373b4bfc@o1081482.ingest.sentry.io/6088888',
+  integrations: [new Integrations.BrowserTracing()],
+  tracesSampleRate: 1.0,
+});
+
 const { Footer } = Layout;
 
 const OK = 'ok';
