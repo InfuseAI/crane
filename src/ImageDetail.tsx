@@ -1,5 +1,14 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Layout, Spin, Breadcrumb, Col, Row, Table, Typography, Card } from 'antd';
+import {
+  Layout,
+  Spin,
+  Breadcrumb,
+  Col,
+  Row,
+  Table,
+  Typography,
+  Card,
+} from 'antd';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atomOneLight } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import filesize from 'filesize';
@@ -94,9 +103,8 @@ const LayerSunburst = (props) => {
       },
       {
         type: 'tooltip',
-        enable: true
+        enable: true,
       },
-
     ],
     hierarchyConfig: {
       field: 'Size',
@@ -107,23 +115,25 @@ const LayerSunburst = (props) => {
           margin: 0,
           padding: 0,
           opacity: 1,
-        }
+        },
       },
       customContent: (item, data) => {
-        const {name, value} = get(data, '0', {})
+        const { name, value } = get(data, '0', {});
         if (value) {
           return (
             <Card
-              style={{width: 300, margin: 0, backgroundColor: '#fafafa'}}
+              style={{ width: 300, margin: 0, backgroundColor: '#fafafa' }}
               actions={[
                 <></>,
-                <span style={{fontWeight: 300, fontSize: '24px'}}>{value}</span>
+                <span style={{ fontWeight: 300, fontSize: '24px' }}>
+                  {value}
+                </span>,
               ]}
             >
               <SyntaxHighlighter
                 wrapLines={true}
                 wrapLongLines={true}
-                customStyle={{overflow: 'hidden'}}
+                customStyle={{ overflow: 'hidden' }}
                 language='dockerfile'
                 style={atomOneLight}
               >
@@ -132,7 +142,7 @@ const LayerSunburst = (props) => {
             </Card>
           );
         }
-      }
+      },
     },
     drilldown: {
       enabled: true,
@@ -141,13 +151,7 @@ const LayerSunburst = (props) => {
         dividerText: '>',
       },
     },
-    color: [
-      '#007991',
-      '#0093a0',
-      '#0daca8',
-      '#45c6ab',
-      '#76dea8',
-    ],
+    color: ['#007991', '#0093a0', '#0daca8', '#45c6ab', '#76dea8'],
     label: {
       layout: [
         {
@@ -181,7 +185,7 @@ const LayerSunburst = (props) => {
           } else {
             onMouseEnter();
           }
-        } catch(e) {
+        } catch (e) {
           console.log('Unexpected error: ', e);
         }
       });
@@ -189,7 +193,13 @@ const LayerSunburst = (props) => {
   };
 
   // @ts-ignore
-  return <Sunburst style={{ height: '100%', width: '100%' }} {...config} ref={chartRef} />;
+  return (
+    <Sunburst
+      style={{ height: '100%', width: '100%' }}
+      {...config}
+      ref={chartRef}
+    />
+  );
 };
 
 const MemorizeLayerSunburst = React.memo(LayerSunburst);
@@ -200,7 +210,15 @@ function useQuery() {
 }
 
 function LayerTable(props) {
-  const { columns, layers, loading, expandedRowKeys, onExpand, activeRow, chartRef } = props;
+  const {
+    columns,
+    layers,
+    loading,
+    expandedRowKeys,
+    onExpand,
+    activeRow,
+    chartRef,
+  } = props;
   const expandedRowRender = (record) => {
     return (
       <SyntaxHighlighter
@@ -237,20 +255,22 @@ function LayerTable(props) {
         expandRowByClick: true,
       }}
       onExpand={onExpand}
-      onRow={
-        (record, rowIndex) => {
-          const { CreatedBy } = record;
-          const chart = chartRef.current.getChart();
-          return {
-            onMouseEnter: (event) => {
-              chart?.setState('active', (item) => item.data.CreatedBy === CreatedBy, true)
-            },
-            onMouseLeave: (event) => {
-              chart?.setState('active', () => true, false);
-            }
-          }
-        }
-      }
+      onRow={(record, rowIndex) => {
+        const { CreatedBy } = record;
+        const chart = chartRef.current.getChart();
+        return {
+          onMouseEnter: (event) => {
+            chart?.setState(
+              'active',
+              (item) => item.data.CreatedBy === CreatedBy,
+              true
+            );
+          },
+          onMouseLeave: (event) => {
+            chart?.setState('active', () => true, false);
+          },
+        };
+      }}
     />
   );
 }
@@ -298,14 +318,20 @@ export default function ImageDetail() {
     }
   }, [command]);
 
-  const onMouseLeave = useCallback(throttle(() => {
-    setActiveRow('');
-  }, 16), []);
+  const onMouseLeave = useCallback(
+    throttle(() => {
+      setActiveRow('');
+    }, 16),
+    []
+  );
 
-  const onMouseEnter = useCallback(throttle((row) => {
-    setActiveRow('');
-    setActiveRow(row);
-  }, 16), []);
+  const onMouseEnter = useCallback(
+    throttle((row) => {
+      setActiveRow('');
+      setActiveRow(row);
+    }, 16),
+    []
+  );
 
   const onClick = useCallback(({ cmd, key }) => {
     if (cmd) {
@@ -346,7 +372,7 @@ export default function ImageDetail() {
         <SyntaxHighlighter
           wrapLines={true}
           wrapLongLines={false}
-          customStyle={{overflow: 'hidden'}}
+          customStyle={{ overflow: 'hidden' }}
           language='dockerfile'
           style={atomOneLight}
         >
@@ -360,7 +386,12 @@ export default function ImageDetail() {
       width: '20%',
       className: 'size-col',
       dataIndex: 'Size',
-      render: (val) => val > 0 ? filesize(val, { round: 1 }) : (<Text type='secondary'>{ val } B</Text>),
+      render: (val) =>
+        val > 0 ? (
+          filesize(val, { round: 1 })
+        ) : (
+          <Text type='secondary'>{val} B</Text>
+        ),
     },
   ];
 
@@ -383,7 +414,7 @@ export default function ImageDetail() {
               span={12}
               style={{
                 maxHeight: 'calc(100vh - 200px)',
-                  minHeight: 'calc(100vh - 200px)',
+                minHeight: 'calc(100vh - 200px)',
               }}
             >
               <MemorizeLayerSunburst

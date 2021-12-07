@@ -181,7 +181,9 @@ export default function ListImage() {
             (a, b) => a.length - b.length || a.localeCompare(b)
           );
           const [name, tag] = (repoTags.shift() || 'none').split(':');
-          const label = ((x.Labels || {})['crane.labels'] || '').split(',').filter((v) => v !== '');
+          const label = ((x.Labels || {})['crane.labels'] || '')
+            .split(',')
+            .filter((v) => v !== '');
           const alias = repoTags.map((r) => {
             const [name, tag] = r.split(':');
             const imageId = x.Id.split(':')[1].substring(0, 12);
@@ -205,7 +207,6 @@ export default function ListImage() {
     fetchCredentials();
     fetchImageList();
   }, []);
-
   const ActionButtons = (props) => {
     const { record } = props;
     const imageName = `${record.name}:${record.tag}`;
@@ -360,14 +361,16 @@ export default function ListImage() {
       width: '10%',
       render: (imageLabel) => {
         console.log(imageLabel, 111);
-        if (imageLabel.length <= 0) { return <></> };
+        if (imageLabel.length <= 0) {
+          return <></>;
+        }
         return (
           <>
             {imageLabel.map((label) => {
-              return (<Tag className='list-image-label'>{label}</Tag>);
+              return <Tag className='list-image-label'>{label}</Tag>;
             })}
           </>
-        )
+        );
       },
     },
     {

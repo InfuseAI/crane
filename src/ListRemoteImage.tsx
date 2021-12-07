@@ -135,9 +135,14 @@ export default function ListRemoteImages() {
               onClick={async () => {
                 const tag = `${record.namespace}/${record.name}:${name}`;
                 const results = (await send('list-image')) as ImageInfo[];
-                const image = results.find((x) => x.RepoTags && x.RepoTags.includes(tag));
-                const description = ((image || {}).Labels|| {})['crane.description'] || '';
-                const uri = encodeURI(`/createPrimeHubImage?tag=${tag}&&description=${description}`);
+                const image = results.find(
+                  (x) => x.RepoTags && x.RepoTags.includes(tag)
+                );
+                const description =
+                  ((image || {}).Labels || {})['crane.description'] || '';
+                const uri = encodeURI(
+                  `/createPrimeHubImage?tag=${tag}&&description=${description}`
+                );
                 history.push(uri);
               }}
             >
