@@ -167,7 +167,7 @@ export default function ListRemoteImages() {
     return async () => {
       setLoading(true);
       const { repositories, errorMsg } = (await send(
-        'list-dockerhub-repositories'
+        'list-dockerhub-repositories', {page: 1, pageSize: 100}
       )) as { repositories: DockerHubRepository[]; errorMsg: string };
       if (errorMsg) {
         errorNotificationHandler(errorMsg);

@@ -476,22 +476,29 @@ const handlers = {
   },
   'list-aws-ecr-images': async (repositoryName: string) =>
     AwsAdapter.getInstance().listEcrImages(repositoryName),
-  'list-dockerhub-repositories': async () => {
+  'list-dockerhub-repositories': async (options) => {
+    const page = options?.page || 1;
+    const pageSize = options?.pageSize || 100;
     try {
-      return {
-        repositories: await DockerHubAdapter.getInstance().listRepositories(),
-      };
+      return await DockerHubAdapter.getInstance().listRepositories(
+        undefined,
+        page,
+        pageSize
+      );
     } catch (e) {
       return { errorMsg: e.message };
     }
   },
-  'list-dockerhub-images': async (repositoryName: string) => {
+  'list-dockerhub-images': async (repositoryName: string, options) => {
+    const page = options?.page || 1;
+    const pageSize = options?.pageSize || 100;
     try {
-      return {
-        images: await DockerHubAdapter.getInstance().listImageTags(
-          repositoryName
-        ),
-      };
+      return await DockerHubAdapter.getInstance().listImageTags(
+        repositoryName,
+        undefined,
+        page,
+        pageSize
+      );
     } catch (e) {
       return { errorMsg: e.message };
     }

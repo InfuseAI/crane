@@ -80,19 +80,22 @@ export default class DockerHubAdapter {
     namespace = this.credential.username,
     page = 1,
     page_size = 100
-  ): Promise<DockerHubRepository[]> {
+  ): Promise<{ count: number; repositories: DockerHubRepository[] }> {
     if (!namespace) {
       throw new Error(DockerHubError.MISSING_CREDENTIAL);
     }
     const url = `${API_URL}/repositories/${namespace}?page_size=${page_size}&page=${page}`;
     const response = await this.api.get(url);
 
-    return get(response, 'data.results', []).map(
-      (repository: DockerHubRepository, index: number) => {
-        repository.key = index;
-        return repository;
-      }
-    );
+    return {
+      count: get(response, 'data.count', 0),
+      repositories: get(response, 'data.results', []).map(
+        (repository: DockerHubRepository, index: number) => {
+          repository.key = index;
+          return repository;
+        }
+      ),
+    };
   }
 
   public async listImageTags(
@@ -100,16 +103,19 @@ export default class DockerHubAdapter {
     namespace = this.credential.username,
     page = 1,
     page_size = 100
-  ): Promise<DockerHubImage[]> {
+  ): Promise<{ count: number; images: DockerHubImage[] }> {
     if (!namespace) {
       throw new Error(DockerHubError.MISSING_CREDENTIAL);
     }
     const url = `${API_URL}/repositories/${namespace}/${repository}/tags?page_size=${page_size}&page=${page}`;
     const response = await this.api.get(url);
 
-    return get(response, 'data.results', []).map((tag) => {
-      tag.key = tag.id;
-      return tag;
-    });
+    return {
+      count: get(response, 'data.count', 0),
+      images: get(response, 'data.results', []).map((tag) => {
+        tag.key = tag.id;
+        return tag;
+      }),
+    };
   }
 }
