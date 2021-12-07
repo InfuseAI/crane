@@ -1,97 +1,50 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { Tooltip, Button, Table, Tag, notification } from 'antd';
 import {
   ExportOutlined,
   LoadingOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
-import { get } from 'lodash';
 import { send } from './utils/ipcClient';
 import { format } from 'timeago.js';
 import { useHistory } from 'react-router-dom';
 import filesize from 'filesize';
 import { ImageInfo } from 'dockerode';
-const API_BASE_URL = 'https://hub.docker.com';
-const API_VERSION = 'v2';
-const API_URL = `${API_BASE_URL}/${API_VERSION}`;
-
-interface Credential {
-  account: string;
-  password: string;
-}
-
-interface Repository {
-  key: any;
-  user: string;
-  name: string;
-  namespace: string;
-  repository_type: string;
-  status: number;
-  description: string;
-  is_private: boolean;
-  last_updated: string;
-}
-
-interface Image {
-  architecture: string;
-  os: string;
-  size: number;
-  last_pushed: string;
-  status: string;
-}
+import {
+  DockerHubRepository,
+  DockerHubImage,
+} from './electron/DockerHubAdapter';
 
 interface ImageTag {
   key: any;
   name: string;
   tag_active: string;
   full_size: number;
-  images: Image[];
+  images: DockerHubImage[];
 }
 
 export default function ListRemoteImages() {
   const history = useHistory();
-  const [dockerhub, setDockerhub] = useState<Partial<Credential>>({});
-  const [client, setClient] = useState<any>(null);
   const [nestedData, setNestedData] = useState({});
   const [tagsLoading, setTagsLoading] = useState({});
-  const [repos, setRepos] = useState<Partial<Repository>[]>([]);
+  const [repos, setRepos] = useState<Partial<DockerHubRepository>[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const fetchCredential = async () => {
-    // @ts-ignore
-    const credential: any = await send('get-dockerhub-credential');
-    if (credential.account && credential.password) {
-      setDockerhub(credential);
-    } else {
-      notification.error({
-        message: 'Missing DockerHub Credential',
-        description: 'Please add your DockerHub credential',
-      });
-      setLoading(false);
-    }
-  };
 
-  const genClient = async (username, password) => {
-    const loginURL = `${API_URL}/users/login`;
-    const resp = await axios.post(loginURL, { username, password });
-    const token = get(resp, 'data.token', null);
-    const AUTH_TOKEN = `JWT ${token}`;
-    const instance: any = axios.create({
-      baseURL: API_URL,
-    });
-    instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
-    return instance;
-  };
-
-  const expandedRowRender = (record: Repository, index, indent, expanded) => {
-    const columns = [
+  const expandedRowRender = (
+    record: Partial<DockerHubRepository>,
+    index,
+    indent,
+    expanded
+  ) => {
+    const repoName = record.name || '';
+    const columns: any = [
       {
         title: 'NAME',
         dataIndex: 'name',
         key: 'name',
         width: '40%',
         render: (name, tag: ImageTag) =>
-          `${record.namespace}/${record.name}:${name}`,
+          `${record.namespace}/${repoName}:${name}`,
       },
       {
         title: 'STATUS',
@@ -133,7 +86,7 @@ export default function ListRemoteImages() {
               size='small'
               icon={<ExportOutlined />}
               onClick={async () => {
-                const tag = `${record.namespace}/${record.name}:${name}`;
+                const tag = `${record.namespace}/${repoName}:${name}`;
                 const results = (await send('list-image')) as ImageInfo[];
                 const image = results.find(
                   (x) => x.RepoTags && x.RepoTags.includes(tag)
@@ -152,12 +105,12 @@ export default function ListRemoteImages() {
         ),
       },
     ];
-    const data: ImageTag[] = nestedData[record.name];
+    const data: ImageTag[] = nestedData[repoName];
     return (
       <Table
         size='small'
         showHeader={false}
-        loading={tagsLoading[record.name] || !data}
+        loading={tagsLoading[repoName] || !data}
         columns={columns}
         dataSource={data}
         pagination={false}
@@ -172,72 +125,64 @@ export default function ListRemoteImages() {
       [record.name]: true,
     });
     (async () => {
-      const { api } = client;
-      const results = get(
-        await api.get(`repositories/${record.namespace}/${record.name}/tags`),
-        'data.results',
-        []
-      ).map((tag) => {
-        tag.key = tag.id;
-        return tag;
-      });
+      const { images, errorMsg } = (await send(
+        'list-dockerhub-images',
+        record.name
+      )) as { images: DockerHubImage[]; errorMsg: string };
+      if (errorMsg) {
+        errorNotificationHandler(errorMsg);
+      } else {
+        setNestedData({
+          ...nestedData,
+          [record.name]: images,
+        });
+      }
       setTagsLoading({
         ...tagsLoading,
         [record.name]: false,
       });
-      setNestedData({
-        ...nestedData,
-        [record.name]: results,
-      });
     })();
   };
 
-  useEffect(() => {
-    fetchCredential();
-  }, []);
-
-  useEffect(() => {
-    if (dockerhub.account && dockerhub.password) {
-      genClient(dockerhub.account, dockerhub.password).then((api) => {
-        setClient({ api });
-      });
+  const errorNotificationHandler = (error: string) => {
+    let message;
+    let description;
+    switch (error) {
+      case 'Missing DockerHub Credential':
+        message = error;
+        description = 'Please add your DockerHub credential';
+        break;
+      default:
+        message = 'Something wrong when fetch remote repositories :(..';
+        description = error;
+        break;
     }
-  }, [dockerhub]);
+    notification.error({
+      message,
+      description,
+    });
+  };
 
-  const genFetchRepo = (client) => {
+  const genFetchRepo = () => {
     return async () => {
-      if (dockerhub.account && client) {
-        const { api } = client;
-        try {
-          setLoading(true);
-          const result = get(
-            await api.get(`/repositories/${dockerhub.account}?page_size=100`),
-            'data.results',
-            []
-          ).map((repository: Repository, index: number) => {
-            repository.key = index;
-            return repository;
-          });
-          setLoading(false);
-          setRepos(result);
-        } catch (error) {
-          notification.error({
-            message: 'Something wrong when fetch remote repositories :(..',
-            description: `${error}`,
-          });
-          console.log(error);
-        }
+      setLoading(true);
+      const { repositories, errorMsg } = (await send(
+        'list-dockerhub-repositories'
+      )) as { repositories: DockerHubRepository[]; errorMsg: string };
+      if (errorMsg) {
+        errorNotificationHandler(errorMsg);
       } else {
-        console.log('No DockerHub Credential');
+        setRepos(repositories);
       }
+      setLoading(false);
     };
   };
 
   useEffect(() => {
-    genFetchRepo(client)();
-  }, [client]);
+    genFetchRepo()();
+  }, []);
 
-  const columns = [
+  const columns: any = [
     {
       title: 'TAG',
       dataIndex: 'name',
@@ -304,7 +249,7 @@ export default function ListRemoteImages() {
             right: 0,
           }}
           type='primary'
-          onClick={genFetchRepo(client)}
+          onClick={genFetchRepo()}
           disabled={loading}
         >
           {loading ? <LoadingOutlined /> : <ReloadOutlined />}

@@ -7,11 +7,13 @@ import { send } from './ServerIpc';
 import axios from 'axios';
 import { createMarkdownArrayTableSync } from 'parse-markdown-table';
 import AwsAdapter from './AwsAdapter';
+import DockerHubAdapter from './DockerHubAdapter';
 import * as Sentry from '@sentry/electron';
 
 Sentry.init({
   dsn: 'https://6ad1a0b7db2247719c690f7d373b4bfc@o1081482.ingest.sentry.io/6088888',
 });
+
 
 const docker = new Docker();
 const dockerHubCredentialKeyName = 'Crane-DockerHub';
@@ -27,6 +29,16 @@ getAwsCredential()
     return aws.verifyAccessPermission();
   })
   .then((data) => console.log(data))
+  .catch((err) => console.log(err));
+
+getCredential(dockerHubCredentialKeyName)
+  .then((credential) =>
+    DockerHubAdapter.setup({
+      username: credential.account,
+      password: credential.password,
+    })
+  )
+  .then((docker) => docker.login())
   .catch((err) => console.log(err));
 
 export function generateDockerfile(options) {
@@ -152,12 +164,22 @@ const handlers = {
     return await getCredential(primeHubCredentialKeyName);
   },
   'get-aws-credential': async () => await getAwsCredential(),
-  'save-dockerhub-credential': async (args) =>
-    await saveCredential(
-      dockerHubCredentialKeyName,
-      args.account,
-      args.password
-    ),
+  'save-dockerhub-credential': async (args) => {
+    try {
+      await saveCredential(
+        dockerHubCredentialKeyName,
+        args.account,
+        args.password
+      );
+      await DockerHubAdapter.setup({
+        username: args.account,
+        password: args.password,
+      });
+      await DockerHubAdapter.getInstance().login();
+    } catch (error) {
+      console.log(error);
+    }
+  },
   'save-primehub-credential': async (args) =>
     await saveCredential(primeHubCredentialKeyName, args.endpoint, args.token),
   'save-aws-credential': async (args) => {
@@ -168,13 +190,17 @@ const handlers = {
     }
     await saveCredential(awsRegionKeyName, 'region', region);
   },
-  'delete-dockerhub-credential': async () =>
-    await deleteCredential(dockerHubCredentialKeyName),
-  'delete-primehub-credential': async () =>
-    await deleteCredential(primeHubCredentialKeyName),
+  'delete-dockerhub-credential': async () => {
+    await deleteCredential(dockerHubCredentialKeyName);
+    DockerHubAdapter.setup({ username: '', password: '' });
+  },
+  'delete-primehub-credential': async () => {
+    await deleteCredential(primeHubCredentialKeyName);
+  },
   'delete-aws-credential': async () => {
     await deleteCredential(awsCredentialKeyName);
     await deleteCredential(awsRegionKeyName);
+    AwsAdapter.setup({ accessKey: '', secretKey: '', region: '' });
   },
   'build-status': async () => {
     return handlers.build_status;
@@ -444,12 +470,32 @@ const handlers = {
       return {
         repositories: await AwsAdapter.getInstance().listEcrRepositories(),
       };
-    } catch (err) {
-      return { error: err };
+    } catch (e) {
+      return { errorMsg: e.message };
     }
   },
   'list-aws-ecr-images': async (repositoryName: string) =>
     AwsAdapter.getInstance().listEcrImages(repositoryName),
+  'list-dockerhub-repositories': async () => {
+    try {
+      return {
+        repositories: await DockerHubAdapter.getInstance().listRepositories(),
+      };
+    } catch (e) {
+      return { errorMsg: e.message };
+    }
+  },
+  'list-dockerhub-images': async (repositoryName: string) => {
+    try {
+      return {
+        images: await DockerHubAdapter.getInstance().listImageTags(
+          repositoryName
+        ),
+      };
+    } catch (e) {
+      return { errorMsg: e.message };
+    }
+  },
 };
 
 export default handlers;
