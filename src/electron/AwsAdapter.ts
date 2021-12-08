@@ -1,4 +1,5 @@
 import * as AWS from 'aws-sdk';
+
 interface AwsAdapterConfig {
   accessKey: string;
   secretKey: string;
@@ -40,6 +41,20 @@ export default class AwsAdapter {
     console.log('[Setup] AWS Adapter');
     AwsAdapter.instance = new AwsAdapter(config);
     return AwsAdapter.instance;
+  }
+
+  public static async verifyCredentials(
+    accessKeyId: string,
+    secretAccessKey: string,
+    region: string
+  ): Promise<AWS.STS.GetCallerIdentityResponse> {
+    return await new AWS.STS({
+      accessKeyId,
+      secretAccessKey,
+      region,
+    })
+      .getCallerIdentity()
+      .promise();
   }
 
   public async verifyAccessPermission(): Promise<AWS.STS.GetCallerIdentityResponse> {

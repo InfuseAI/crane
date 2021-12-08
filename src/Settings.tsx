@@ -100,6 +100,28 @@ export default function Settings() {
       });
     }
   };
+  const onAWSTest = async () => {
+    const accessKeyId = awsForm.getFieldValue('aws-id');
+    const secretAccessKey = awsForm.getFieldValue('aws-key');
+    const region = awsForm.getFieldValue('aws-region');
+    const result = await send('test-aws-credentials', {
+      accessKeyId,
+      secretAccessKey,
+      region,
+    });
+    if (result.error) {
+      console.log(result.error);
+      notification.error({
+        message: 'AWS Credential Check Failed',
+        description: ``,
+      });
+    } else {
+      notification.success({
+        message: 'AWS  Connected',
+        description: ``,
+      });
+    }
+  };
   const onDockerHubReset = async () => {
     await send('delete-dockerhub-credential');
     notification.info({
@@ -271,7 +293,13 @@ export default function Settings() {
                 <Input />
               </Form.Item>
               <Form.Item label='Secret Access Key' name='aws-key'>
-                <Input.Password />
+                <Input.Password
+                  addonAfter={
+                    <Button type='text' onClick={onAWSTest}>
+                      Test
+                    </Button>
+                  }
+                />
               </Form.Item>
               <Form.Item style={{ textAlign: 'right' }}>
                 <Button type='primary' htmlType='submit'>

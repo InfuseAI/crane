@@ -180,6 +180,17 @@ const handlers = {
       console.log(error);
     }
   },
+  'test-aws-credentials': async (args) => {
+    try {
+      return await AwsAdapter.verifyCredentials(
+        args.accessKeyId,
+        args.secretAccessKey,
+        args.region
+      );
+    } catch (error) {
+      return { error };
+    }
+  },
   'save-primehub-credential': async (args) =>
     await saveCredential(primeHubCredentialKeyName, args.endpoint, args.token),
   'save-aws-credential': async (args) => {
