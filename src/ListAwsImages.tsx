@@ -147,14 +147,13 @@ export default function ListAwsImages() {
 
   async function fetchRepositories() {
     setLoading(true);
-    const { repositories, error } = (await send(
+    const { repositories, errorMsg } = (await send(
       'list-aws-ecr-repositories'
-    )) as { repositories: ECR.RepositoryList; error: any };
-
-    if (error) {
+    )) as { repositories: ECR.RepositoryList; errorMsg: string };
+    if (errorMsg) {
       notification.error({
         message: 'Something wrong when fetch AWS repositories :(..',
-        description: `${error.message}`,
+        description: `${errorMsg}`,
       });
     } else {
       setRepos(

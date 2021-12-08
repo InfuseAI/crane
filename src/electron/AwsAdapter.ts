@@ -1,12 +1,16 @@
 import * as AWS from 'aws-sdk';
-import { find } from 'lodash';
-
 interface AwsAdapterConfig {
   accessKey: string;
   secretKey: string;
   region: string;
 }
 
+const defaultAwsRegion = 'us-east-1';
+
+export enum AwsError {
+  MISSING_CREDENTIAL = 'Missing AWS Credential',
+  INVALID_CREDENTIAL = 'Invalid AWS Credentials',
+}
 export default class AwsAdapter {
   private static instance: AwsAdapter;
   private config: AwsAdapterConfig;
@@ -19,12 +23,12 @@ export default class AwsAdapter {
     this.ecr = new AWS.ECR({
       accessKeyId: this.config.accessKey,
       secretAccessKey: this.config.secretKey,
-      region: this.config.region,
+      region: this.config.region || defaultAwsRegion,
     });
     this.sts = new AWS.STS({
       accessKeyId: this.config.accessKey,
       secretAccessKey: this.config.secretKey,
-      region: this.config.region,
+      region: this.config.region || defaultAwsRegion,
     });
   }
 
@@ -33,9 +37,6 @@ export default class AwsAdapter {
   }
 
   public static setup(config: AwsAdapterConfig): AwsAdapter {
-    if (AwsAdapter.instance) {
-      delete AwsAdapter.instance;
-    }
     console.log('[Setup] AWS Adapter');
     AwsAdapter.instance = new AwsAdapter(config);
     return AwsAdapter.instance;
