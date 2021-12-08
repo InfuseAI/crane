@@ -36,7 +36,7 @@ export default function Settings() {
       account: values['docker-account'],
       password: values['docker-password'],
     });
-    notification.info({
+    notification.success({
       message: 'DockerHub setup saved.',
     });
   };
@@ -46,7 +46,7 @@ export default function Settings() {
       secretKey: values['aws-key'],
       region: values['aws-region'],
     });
-    notification.info({
+    notification.success({
       message: 'AWS setup saved.',
     });
   };
@@ -55,7 +55,7 @@ export default function Settings() {
       endpoint: values['primehub-api-endpoint'],
       token: values['primehub-api-token'],
     });
-    notification.info({
+    notification.success({
       message: 'PrimeHub setup saved.',
     });
   };
@@ -117,7 +117,27 @@ export default function Settings() {
       });
     } else {
       notification.success({
-        message: 'AWS  Connected',
+        message: 'AWS Connected',
+        description: ``,
+      });
+    }
+  };
+  const onDockerHubTest = async () => {
+    const username = dockerHubForm.getFieldValue('docker-account');
+    const password = dockerHubForm.getFieldValue('docker-password');
+    const result = await send('test-dockerhub-credentials', {
+      username,
+      password,
+    });
+    if (!result) {
+      console.log(result.error);
+      notification.error({
+        message: 'DockerHub Credential Check Failed',
+        description: ``,
+      });
+    } else {
+      notification.success({
+        message: 'DockerHub Connected',
         description: ``,
       });
     }
@@ -229,7 +249,13 @@ export default function Settings() {
                 <Input />
               </Form.Item>
               <Form.Item label='Password' name='docker-password'>
-                <Input.Password />
+                <Input.Password
+                  addonAfter={
+                    <Button type='text' onClick={onDockerHubTest}>
+                      Test
+                    </Button>
+                  }
+                />
               </Form.Item>
               <Form.Item style={{ textAlign: 'right' }}>
                 <Button type='primary' htmlType='submit'>
