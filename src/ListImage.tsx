@@ -360,7 +360,6 @@ export default function ListImage() {
       key: 'imageLabel',
       width: '10%',
       render: (imageLabel) => {
-        console.log(imageLabel, 111);
         if (imageLabel.length <= 0) {
           return <></>;
         }
