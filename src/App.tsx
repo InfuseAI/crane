@@ -6,7 +6,7 @@ import {
   Switch,
 } from 'react-router-dom';
 import './App.less';
-import { Alert, Button, Space, Layout, Skeleton } from 'antd';
+import { Alert, Button, Space, Layout, Skeleton, Modal, Divider } from 'antd';
 import Sidebar from './Sidebar';
 import BuildImage from './BuildImage';
 import ListImage from './ListImage';
@@ -16,6 +16,10 @@ import { send } from './utils/ipcClient';
 import CreatePrimeHubImage from './CreatePrimeHubImage';
 import * as Sentry from '@sentry/browser';
 import { Integrations } from '@sentry/tracing';
+import compareVersions from 'compare-versions';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import useLocalStorage from './hooks/useLocalStorage';
 
 Sentry.init({
   dsn: 'https://6ad1a0b7db2247719c690f7d373b4bfc@o1081482.ingest.sentry.io/6088888',
@@ -29,6 +33,14 @@ const OK = 'ok';
 
 const Crane = () => {
   const [missingDocker, setMissingDocker] = useState(false);
+  const [isNewVersionReleased, setIsNewVersionReleased] = useState(false);
+  const [releasedData, setReleasedData] = useState({
+    name: '',
+    version: '',
+    url: '',
+    changelog: '',
+  });
+  const [skipVersion, setSkipVersion] = useLocalStorage('skip_version', '');
   const siderWidth = {
     collapsed: 80,
     unCollapsed: 160,
@@ -41,6 +53,17 @@ const Crane = () => {
       console.log('Ping docker:', pong);
       if (pong !== OK) {
         setMissingDocker(true);
+      }
+      const crane = await send('get-crane-version');
+      if (
+        crane.latest &&
+        compareVersions(crane.latest.version, crane.version) > 0 &&
+        crane.latest.version !== skipVersion
+      ) {
+        // Show New version released
+        setIsNewVersionReleased(true);
+        setReleasedData(crane.latest);
+        console.log(crane.latest);
       }
     })();
   }, []);
@@ -76,6 +99,65 @@ const Crane = () => {
           ) : (
             <></>
           )}
+          <Modal
+            title={`New Version Released: ${releasedData.name}`}
+            width={'50%'}
+            mask={true}
+            className='modal-version-update'
+            visible={isNewVersionReleased}
+            onOk={() => {
+              setIsNewVersionReleased(false);
+              console.log('OK');
+            }}
+            onCancel={() => {
+              setIsNewVersionReleased(false);
+              console.log('Cancel');
+            }}
+            footer={[
+              <Button
+                key='download'
+                type='primary'
+                href={releasedData.url}
+                target='_blank'
+                onClick={() => {
+                  setIsNewVersionReleased(false);
+                  console.log('Download');
+                }}
+              >
+                Download on GitHub
+              </Button>,
+              <Button
+                key='skip'
+                onClick={() => {
+                  setIsNewVersionReleased(false);
+                  setSkipVersion(releasedData.version);
+                  console.log('Skip');
+                }}
+              >
+                Skip this Version
+              </Button>,
+            ]}
+          >
+            <div className='release-note'>
+              <ReactMarkdown
+                children={releasedData.changelog}
+                rehypePlugins={[rehypeRaw]}
+                components={{
+                  img: ({ children, ...props }) => {
+                    console.log(props);
+                    return <img src={props.src} alt={props.alt} width='100%' />;
+                  },
+                }}
+              />
+              <div className='read-more'>
+              </div>
+            </div>
+            <Divider>
+              <a href={releasedData.url} target='_blank' rel='noreferrer'>
+                Read More
+              </a>
+            </Divider>
+          </Modal>
           <Suspense
             fallback={
               <div className='site-layout-background'>

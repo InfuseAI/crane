@@ -9,6 +9,7 @@ import { createMarkdownArrayTableSync } from 'parse-markdown-table';
 import AwsAdapter from './AwsAdapter';
 import DockerHubAdapter from './DockerHubAdapter';
 import * as Sentry from '@sentry/electron';
+import tag from 'antd/lib/tag';
 
 Sentry.init({
   dsn: 'https://6ad1a0b7db2247719c690f7d373b4bfc@o1081482.ingest.sentry.io/6088888',
@@ -145,6 +146,24 @@ export async function getAwsCredential() {
   return awsCredential;
 }
 
+export async function getCraneLatestVersion() {
+  const githubApiUrl =
+    'https://api.github.com/repos/infuseai/crane/releases/latest';
+  const response = await axios.get(githubApiUrl);
+
+  const version: string = response.data['tag_name'];
+
+  const release = {
+    version: version.replace('v', ''),
+    name: response.data['name'],
+    url: response.data['html_url'],
+    changelog: response.data['body'],
+    // published_at: response.data['published_at'],
+  };
+
+  return release;
+}
+
 const handlers = {
   build_events: [],
   build_status: '',
@@ -155,6 +174,16 @@ const handlers = {
       return error;
     }
     return 'ok';
+  },
+  'get-crane-version': async () => {
+    try {
+      return {
+        version: config.version,
+        latest: await getCraneLatestVersion(),
+      };
+    } catch (error) {
+      return { version: config.version, error: error.message };
+    }
   },
   'get-dockerhub-credential': async () => {
     return await getCredential(dockerHubCredentialKeyName);
