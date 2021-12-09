@@ -14,7 +14,6 @@ Sentry.init({
   dsn: 'https://6ad1a0b7db2247719c690f7d373b4bfc@o1081482.ingest.sentry.io/6088888',
 });
 
-
 const docker = new Docker();
 const dockerHubCredentialKeyName = 'Crane-DockerHub';
 const primeHubCredentialKeyName = 'Crane-PrimeHub';
@@ -178,6 +177,28 @@ const handlers = {
       await DockerHubAdapter.getInstance().login();
     } catch (error) {
       console.log(error);
+    }
+  },
+  'test-aws-credentials': async (args) => {
+    try {
+      return await AwsAdapter.verifyCredentials(
+        args.accessKeyId,
+        args.secretAccessKey,
+        args.region
+      );
+    } catch (error) {
+      return { error };
+    }
+  },
+  'test-dockerhub-credentials': async (args) => {
+    try {
+      return await DockerHubAdapter.verifyCredentials(
+        args.username,
+        args.password
+      );
+    } catch (error) {
+      console.log(error);
+      return false;
     }
   },
   'save-primehub-credential': async (args) =>

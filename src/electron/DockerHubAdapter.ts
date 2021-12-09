@@ -63,6 +63,19 @@ export default class DockerHubAdapter {
     return DockerHubAdapter.instance;
   }
 
+  public static async verifyCredentials(
+    username: string,
+    password: string
+  ): Promise<boolean> {
+    const loginUrl = `${API_URL}/users/login`;
+    const response = await axios.post(loginUrl, { username, password });
+    const token = get(response, 'data.token', null);
+    if (token) {
+      return true;
+    }
+    return false;
+  }
+
   public async login(): Promise<void> {
     const loginUrl = `${API_URL}/users/login`;
     const response = await axios.post(loginUrl, this.credential);
