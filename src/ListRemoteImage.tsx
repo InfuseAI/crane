@@ -15,6 +15,8 @@ import {
   DockerHubImage,
 } from './electron/DockerHubAdapter';
 
+const PAGE_SIZE = 10;
+
 interface ImageTag {
   key: any;
   name: string;
@@ -29,6 +31,8 @@ export default function ListRemoteImages() {
   const [tagsLoading, setTagsLoading] = useState({});
   const [repos, setRepos] = useState<Partial<DockerHubRepository>[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [totalSize, setTotalSize] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
   const expandedRowRender = (
     record: Partial<DockerHubRepository>,
@@ -163,16 +167,23 @@ export default function ListRemoteImages() {
     });
   };
 
-  const genFetchRepo = () => {
+  const genFetchRepo = (page = 1, pageSize = PAGE_SIZE) => {
     return async () => {
       setLoading(true);
-      const { repositories, errorMsg } = (await send(
-        'list-dockerhub-repositories', {page: 1, pageSize: 100}
-      )) as { repositories: DockerHubRepository[]; errorMsg: string };
+      const { repositories, errorMsg, count } = (await send(
+        'list-dockerhub-repositories',
+        { page, pageSize }
+      )) as {
+        repositories: DockerHubRepository[];
+        errorMsg: string;
+        count: number;
+      };
+      setTotalSize(count);
       if (errorMsg) {
         errorNotificationHandler(errorMsg);
       } else {
         setRepos(repositories);
+        setCurrentPage(page);
       }
       setLoading(false);
     };
@@ -262,7 +273,21 @@ export default function ListRemoteImages() {
         className='repo-table'
         columns={columns}
         dataSource={repos}
-        pagination={false}
+        pagination={
+          totalSize / PAGE_SIZE > 1
+            ? {
+                position: ['topLeft', 'bottomLeft'],
+                current: currentPage,
+                defaultCurrent: 1,
+                size: 'default',
+                pageSize: PAGE_SIZE,
+                total: totalSize,
+                onChange: (page, pageSize) => {
+                  genFetchRepo(page, pageSize)();
+                },
+              }
+            : false
+        }
         loading={loading}
         expandable={{
           expandedRowRender,
