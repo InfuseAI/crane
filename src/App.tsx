@@ -6,7 +6,7 @@ import {
   Switch,
 } from 'react-router-dom';
 import './App.less';
-import { Alert, Button, Space, Layout, Skeleton, Modal } from 'antd';
+import { Alert, Button, Space, Layout, Skeleton, Modal, Divider } from 'antd';
 import Sidebar from './Sidebar';
 import BuildImage from './BuildImage';
 import ListImage from './ListImage';
@@ -100,8 +100,10 @@ const Crane = () => {
             <></>
           )}
           <Modal
-            title={`New Version Released => ${releasedData.name}`}
-            width={'60%'}
+            title={`New Version Released: ${releasedData.name}`}
+            width={'50%'}
+            mask={true}
+            className='modal-version-update'
             visible={isNewVersionReleased}
             onOk={() => {
               setIsNewVersionReleased(false);
@@ -122,7 +124,7 @@ const Crane = () => {
                   console.log('Download');
                 }}
               >
-                Download
+                Download on GitHub
               </Button>,
               <Button
                 key='skip'
@@ -136,16 +138,25 @@ const Crane = () => {
               </Button>,
             ]}
           >
-            <ReactMarkdown
-              children={releasedData.changelog}
-              rehypePlugins={[rehypeRaw]}
-              components={{
-                img: ({ children, ...props }) => {
-                  console.log(props);
-                  return <img src={props.src} alt={props.alt} width='100%' />;
-                },
-              }}
-            />
+            <div className='release-note'>
+              <ReactMarkdown
+                children={releasedData.changelog}
+                rehypePlugins={[rehypeRaw]}
+                components={{
+                  img: ({ children, ...props }) => {
+                    console.log(props);
+                    return <img src={props.src} alt={props.alt} width='100%' />;
+                  },
+                }}
+              />
+              <div className='read-more'>
+              </div>
+            </div>
+            <Divider>
+              <a href={releasedData.url} target='_blank' rel='noreferrer'>
+                Read More
+              </a>
+            </Divider>
           </Modal>
           <Suspense
             fallback={

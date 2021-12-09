@@ -6,6 +6,9 @@ body {
   span {
     cursor: default;
   }
+  .ant-btn span {
+    cursor: pointer;
+  }
 }
 
 .App-link {
@@ -194,3 +197,24 @@ body {
   margin-right: 8px;
   vertical-align: top;
 }
+
+.modal-version-update {
+  .release-note {
+    max-height: 50vh;
+    overflow: hidden;
+    position: relative;
+    .read-more {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      margin: 0;
+      padding: 60px 0;
+      background-image: linear-gradient(to bottom, transparent, white);
+    }
+  }
+  .ant-divider {
+    margin: 0;
+  }
+}
+
