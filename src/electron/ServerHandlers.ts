@@ -8,12 +8,6 @@ import axios from 'axios';
 import { createMarkdownArrayTableSync } from 'parse-markdown-table';
 import AwsAdapter from './AwsAdapter';
 import DockerHubAdapter from './DockerHubAdapter';
-import * as Sentry from '@sentry/electron';
-import tag from 'antd/lib/tag';
-
-Sentry.init({
-  dsn: 'https://6ad1a0b7db2247719c690f7d373b4bfc@o1081482.ingest.sentry.io/6088888',
-});
 
 const docker = new Docker();
 const dockerHubCredentialKeyName = 'Crane-DockerHub';
