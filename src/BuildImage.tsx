@@ -19,6 +19,7 @@ import { LazyLog, ScrollFollow } from 'react-lazylog';
 import { useHistory } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
 import ImageSuggestions from './data/ImageSuggestions.json';
+import { OptionData } from 'rc-select/lib/interface';
 
 const { Content } = Layout;
 const { TextArea } = Input;
@@ -123,7 +124,7 @@ export default function BuildImage() {
     }
   };
 
-  const renderOfficialTitle = (title) => (<span>{title}</span>);
+  const renderOfficialTitle = (title) => <span>{title}</span>;
   const renderOfficialItem = (imageName) => ({
     value: imageName,
     label: (
@@ -168,7 +169,6 @@ export default function BuildImage() {
       </div>
     ),
   });
-
 
   const onFinish = async (values) => {
     setBlockBuildButton(true);
@@ -268,15 +268,9 @@ export default function BuildImage() {
           return row;
         });
 
-        updateOptions([
-          ...officialOptions,
-          ...primehubNotebookOptions
-        ]);
+        updateOptions([...officialOptions, ...primehubNotebookOptions]);
 
-        setResults([
-          ...primehubNotebookOptions,
-          ...officialOptions
-        ]);
+        setResults([...primehubNotebookOptions, ...officialOptions]);
       } else {
         console.log('No primehub notebooks found');
       }
@@ -286,15 +280,55 @@ export default function BuildImage() {
   }, []);
 
   const onSearch = (data: string) => {
-    const filteredOptions = options.map((row) => {
-      return {
-        label: row.label,
-        options: row.options.filter(opt => {
-          return opt.value.indexOf(data) > -1;
-        }),
-      }
-    }).filter((opt) => opt.options.length > 0);
+    const filteredOptions = options
+      .map((row) => {
+        return {
+          label: row.label,
+          options: row.options.filter((opt) => {
+            return opt.value.indexOf(data) > -1;
+          }),
+        };
+      })
+      .filter((opt) => opt.options.length > 0);
     setResults(filteredOptions);
+  };
+
+  type PackageType = 'apt' | 'conda' | 'pip';
+  type SearchHandler = (value: string) => void;
+
+  interface IntelliTextAreaProps {
+    type: PackageType;
+  }
+
+  const IntelliTextArea = (props: IntelliTextAreaProps) => {
+    const [options, setOptions] = useState<{
+      apt: OptionData[];
+      conda: OptionData[];
+      pip: OptionData[];
+    }>({ apt: [], conda: [], pip: [] });
+    const { type } = props;
+    const getSearchHandler: (value: PackageType) => SearchHandler = (type) => {
+      const result: SearchHandler = (value) => {
+        setOptions({
+          ...options,
+          [type]: !value ? []: [{ value }, { value: value + value }, { value: value + value + value }],
+        });
+      };
+      return result;
+    };
+    return (
+      <AutoComplete
+        options={options[type]}
+        onSearch={getSearchHandler(type)}
+      >
+        <TextArea
+          allowClear={true}
+          autoSize={{ minRows: 5, maxRows: 5 }}
+          placeholder={placeholder}
+          disabled={blockBuildButton}
+        />
+      </AutoComplete>
+    );
   };
 
   return (
@@ -362,32 +396,17 @@ export default function BuildImage() {
           <Row gutter={8}>
             <Col span={8}>
               <Form.Item label='apt' name='apt'>
-                <TextArea
-                  allowClear={true}
-                  autoSize={{ minRows: 5, maxRows: 5 }}
-                  placeholder={placeholder}
-                  disabled={blockBuildButton}
-                />
+                <IntelliTextArea type='apt' />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item label='conda' name='conda'>
-                <TextArea
-                  allowClear={true}
-                  autoSize={{ minRows: 5, maxRows: 5 }}
-                  placeholder={placeholder}
-                  disabled={blockBuildButton}
-                />
+                <IntelliTextArea type='conda' />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item label='pip' name='pip'>
-                <TextArea
-                  allowClear={true}
-                  autoSize={{ minRows: 5, maxRows: 5 }}
-                  placeholder={placeholder}
-                  disabled={blockBuildButton}
-                />
+                <IntelliTextArea type='pip' />
               </Form.Item>
             </Col>
           </Row>
