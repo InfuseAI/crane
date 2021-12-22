@@ -18,6 +18,7 @@ export default function Sidebar(prop) {
     }
   };
   const location = useLocation();
+  console.log(location.pathname.split('/'));
   return (
     <Sider
       collapsible
@@ -35,14 +36,13 @@ export default function Sidebar(prop) {
       <div className='logo' />
       <Menu
         theme='dark'
-        defaultSelectedKeys={[location.pathname.replaceAll('/', '')]}
-        selectedKeys={[location.pathname.replaceAll('/', '')]}
+        selectedKeys={location.pathname.split('/')}
         mode='inline'
         style={{ position: 'relative', fontSize: '16px' }}
         inlineIndent={34}
       >
-        <Menu.Item key='' icon={<PlusOutlined />}>
-          <Link to='/' style={{ color: 'white' }}>
+        <Menu.Item key='build' icon={<PlusOutlined />}>
+          <Link to='/build' style={{ color: 'white' }}>
             Build
           </Link>
         </Menu.Item>

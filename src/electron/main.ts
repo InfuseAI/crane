@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as squirrelStartup from 'electron-squirrel-startup';
 import * as Sentry from '@sentry/electron';
+import menuFactoryService from './services/menuFactory';
 
 if (squirrelStartup) app.quit();
 
@@ -103,7 +104,8 @@ app.on('ready', async () => {
 
   createAppDirectory();
 
-  createWindow(args);
+  const main_window = createWindow(args);
+  menuFactoryService.buildMenu(app, main_window);
   const forceToUseBackgroundProcess =
     process.env.FORCE_BACKGROUND_PROCESS === '1';
   if (isDev && !forceToUseBackgroundProcess) {
