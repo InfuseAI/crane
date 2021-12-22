@@ -166,7 +166,7 @@ const Crane = () => {
             }
           >
             <Switch>
-              <Route exact path='/' component={BuildImage} />
+              <Route exact path='/build' component={BuildImage} />
               <Route path='/settings/:tabName' component={Settings} />
               <Route path='/images' component={ListImage} />
               <Route path='/image/:id' component={ImageDetail} />
@@ -174,7 +174,7 @@ const Crane = () => {
                 path='/createPrimeHubImage'
                 component={CreatePrimeHubImage}
               />
-              <Redirect to='/' />
+              <Redirect to='/build' />
             </Switch>
           </Suspense>
           <Footer style={{ textAlign: 'center' }}>
