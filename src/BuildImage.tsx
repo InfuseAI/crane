@@ -309,10 +309,18 @@ export default function BuildImage() {
     const { type } = props;
     const getSearchHandler: (value: PackageType) => SearchHandler = (type) => {
       const result: SearchHandler = (value) => {
-        setOptions({
-          ...options,
-          [type]: !value ? []: [{ value }, { value: value + value }, { value: value + value + value }],
-        });
+        // TODO getAutoSuggestionResult
+        // Options Result example.
+        const optionResult = {
+          apt: [{ value: 'vim' }, { value: 'curl' }, { value: 'tmux' }],
+          conda: [
+            { value: 'pytorch' },
+            { value: 'tensorflow' },
+            { value: 'opencv' },
+          ],
+          pip: [{ value: 'cv2' }, { value: 'numpy' }],
+        };
+        setOptions(optionResult);
       };
       return result;
     };
@@ -320,6 +328,7 @@ export default function BuildImage() {
       <AutoComplete
         options={options[type]}
         onSearch={getSearchHandler(type)}
+        defaultOpen={!!options[type]}
       >
         <TextArea
           allowClear={true}
