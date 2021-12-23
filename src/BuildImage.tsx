@@ -11,6 +11,7 @@ import {
   AutoComplete,
   Drawer,
   notification,
+  Typography,
 } from 'antd';
 import useLocalStorage from './hooks/useLocalStorage';
 import { SiPython } from 'react-icons/si';
@@ -20,7 +21,12 @@ import { useHistory } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
 import ImageSuggestions from './data/ImageSuggestions.json';
 import { OptionData } from 'rc-select/lib/interface';
+import { debounce, uniqBy } from 'lodash';
 
+const { Text } = Typography;
+
+const PKG_PILOT_URL =
+  'https://4pgoedjmk5.execute-api.ap-northeast-1.amazonaws.com/Prod/recommend/';
 const { Content } = Layout;
 const { TextArea } = Input;
 
@@ -300,35 +306,103 @@ export default function BuildImage() {
     type: PackageType;
   }
 
+  const fetchPkgSuggestion = async (q: string, p: PackageType) => {
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    const result = await fetch(PKG_PILOT_URL, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        q,
+        p,
+        n: 3,
+      }),
+    });
+    return result;
+  };
+
+  const renderPkgOpt = (title: string, type: string, matched: string) => {
+    let label: any = title;
+    const index = title.indexOf(matched);
+    if (index > -1) {
+      const length = matched.length;
+      const prefix = title.substring(0, index);
+      const suffix = title.substring(index + length);
+      const match = title.substring(index, index + length);
+      label = (
+        <span>
+          {prefix}<Text mark>{match}</Text>{suffix}
+        </span>
+      );
+    }
+    return (
+      <span>
+        {label}
+      </span>
+    );
+  };
+
   const IntelliTextArea = (props: IntelliTextAreaProps) => {
-    const [options, setOptions] = useState<{
-      apt: OptionData[];
-      conda: OptionData[];
-      pip: OptionData[];
-    }>({ apt: [], conda: [], pip: [] });
+    const [options, setOptions] = useState<any[]>([]);
     const { type } = props;
     const getSearchHandler: (value: PackageType) => SearchHandler = (type) => {
       const result: SearchHandler = (value) => {
-        // TODO getAutoSuggestionResult
-        // Options Result example.
-        const optionResult = {
-          apt: [{ value: 'vim' }, { value: 'curl' }, { value: 'tmux' }],
-          conda: [
-            { value: 'pytorch' },
-            { value: 'tensorflow' },
-            { value: 'opencv' },
-          ],
-          pip: [{ value: 'cv2' }, { value: 'numpy' }],
-        };
-        setOptions(optionResult);
+        const lastValue = value.split('\n').pop() || '';
+        if (lastValue.length < 1) {
+          setOptions([]);
+          return;
+        }
+        fetchPkgSuggestion(lastValue, type)
+          .then((resp) => {
+            return resp.json();
+          })
+          .then((result) => {
+            const { matches, recommendations } = result;
+            const matchItems = matches[type]
+              ? matches[type]?.map((value) => {
+                  return {
+                    value,
+                    key: `m_${value}`,
+                    label: renderPkgOpt(value, type, lastValue),
+                  };
+                })
+              : [];
+
+            const recommendItems = recommendations[type]
+              ? recommendations[type]?.map((value) => {
+                  return {
+                    value,
+                    key: `r_${value}`,
+                    label: renderPkgOpt(value, type),
+                  };
+                })
+              : [];
+
+            const uniqItems = uniqBy(
+              [...matchItems, ...recommendItems],
+              (item) => item.value
+            );
+            const optionResult = uniqItems.length ? [
+              {
+                label: (
+                  <Text type='secondary' style={{ fontSize: 12 }}>
+                    Packages you may want to add:
+                  </Text>
+                ),
+              },
+              ...uniqItems,
+            ]: [];
+            setOptions([...optionResult]);
+          });
       };
-      return result;
+      return debounce(result, 300);
     };
     return (
       <AutoComplete
-        options={options[type]}
+        options={options}
         onSearch={getSearchHandler(type)}
-        defaultOpen={!!options[type]}
+        defaultOpen={!!options}
       >
         <TextArea
           allowClear={true}
