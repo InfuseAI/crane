@@ -20,7 +20,6 @@ import { LazyLog, ScrollFollow } from 'react-lazylog';
 import { useHistory } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
 import ImageSuggestions from './data/ImageSuggestions.json';
-import { OptionData } from 'rc-select/lib/interface';
 import { debounce, uniqBy } from 'lodash';
 
 const { Text } = Typography;
@@ -348,7 +347,8 @@ export default function BuildImage() {
     const { type } = props;
     const getSearchHandler: (value: PackageType) => SearchHandler = (type) => {
       const result: SearchHandler = (value) => {
-        const lastValue = value.split('\n').pop() || '';
+        const pkgs = value.split('\n');
+        const lastValue = pkgs.pop() || '';
         if (lastValue.length < 1) {
           setOptions([]);
           return;
@@ -359,10 +359,13 @@ export default function BuildImage() {
           })
           .then((result) => {
             const { matches, recommendations } = result;
+            if (!matches) return;
             const matchItems = matches[type]
               ? matches[type]?.map((value) => {
+                  const vList = pkgs.slice(0, pkgs.length);
+                  vList.push(value);
                   return {
-                    value,
+                    value: vList.join('\n'),
                     key: `m_${value}`,
                     label: renderPkgOpt(value, type, lastValue),
                   };
@@ -374,7 +377,7 @@ export default function BuildImage() {
                   return {
                     value,
                     key: `r_${value}`,
-                    label: renderPkgOpt(value, type),
+                    label: renderPkgOpt(value, type, lastValue),
                   };
                 })
               : [];
@@ -384,13 +387,6 @@ export default function BuildImage() {
               (item) => item.value
             );
             const optionResult = uniqItems.length ? [
-              {
-                label: (
-                  <Text type='secondary' style={{ fontSize: 12 }}>
-                    Packages you may want to add:
-                  </Text>
-                ),
-              },
               ...uniqItems,
             ]: [];
             setOptions([...optionResult]);
@@ -403,6 +399,7 @@ export default function BuildImage() {
         options={options}
         onSearch={getSearchHandler(type)}
         defaultOpen={!!options}
+        backfill={true}
       >
         <TextArea
           allowClear={true}
