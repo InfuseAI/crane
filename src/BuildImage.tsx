@@ -11,6 +11,7 @@ import {
   AutoComplete,
   Drawer,
   notification,
+  Typography,
 } from 'antd';
 import useLocalStorage from './hooks/useLocalStorage';
 import { SiPython } from 'react-icons/si';
@@ -19,7 +20,12 @@ import { LazyLog, ScrollFollow } from 'react-lazylog';
 import { useHistory } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
 import ImageSuggestions from './data/ImageSuggestions.json';
+import { debounce, uniqBy } from 'lodash';
 
+const { Text } = Typography;
+
+const PKG_PILOT_URL =
+  'https://4pgoedjmk5.execute-api.ap-northeast-1.amazonaws.com/Prod/recommend/';
 const { Content } = Layout;
 const { TextArea } = Input;
 
@@ -123,7 +129,7 @@ export default function BuildImage() {
     }
   };
 
-  const renderOfficialTitle = (title) => (<span>{title}</span>);
+  const renderOfficialTitle = (title) => <span>{title}</span>;
   const renderOfficialItem = (imageName) => ({
     value: imageName,
     label: (
@@ -168,7 +174,6 @@ export default function BuildImage() {
       </div>
     ),
   });
-
 
   const onFinish = async (values) => {
     setBlockBuildButton(true);
@@ -268,15 +273,9 @@ export default function BuildImage() {
           return row;
         });
 
-        updateOptions([
-          ...officialOptions,
-          ...primehubNotebookOptions
-        ]);
+        updateOptions([...officialOptions, ...primehubNotebookOptions]);
 
-        setResults([
-          ...primehubNotebookOptions,
-          ...officialOptions
-        ]);
+        setResults([...primehubNotebookOptions, ...officialOptions]);
       } else {
         console.log('No primehub notebooks found');
       }
@@ -286,15 +285,130 @@ export default function BuildImage() {
   }, []);
 
   const onSearch = (data: string) => {
-    const filteredOptions = options.map((row) => {
-      return {
-        label: row.label,
-        options: row.options.filter(opt => {
-          return opt.value.indexOf(data) > -1;
-        }),
-      }
-    }).filter((opt) => opt.options.length > 0);
+    const filteredOptions = options
+      .map((row) => {
+        return {
+          label: row.label,
+          options: row.options.filter((opt) => {
+            return opt.value.indexOf(data) > -1;
+          }),
+        };
+      })
+      .filter((opt) => opt.options.length > 0);
     setResults(filteredOptions);
+  };
+
+  type PackageType = 'apt' | 'conda' | 'pip';
+  type SearchHandler = (value: string) => void;
+
+  interface IntelliTextAreaProps {
+    type: PackageType;
+  }
+
+  const fetchPkgSuggestion = async (q: string, p: PackageType) => {
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    const result = await fetch(PKG_PILOT_URL, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        q,
+        p,
+        n: 3,
+      }),
+    });
+    return result;
+  };
+
+  const renderPkgOpt = (title: string, type: string, matched: string) => {
+    let label: any = title;
+    const index = title.indexOf(matched);
+    if (index > -1) {
+      const length = matched.length;
+      const prefix = title.substring(0, index);
+      const suffix = title.substring(index + length);
+      const match = title.substring(index, index + length);
+      label = (
+        <span>
+          {prefix}<Text mark>{match}</Text>{suffix}
+        </span>
+      );
+    }
+    return (
+      <span>
+        {label}
+      </span>
+    );
+  };
+
+  const IntelliTextArea = (props: IntelliTextAreaProps) => {
+    const [options, setOptions] = useState<any[]>([]);
+    const { type } = props;
+    const getSearchHandler: (value: PackageType) => SearchHandler = (type) => {
+      const result: SearchHandler = (value) => {
+        const pkgs = value.split('\n');
+        const lastValue = pkgs.pop() || '';
+        if (lastValue.length < 1) {
+          setOptions([]);
+          return;
+        }
+        fetchPkgSuggestion(lastValue, type)
+          .then((resp) => {
+            return resp.json();
+          })
+          .then((result) => {
+            const { matches, recommendations } = result;
+            if (!matches) return;
+            const matchItems = matches[type]
+              ? matches[type]?.map((value) => {
+                  const vList = pkgs.slice(0, pkgs.length);
+                  vList.push(value);
+                  return {
+                    value: vList.join('\n'),
+                    key: `m_${value}`,
+                    label: renderPkgOpt(value, type, lastValue),
+                  };
+                })
+              : [];
+
+            const recommendItems = recommendations[type]
+              ? recommendations[type]?.map((value) => {
+                  return {
+                    value,
+                    key: `r_${value}`,
+                    label: renderPkgOpt(value, type, lastValue),
+                  };
+                })
+              : [];
+
+            const uniqItems = uniqBy(
+              [...matchItems, ...recommendItems],
+              (item) => item.value
+            );
+            const optionResult = uniqItems.length ? [
+              ...uniqItems,
+            ]: [];
+            setOptions([...optionResult]);
+          });
+      };
+      return debounce(result, 300);
+    };
+    return (
+      <AutoComplete
+        options={options}
+        onSearch={getSearchHandler(type)}
+        defaultOpen={!!options}
+        backfill={true}
+      >
+        <TextArea
+          allowClear={true}
+          autoSize={{ minRows: 5, maxRows: 5 }}
+          placeholder={placeholder}
+          disabled={blockBuildButton}
+        />
+      </AutoComplete>
+    );
   };
 
   return (
@@ -362,32 +476,17 @@ export default function BuildImage() {
           <Row gutter={8}>
             <Col span={8}>
               <Form.Item label='apt' name='apt'>
-                <TextArea
-                  allowClear={true}
-                  autoSize={{ minRows: 5, maxRows: 5 }}
-                  placeholder={placeholder}
-                  disabled={blockBuildButton}
-                />
+                <IntelliTextArea type='apt' />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item label='conda' name='conda'>
-                <TextArea
-                  allowClear={true}
-                  autoSize={{ minRows: 5, maxRows: 5 }}
-                  placeholder={placeholder}
-                  disabled={blockBuildButton}
-                />
+                <IntelliTextArea type='conda' />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item label='pip' name='pip'>
-                <TextArea
-                  allowClear={true}
-                  autoSize={{ minRows: 5, maxRows: 5 }}
-                  placeholder={placeholder}
-                  disabled={blockBuildButton}
-                />
+                <IntelliTextArea type='pip' />
               </Form.Item>
             </Col>
           </Row>
