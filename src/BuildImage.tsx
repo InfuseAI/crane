@@ -374,8 +374,10 @@ export default function BuildImage() {
 
             const recommendItems = recommendations[type]
               ? recommendations[type]?.map((value) => {
+                  const vList = pkgs.slice(0, pkgs.length);
+                  vList.push(value);
                   return {
-                    value,
+                    value: vList.join('\n'),
                     key: `r_${value}`,
                     label: renderPkgOpt(value, type, lastValue),
                   };
@@ -389,6 +391,7 @@ export default function BuildImage() {
             const optionResult = uniqItems.length ? [
               ...uniqItems,
             ]: [];
+            console.log(optionResult);
             setOptions([...optionResult]);
           });
       };
