@@ -1,4 +1,9 @@
+import * as isDev from 'electron-is-dev';
+import * as path from 'path';
 export default function DarwinMenu (app, mainWindow) {
+  const startURL = isDev
+    ? 'http://localhost:16888/'
+    : `file://${path.join(__dirname, "../../build/index.html")}`;
   const menu = [
     {
       label: 'Crane',
@@ -31,7 +36,7 @@ export default function DarwinMenu (app, mainWindow) {
           label: 'Perferences...',
           accelerator: 'Command+,',
           click: (item, focusedWindow) => {
-            focusedWindow.loadURL(`http://localhost:16888/#/settings/dockerhub`);
+            focusedWindow.loadURL(`${startURL}#/settings/dockerhub`);
           }
         },
         {
