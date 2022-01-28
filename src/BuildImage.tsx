@@ -304,10 +304,6 @@ export default function BuildImage() {
   type PackageType = 'apt' | 'conda' | 'pip';
   type SearchHandler = (value: string) => void;
 
-  interface IntelliTextAreaProps {
-    type: PackageType;
-  }
-
   const fetchPkgSuggestion = async (q: string, p: PackageType) => {
     const headers = {
       'Content-Type': 'application/json',
