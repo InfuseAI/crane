@@ -54,7 +54,7 @@ export function generateDockerfile(options) {
   if (options['apt']) {
     apt = `RUN apt-get update && apt-get install -y --no-install-recommends ${options[
       'apt'
-    ].replace(/[\r\n]+/g, ' ')} && apt-get purge && apt-get clean`;
+    ].replace(/[\r\n]+/g, ' ')} && apt-get purge && apt-get clean && rm -rf /var/lib/apt/lists/*`;
   }
 
   if (options['conda']) {
