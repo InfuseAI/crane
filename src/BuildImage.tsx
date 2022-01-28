@@ -108,6 +108,9 @@ const LabelGroup = ({ value = {}, onChange }) => {
 export default function BuildImage() {
   const history = useHistory();
   const [options, updateOptions] = useState<any[]>([]);
+  const [aptOptions, setAptOptions] = useState<any[]>([]);
+  const [pipOptions, setPipOptions] = useState<any[]>([]);
+  const [condaOptions, setCondaOptions] = useState<any[]>([]);
   const [results, setResults] = useState<any[]>([]);
   const [logDrawerVisible, setLogDrawerVisible] = useState(false);
   const [blockBuildButton, setBlockBuildButton] = useState(false);
@@ -342,77 +345,58 @@ export default function BuildImage() {
     );
   };
 
-  const IntelliTextArea = (props: IntelliTextAreaProps) => {
-    const [options, setOptions] = useState<any[]>([]);
-    const { type } = props;
-    const getSearchHandler: (value: PackageType) => SearchHandler = (type) => {
-      const result: SearchHandler = (value) => {
-        const pkgs = value.split('\n');
-        const lastValue = pkgs.pop() || '';
-        if (lastValue.length < 1) {
-          setOptions([]);
-          return;
-        }
-        fetchPkgSuggestion(lastValue, type)
-          .then((resp) => {
-            return resp.json();
-          })
-          .then((result) => {
-            const { matches, recommendations } = result;
-            if (!matches) return;
-            const matchItems = matches[type]
-              ? matches[type]?.map((value) => {
-                  const vList = pkgs.slice(0, pkgs.length);
-                  vList.push(value);
-                  return {
-                    value: vList.join('\n'),
-                    key: `m_${value}`,
-                    label: renderPkgOpt(value, type, lastValue),
-                  };
-                })
-              : [];
+  const searchHandlerBuilder: (type: PackageType, setOptions: React.Dispatch<React.SetStateAction<any[]>>) => SearchHandler = (type, setOptions) => {
+    const result: SearchHandler = (value: string) => {
+      const pkgs = value.split('\n');
+      const lastValue = pkgs.pop() || '';
+      if (lastValue.length < 1) {
+        setOptions([]);
+        return;
+      }
+      fetchPkgSuggestion(lastValue, type)
+      .then((resp) => {
+        return resp.json();
+      })
+      .then((result) => {
+        const { matches, recommendations } = result;
+        if (!matches) return;
+        const matchItems = matches[type]
+          ? matches[type]?.map((value) => {
+              const vList = pkgs.slice(0, pkgs.length);
+              vList.push(value);
+              return {
+                value: vList.join('\n'),
+                key: `m_${value}`,
+                label: renderPkgOpt(value, type, lastValue),
+              };
+            })
+          : [];
 
-            const recommendItems = recommendations[type]
-              ? recommendations[type]?.map((value) => {
-                  const vList = pkgs.slice(0, pkgs.length);
-                  vList.push(value);
-                  return {
-                    value: vList.join('\n'),
-                    key: `r_${value}`,
-                    label: renderPkgOpt(value, type, lastValue),
-                  };
-                })
-              : [];
+        const recommendItems = recommendations[type]
+          ? recommendations[type]?.map((value) => {
+              const vList = pkgs.slice(0, pkgs.length);
+              vList.push(value);
+              return {
+                value: vList.join('\n'),
+                key: `r_${value}`,
+                label: renderPkgOpt(value, type, lastValue),
+              };
+            })
+          : [];
 
-            const uniqItems = uniqBy(
-              [...matchItems, ...recommendItems],
-              (item) => item.value
-            );
-            const optionResult = uniqItems.length ? [
-              ...uniqItems,
-            ]: [];
-            console.log(optionResult);
-            setOptions([...optionResult]);
-          });
-      };
-      return debounce(result, 300);
+        const uniqItems = uniqBy(
+          [...matchItems, ...recommendItems],
+          (item) => item.value
+        );
+        const optionResult = uniqItems.length ? [
+          ...uniqItems,
+        ]: [];
+        console.log(optionResult);
+        setOptions([...optionResult]);
+      });
     };
-    return (
-      <AutoComplete
-        options={options}
-        onSearch={getSearchHandler(type)}
-        defaultOpen={!!options}
-        backfill={true}
-      >
-        <TextArea
-          allowClear={true}
-          autoSize={{ minRows: 5, maxRows: 5 }}
-          placeholder={placeholder}
-          disabled={blockBuildButton}
-        />
-      </AutoComplete>
-    );
-  };
+    return debounce(result, 300);
+  }
 
   return (
     <Content style={{ margin: '0 16px' }}>
@@ -479,17 +463,53 @@ export default function BuildImage() {
           <Row gutter={8}>
             <Col span={8}>
               <Form.Item label='apt' name='apt'>
-                <IntelliTextArea type='apt' />
+                <AutoComplete
+                  options={aptOptions}
+                  onSearch={searchHandlerBuilder('apt', setAptOptions)}
+                  defaultOpen={!!aptOptions}
+                  backfill={true}
+                >
+                  <TextArea
+                    allowClear={true}
+                    autoSize={{ minRows: 5, maxRows: 5 }}
+                    placeholder={placeholder}
+                    disabled={blockBuildButton}
+                  />
+                </AutoComplete>
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item label='conda' name='conda'>
-                <IntelliTextArea type='conda' />
+                <AutoComplete
+                  options={condaOptions}
+                  onSearch={searchHandlerBuilder('conda', setCondaOptions)}
+                  defaultOpen={!!condaOptions}
+                  backfill={true}
+                >
+                  <TextArea
+                    allowClear={true}
+                    autoSize={{ minRows: 5, maxRows: 5 }}
+                    placeholder={placeholder}
+                    disabled={blockBuildButton}
+                  />
+                </AutoComplete>
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item label='pip' name='pip'>
-                <IntelliTextArea type='pip' />
+                <AutoComplete
+                  options={pipOptions}
+                  onSearch={searchHandlerBuilder('pip', setPipOptions)}
+                  defaultOpen={!!pipOptions}
+                  backfill={true}
+                >
+                  <TextArea
+                    allowClear={true}
+                    autoSize={{ minRows: 5, maxRows: 5 }}
+                    placeholder={placeholder}
+                    disabled={blockBuildButton}
+                  />
+                </AutoComplete>
               </Form.Item>
             </Col>
           </Row>
